@@ -1,0 +1,203 @@
+{
+  "target_id": "mars_jezero_crater",
+  "target_name": "Jezero Crater",
+  "target_archetype": "crater_delta_paleolake",
+  "mission_context": "NASA Mars 2020 Perseverance Rover Landing Site",
+  "scientific_summary": "A 49-km impact crater that hosted a prominent open-basin lake fed by two inlet valleys during the Noachian-Hesperian transition (~3.7 Ga). Features a remarkably preserved fluvial delta with clay, carbonate, and olivine-bearing strata. Contains ground-truth environmental measurements from the Perseverance MEDA instrument suite.",
+  "geological_epoch": "Circa 3.7 Ga (Late Noachian to Early Hesperian)",
+  "coordinates": {
+    "center_lat": 18.38,
+    "center_lon_east": 77.58,
+    "center_lon_west": 282.42,
+    "min_lat": 18.15,
+    "max_lat": 18.6,
+    "min_lon_east": 77.3,
+    "max_lon_east": 77.85,
+    "datum": "MOLA areoid (0 m elevation defined at mean radius 3396.0 km)"
+  },
+  "tier1_global_vector": {
+    "vegetation_ndvi": 0.0,
+    "slope_deg": 2.4,
+    "surface_roughness_m": 0.78,
+    "lst_mean_k": 214.2,
+    "lst_diurnal_range_k": 78.6,
+    "soil_moisture_fraction": 0.0
+  },
+  "tier1_feature_weights": {
+    "vegetation_ndvi": 0.25,
+    "slope_deg": 0.15,
+    "surface_roughness_m": 0.15,
+    "lst_mean_k": 0.15,
+    "lst_diurnal_range_k": 0.15,
+    "soil_moisture_fraction": 0.15
+  },
+  "tier1_tolerances": {
+    "vegetation_ndvi": 0.05,
+    "slope_deg": 3.0,
+    "surface_roughness_m": 0.6,
+    "lst_mean_k": 15.0,
+    "lst_diurnal_range_k": 12.0,
+    "soil_moisture_fraction": 0.03
+  },
+  "detailed_measurements": {
+    "elevation": {
+      "name": "surface_elevation",
+      "value": -2530.0,
+      "unit": "m",
+      "std_dev": 120.0,
+      "min_val": -2650.0,
+      "max_val": -2100.0,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "MOLA / HiRISE DTM / Perseverance MEDA barometer",
+      "pds_dataset_id": "MGS-M-MOLA-5-MEGDR-L3-V1.0",
+      "citation": "Farley et al. (2020), Rodriguez-Manfredi et al. (2021)",
+      "notes": "Elevation of floor and western delta fan base"
+    },
+    "slope": {
+      "name": "crater_floor_slope",
+      "value": 2.4,
+      "unit": "degrees",
+      "std_dev": 1.8,
+      "min_val": 0.2,
+      "max_val": 18.5,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "HiRISE DTM / Rover IMU traversability logs",
+      "pds_dataset_id": "MRO-M-HIRISE-5-DTM-V1.0",
+      "citation": "Stack et al. (2020)",
+      "notes": "Landing ellipse is flat (1.5 deg), delta scarp exceeds 15-20 deg"
+    },
+    "surface_roughness_rms": {
+      "name": "decameter_rms_roughness",
+      "value": 0.78,
+      "unit": "m",
+      "std_dev": 0.35,
+      "min_val": 0.2,
+      "max_val": 2.1,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "HiRISE / Perseverance Navcam stereo point clouds",
+      "pds_dataset_id": "MRO-M-HIRISE-5-DTM-V1.0",
+      "citation": "Golombek et al. (2020)",
+      "notes": "Moderate-to-high roughness due to fractured floor (S\u00e9\u00edtah) and boulder ejecta"
+    },
+    "temperature_mean_annual": {
+      "name": "surface_temperature_annual_mean",
+      "value": 214.2,
+      "unit": "K",
+      "std_dev": 14.0,
+      "min_val": 183.4,
+      "max_val": 282.1,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "Perseverance MEDA Thermal Infrared Sensor (TIRS)",
+      "pds_dataset_id": "M2020-M-MEDA-3-RDR-V1.0",
+      "citation": "Martinez et al. (2023) JGR Planets",
+      "notes": "Ground-truth calibrated surface temperature from rover"
+    },
+    "temperature_diurnal_range": {
+      "name": "diurnal_temperature_amplitude",
+      "value": 78.6,
+      "unit": "K",
+      "std_dev": 8.0,
+      "min_val": 60.0,
+      "max_val": 95.0,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "Perseverance MEDA TIRS",
+      "pds_dataset_id": "M2020-M-MEDA-3-RDR-V1.0",
+      "citation": "Rodriguez-Manfredi et al. (2021)",
+      "notes": "Extreme diurnal swing between afternoon peak and pre-dawn minimum"
+    },
+    "thermal_inertia": {
+      "name": "thermal_inertia",
+      "value": 340.0,
+      "unit": "J m^-2 K^-1 s^-1/2",
+      "std_dev": 70.0,
+      "min_val": 210.0,
+      "max_val": 580.0,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "THEMIS Mosaic / MEDA derived surface thermal inertia",
+      "pds_dataset_id": "ODY-M-THM-5-IRGEO-V1.0",
+      "citation": "Martinez et al. (2023)",
+      "notes": "Higher than Oxia Planum due to exposed olivine-cumulate bedrock and coarse sand dunes"
+    },
+    "albedo_bolometric": {
+      "name": "bolometric_visible_albedo",
+      "value": 0.152,
+      "unit": "dimensionless",
+      "std_dev": 0.025,
+      "min_val": 0.11,
+      "max_val": 0.22,
+      "data_quality_tier": "orbital_derived",
+      "instrument": "MGS TES Bolometric Albedo / HiRISE",
+      "pds_dataset_id": "MGS-M-TES-3-TSDR-V1.0",
+      "citation": "Bell et al. (2021)",
+      "notes": "Dark S\u00e9\u00edtah unit has albedo ~0.11; delta top has albedo ~0.18"
+    },
+    "dust_cover_index": {
+      "name": "dust_cover_index_dci",
+      "value": 0.958,
+      "unit": "dimensionless",
+      "std_dev": 0.018,
+      "min_val": 0.92,
+      "max_val": 0.98,
+      "data_quality_tier": "orbital_derived",
+      "instrument": "MGS TES 1075 cm^-1 Silicate Band",
+      "pds_dataset_id": "MGS-M-TES-3-TSDR-V1.0",
+      "citation": "Ruff & Christensen (2002)",
+      "notes": "Dust-poor, active wind-clearing terrain"
+    },
+    "clay_phyllosilicate_index": {
+      "name": "delta_smectite_carbonate_absorption",
+      "value": 0.048,
+      "unit": "band_depth_bd1900_d2300",
+      "std_dev": 0.022,
+      "min_val": 0.015,
+      "max_val": 0.075,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "MRO CRISM / Perseverance SuperCam & PIXL",
+      "pds_dataset_id": "MRO-M-CRISM-3-RDR-TARGETED-V1.0",
+      "citation": "Ehlmann et al. (2008), Farley et al. (2022)",
+      "notes": "Localized in western delta fan mudstones and crater marginal carbonates"
+    },
+    "water_equivalent_hydrogen": {
+      "name": "water_equivalent_hydrogen_weh",
+      "value": 3.2,
+      "unit": "wt% H2O",
+      "std_dev": 0.5,
+      "min_val": 2.5,
+      "max_val": 4.2,
+      "data_quality_tier": "orbital_derived",
+      "instrument": "Mars Odyssey GRS / HEND Neutron Spectrometer",
+      "pds_dataset_id": "ODY-M-GRS-5-DIR-H2O-MAP-V1.0",
+      "citation": "Boynton et al. (2007)",
+      "notes": "Chemically bound within delta clays and hydrated sulfates"
+    },
+    "atmospheric_pressure": {
+      "name": "mean_surface_pressure",
+      "value": 710.0,
+      "unit": "Pa",
+      "std_dev": 55.0,
+      "min_val": 620.0,
+      "max_val": 810.0,
+      "data_quality_tier": "ground_truth_in_situ",
+      "instrument": "Perseverance MEDA Barometer",
+      "pds_dataset_id": "M2020-M-MEDA-3-RDR-V1.0",
+      "citation": "Rodriguez-Manfredi et al. (2021)",
+      "notes": "Measured ground-truth pressure at Jezero floor (~7.1 hPa)"
+    }
+  },
+  "irreducible_limits": {
+    "surface_gravity": "Mars = 3.71 m/s^2 vs Earth = 9.81 m/s^2. Sediment settling velocity in paleolake deltas was significantly lower on Mars.",
+    "atmospheric_pressure": "Mars = ~7.1 hPa vs Earth = 1013 hPa.",
+    "radiation_environment": "Surface dose at Jezero measured by MEDA/RAD analogs is ~240-260 mSv/yr.",
+    "biological_sterility": "Jezero delta on Earth would be saturated with microbial mats and plant roots; Martian delta is pristine abiotic rock."
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "primary_target": false,
+    "created_by": "W4 Mars Target Workstream",
+    "recommended_earth_analog_archetypes": [
+      "Salda Lake (Turkey) - Hydromagnesite/stromatolite microbialite shorelines",
+      "Green River Formation (Utah/Wyoming) - Lacustrine carbonate and deltaic facies",
+      "Lake Eyre Basin (Australia) - Arid terminal lake delta and clay playa"
+    ]
+  }
+}

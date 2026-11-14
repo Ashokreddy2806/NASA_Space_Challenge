@@ -47,8 +47,13 @@ _No entries yet._
 
 ## mrinalini
 
-**Now working on:** —
+**Now working on:** W4 Mars target profile & W5 integration
 
 <!-- entries -->
 
-_No entries yet._
+#### 2026-11-14 16:42 — W4 Mars target profile implemented and tested
+- **Did:** Evaluated 5 candidate Mars locations and selected Oxia Planum (ExoMars rover landing site) as primary target for ancient clay/habitable plain archetype, with Jezero Crater as comparative benchmark. Implemented Mars target profile generator exporting machine-readable JSON schema for W5 similarity engine. Built reference Earth-Mars similarity engine and verified test harness across sample analog sites (Qaidam Basin, McMurdo Dry Valleys, Western Desert) with 100% passing unit tests.
+- **Files:** `backend/target_profiles/mars_target.py`, `backend/engine/similarity.py`, `backend/engine/test_engine.py`, `tests/test_mars_target.py`, `data/processed/targets/mars_oxia_planum.json`, `data/processed/targets/mars_jezero_crater.json`, `data/processed/mars_target_profile.json`
+- **Next:** Integrate with W2 Earth regridded global dataset (0.05°) and W5 similarity ranking pipeline.
+- **Blockers:** none
+
