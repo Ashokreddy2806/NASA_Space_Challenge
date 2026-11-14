@@ -1,6 +1,7 @@
 # Phase-level entry points. Run from NASA_Space_Challenge/.
-# On Windows the virtual environment is at ../.venv/Scripts/python.exe.
-PYTHON ?= ../.venv/Scripts/python.exe
+# Picks the first virtual environment found (macOS/Linux or Windows), else system python.
+# Override with:  make test PYTHON=/path/to/python
+PYTHON ?= $(firstword $(wildcard .venv/bin/python ../.venv/bin/python ../.venv/Scripts/python.exe) python)
 
 .PHONY: phase0 inventory test
 

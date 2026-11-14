@@ -11,9 +11,17 @@ A data-driven analog finder, not a "this desert looks like Mars" slideshow. Ever
 ## Quick start
 
 ```bash
-# from the repository root
+# macOS / Linux, from NASA_Space_Challenge/ (use Python 3.11 or 3.12)
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+make phase0                                   # tests + writes docs/data_inventory.md
+```
+
+```bash
+# Windows, from the repository root
 python -m venv .venv
-.venv\Scripts\activate            # Windows
+.venv\Scripts\activate
 python -m pip install -r NASA_Space_Challenge/requirements.txt
 cd NASA_Space_Challenge
 python -m backend.pipeline.inspect_datasets   # writes docs/data_inventory.md
@@ -21,6 +29,8 @@ python -m pytest -q                           # Phase 0 smoke tests
 ```
 
 The raw datasets are expected in `../Datasets/` (`Moon/`, `Mars/`, `Earth/`) and are **not** committed. Set `NASA_DATA_ROOT` to override the location.
+Teammates can fetch the shared copy (private Hugging Face dataset, ask Rahul for access) with
+`hf download rahuloruganti/nasa-analog-data --repo-type dataset --local-dir ../Datasets`.
 
 ## Repository layout
 

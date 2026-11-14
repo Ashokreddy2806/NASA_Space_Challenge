@@ -7,8 +7,10 @@
 
 The core rule: a feature is only comparable if it is measured the **same physical
 way** on every body. Pixel windows are therefore converted to kilometres, and
-each body's values are converted to percentiles *within that body* before any
-distance is computed.
+every target value is then placed on the **Earth reference scale** (its percentile
+within the Earth land distribution) before any distance is computed. Percentiles
+are never taken within the Moon or Mars, so a "median" lunar value is not forced
+to match a "median" Earth value.
 
 ## Proposed MVP features (6)
 
@@ -83,9 +85,15 @@ merely cold or rocky ones.
 
 ## Normalization and scoring (Phase 3 preview)
 
-1. Convert each feature to a percentile rank **within its own body's valid
-   cells** (Earth land; Moon polar tile; Mars target region).
-2. Sub-score for feature *f*: `1 − |p_earth,f − p_target,f|` (0–1).
+1. For each feature, build the **Earth reference distribution** from valid Earth
+   land cells (log-transform skewed features such as relief, roughness and
+   precipitation first). Earth cell percentile = rank in that distribution.
+2. Place the **target's value** on the same Earth distribution (target percentile
+   = Earth CDF at the target value). Sub-score for feature *f*:
+   `1 − |p_earth,f − p_target,f|` (0–1). If the target lies outside the Earth
+   range (percentile 0 or 1, e.g. lunar day/night temperature extremes or total
+   dryness), flag it "beyond Earth range": the best Earth match is the extreme
+   cell, and the report says Earth cannot reach the target value.
 3. Overall score: weighted mean of available sub-scores; weights adjustable in
    the UI, with presets for rover mobility, cold-trap/ice and thermal cycling.
 4. Report the weight vector, the per-feature sub-scores, and any feature that is

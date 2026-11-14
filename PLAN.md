@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-14 16:38 by ashok (Phase 0: repo scaffold + data inventory)
+**Last updated:** 2026-11-14 21:36 by rahul (data downloads, HF upload; Phase 0 by ashok)
 
 ---
 
@@ -109,11 +109,13 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 
 - 2026-11-14 — rahul — Python backend; visuals must be high quality — judges see the visualization first.
 - 2026-11-14 — rahul — Coarse global grid (~5 km) for search, high-res only for top candidates — 8 GB RAM Macs.
+- 2026-11-14 15:36 — rahul — Moon/Mars data pulled from open PDS (LOLA, Diviner, MOLA) via `backend/pipeline/download.py`; product list in `docs/DATA_CATALOG.md` — no login needed, small sizes (T1 ~0.5 GB).
 - 2026-11-14 — rahul — Each teammate will focus on one part; parts not assigned yet.
 - 2026-11-14 16:38 — ashok — Project code/docs stay in `NASA_Space_Challenge/`; raw data stays in `../Datasets/{Moon,Mars,Earth}` and is mapped by `backend/paths.py` — the team docs already live here and copying >1 GB of rasters into the repo would waste disk.
 - 2026-11-14 16:38 — ashok — Use the detected 2.5 arc-minute WorldClim layers (not the 10-minute fallback), ETOPO 60 arc-second, LOLA polar GeoTIFFs, and the raw MOLA `megt90n000eb.img` — all verified open in Phase 0; no data re-downloaded.
 - 2026-11-14 16:38 — ashok — Pin `rasterio<1.5` in `requirements.txt` — 1.5.2's `_base` DLL is blocked by this machine's Windows Application Control policy; 1.4.3 imports and reads every raster normally.
 - 2026-11-14 16:38 — ashok — Compute terrain features in km-sized windows on an equal-area working grid, then sample them onto the 0.05° lon/lat search grid — meets the "matched physical window" rule; 0.05° cells shrink in longitude toward the poles, which the ranker must not hide.
+- 2026-11-14 21:53 — rahul — Normalize all features against the **Earth reference distribution** (target value placed on Earth's percentile scale), not within each body — percentiles within a body force a median lunar value to match a median Earth value. See `docs/FEATURES.md`.
 
 ## 8. Open questions
 
