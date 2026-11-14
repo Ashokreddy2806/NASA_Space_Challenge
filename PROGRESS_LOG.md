@@ -27,6 +27,12 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 <!-- entries -->
 
+#### 2026-11-14 15:17 — No AI attribution in commits
+- **Did:** Added a git rule to AGENTS.md: no Claude/AI co-author trailers or "Generated with" lines in commits or PRs.
+- **Files:** `AGENTS.md`
+- **Next:** Team picks workstreams in PLAN.md.
+- **Blockers:** none
+
 #### 2026-11-14 — Project docs set up
 - **Did:** Created problem statement, plan, progress log, and AI assistant rules.
 - **Files:** `PROBLEM_STATEMENT.md`, `PLAN.md`, `PROGRESS_LOG.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`

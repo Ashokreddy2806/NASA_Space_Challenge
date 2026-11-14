@@ -44,6 +44,7 @@ Use real timestamps (`date "+%Y-%m-%d %H:%M"`). Keep entries short and concrete:
 
 - `git pull --rebase` before starting and before pushing; the log and plan are edited by everyone.
 - Commit small and often. Message format: `<area>: <what>` (e.g. `pipeline: regrid MODIS LST to 0.05deg`).
+- **No AI attribution** in commit messages or PR descriptions: no `Co-Authored-By: Claude …` (or any other AI) trailer, no "Generated with …" lines. The commit author is the teammate.
 - On a merge conflict in PROGRESS_LOG.md or PLAN.md: **keep both sides**, never drop a teammate's lines.
 
 ## 6. Technical guardrails
