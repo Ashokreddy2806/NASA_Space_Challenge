@@ -67,6 +67,22 @@ A site does not need to match all of these:
 - **ESA**: [Copernicus Data Space](https://dataspace.copernicus.eu/) (Sentinel optical/radar/atmosphere), [ESA Open Science Catalog](https://opensciencedata.esa.int/).
 - **JAXA**: [G-Portal](https://gportal.jaxa.jp/gpr/index/index) (precipitation, snow, vegetation, …).
 
+### Resources
+
+Links provided by the challenge:
+
+- **NASA Earthdata Search:** https://search.earthdata.nasa.gov/
+- **NASA Worldview:** https://worldview.earthdata.nasa.gov/
+- **Planetary Data System (PDS):** https://pds.nasa.gov/
+- **LRO at PDS Geosciences:** https://pds-geosciences.wustl.edu/missions/lro/
+- **LRO Diviner:** https://pds-geosciences.wustl.edu/missions/lro/diviner.htm
+- **CSA RADARSAT Constellation:** https://donnees-data.asc-csa.gc.ca/en/dataset/rcm
+- **CSA RADARSAT-1 archive:** https://donnees-data.asc-csa.gc.ca/en/dataset/radarsat1
+- **CSA SAR Python tutorial:** https://github.com/asc-csa/Synthetic_Aperture_Radar_Tutorial
+- **ESA Copernicus Data Space:** https://dataspace.copernicus.eu/
+- **ESA Open Science Catalog:** https://opensciencedata.esa.int/
+- **JAXA G-Portal:** https://gportal.jaxa.jp/gpr/index/index
+
 ## Team constraints
 
 - **Team:** Rahul, Ashok, Mrinalini (3 people). Everyone uses AI coding assistants.

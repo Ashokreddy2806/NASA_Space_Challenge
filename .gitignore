@@ -28,3 +28,6 @@ venv/
 # Frontend
 node_modules/
 dist/
+
+# Local resources (links live in PROBLEM_STATEMENT.md)
+resources/

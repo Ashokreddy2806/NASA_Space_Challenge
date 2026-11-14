@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** project docs setup
+**Now working on:** project docs and resources setup
 
 <!-- entries -->
+
+#### 2026-11-14 15:21 — Added resources folder
+- **Did:** Added a "Resources" subsection with the challenge's NASA/CSA/ESA/JAXA links to PROBLEM_STATEMENT.md (also kept a local-only `resources/` folder, excluded via .git/info/exclude).
+- **Files:** `PROBLEM_STATEMENT.md`
+- **Next:** Team picks specific data products and records them in PLAN.md.
+- **Blockers:** none
 
 #### 2026-11-14 15:17 — No AI attribution in commits
 - **Did:** Added a git rule to AGENTS.md: no Claude/AI co-author trailers or "Generated with" lines in commits or PRs.
