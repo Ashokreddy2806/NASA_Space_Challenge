@@ -49,9 +49,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## ashok
 
-**Now working on:** dataset documentation
+**Now working on:** Phase 0 complete — waiting for approval to start Phase 1 (Earth grid)
 
 <!-- entries -->
+
+#### 2026-11-14 16:38 — Phase 0: inventory, environment, scaffold
+- **Did:** Verified every downloaded raster/CSV (CRS, resolution, nodata, sampled range, units) in `docs/data_inventory.md`; found `mars_elev.npy` absent but the raw MOLA `.img` present, both literature CSVs missing, and the WorldClim layers at 2.5 arc-min. Added pinned `requirements.txt`, repo scaffold, README, proposed `docs/FEATURES.md`, Makefile and 13 passing smoke tests.
+- **Files:** `backend/paths.py`, `backend/pipeline/inspect_datasets.py`, `docs/data_inventory.md`, `docs/FEATURES.md`, `README.md`, `requirements.txt`, `Makefile`, `tests/test_phase0.py`, `.gitignore`
+- **Next:** Phase 1 — regrid ETOPO/WorldClim to the 0.05° grid and derive terrain/climate features.
+- **Blockers:** await approval of frontend stack and MVP feature list; confirm lunar/Mars target regions in Phase 2.
 
 #### 2026-11-14 15:56 — Added dataset catalog
 - **Did:** Added the Moon, Mars, and Earth dataset inventory with source links, feature mappings, and limitations.

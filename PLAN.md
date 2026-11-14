@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-14 15:21 by rahul (added resources/)
+**Last updated:** 2026-11-14 16:38 by ashok (Phase 0: repo scaffold + data inventory)
 
 ---
 
@@ -28,7 +28,8 @@ Targets (each teammate will focus on one part; parts are **not assigned yet**):
 ## 3. Architecture (proposed — confirm in Decisions)
 
 ```
-data/raw/          downloaded source files (git-ignored)
+data/raw/          downloaded source files (git-ignored; actual files live in
+                   ../Datasets/{Moon,Mars,Earth}, mapped by backend/paths.py)
 data/processed/    gridded features, target profiles (git-ignored if large)
 backend/           Python: data pipeline, similarity engine, API
   pipeline/        download + regrid scripts, one per dataset
@@ -79,7 +80,7 @@ docs/              write-up, figures, submission material
 
 | # | Workstream | Owner | Status |
 |---|---|---|---|
-| W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | — | not started |
+| W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | ashok | done |
 | W2 | Earth data pipeline: download + regrid to common global grid | — | not started |
 | W3 | Moon target profile (lunar south pole features) | — | not started |
 | W4 | Mars target profile (choose site + features) | — | not started |
@@ -109,14 +110,20 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-14 — rahul — Python backend; visuals must be high quality — judges see the visualization first.
 - 2026-11-14 — rahul — Coarse global grid (~5 km) for search, high-res only for top candidates — 8 GB RAM Macs.
 - 2026-11-14 — rahul — Each teammate will focus on one part; parts not assigned yet.
+- 2026-11-14 16:38 — ashok — Project code/docs stay in `NASA_Space_Challenge/`; raw data stays in `../Datasets/{Moon,Mars,Earth}` and is mapped by `backend/paths.py` — the team docs already live here and copying >1 GB of rasters into the repo would waste disk.
+- 2026-11-14 16:38 — ashok — Use the detected 2.5 arc-minute WorldClim layers (not the 10-minute fallback), ETOPO 60 arc-second, LOLA polar GeoTIFFs, and the raw MOLA `megt90n000eb.img` — all verified open in Phase 0; no data re-downloaded.
+- 2026-11-14 16:38 — ashok — Pin `rasterio<1.5` in `requirements.txt` — 1.5.2's `_base` DLL is blocked by this machine's Windows Application Control policy; 1.4.3 imports and reads every raster normally.
+- 2026-11-14 16:38 — ashok — Compute terrain features in km-sized windows on an equal-area working grid, then sample them onto the 0.05° lon/lat search grid — meets the "matched physical window" rule; 0.05° cells shrink in longitude toward the poles, which the ranker must not hide.
 
 ## 8. Open questions
 
-- [ ] Which Mars site is the target (Jezero? another)?
-- [ ] Frontend: deck.gl + MapLibre vs Streamlit + pydeck vs something else?
-- [ ] Final feature list per target (which features exist on both Earth and the target body?).
-- [ ] How to weight features, and should users be able to change weights in the UI?
-- [ ] Who owns which workstream?
+- [ ] Which Mars site is the target (Jezero? another)? Ask again in Phase 2.
+- [ ] Confirm the lunar target region: poleward of 85°S vs specific candidate base sites. Ask in Phase 2.
+- [ ] Frontend: **proposal** deck.gl + MapLibre GL JS with Plotly radar/bar charts (alternative: Streamlit + pydeck). Awaiting confirmation; not recorded as a decision yet.
+- [ ] Final feature list: **proposal** is the six MVP features + separate ice proxy in `docs/FEATURES.md`. Awaiting confirmation; not recorded as a decision yet.
+- [ ] How to weight features, and should users be able to change weights in the UI? (Phase 3 defaults, Phase 5 controls.)
+- [ ] Who owns which workstream? (W1 done by ashok; others unassigned.)
+- [ ] Lunar PSR CSV has no CRS metadata and its square tile reaches ~76°S at the corners (not a strict 80°S cut). Confirm the intended projection for the Phase 2 polygon overlay.
 
 ## 9. Results so far
 

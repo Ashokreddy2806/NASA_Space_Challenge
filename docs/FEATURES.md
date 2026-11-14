@@ -1,0 +1,107 @@
+# Feature definitions
+
+> **Status: proposed, pending team confirmation.** This file is the contract for
+> what "similar" means. Phase 1 locks these definitions and records every
+> implementation detail (window size, projection, resampling, nodata policy).
+> Any later change must be recorded in `PLAN.md` Decisions.
+
+The core rule: a feature is only comparable if it is measured the **same physical
+way** on every body. Pixel windows are therefore converted to kilometres, and
+each body's values are converted to percentiles *within that body* before any
+distance is computed.
+
+## Proposed MVP features (6)
+
+| # | Feature | Earth measurement | Moon target | Mars target | Units |
+|---|---|---|---|---|---|
+| 1 | **Relief** | ETOPO elevation: 95th−5th percentile range in a 20 km window | LOLA `LDEM_80S_80MPP_ADJ` same window | MOLA 16 ppd DEM same window | m |
+| 2 | **Slope** | ETOPO gradient magnitude, median in a 20 km window | LOLA DEM gradient / `SLP_800M`, `SLP_1600M` | MOLA DEM gradient | degrees |
+| 3 | **Roughness (multi-scale)** | ETOPO residual standard deviation at 5, 10 and 20 km windows | LOLA `ROUGH_800M`, `ROUGH_1600M` and DEM residuals | MOLA DEM residuals, limited by 3.7 km pixels | m |
+| 4 | **Scale-robust roughness** | Hurst exponent from log–log elevation variability over 2–32 km | LOLA `H` and `SPSLP` products | MOLA-derived Hurst where resolution allows; otherwise flagged unavailable | unitless / σ per km |
+| 5 | **Temperature statistics and swing** | WorldClim `bio_1` (mean), `bio_2` (diurnal range proxy), `bio_5` (warmest month max), `bio_6` (coldest month min), `bio_7` (annual range) | Literature CSV (`moon_thermal_literature.csv`) | Literature CSV (`mars_thermal_literature.csv`) | °C |
+| 6 | **Dryness** | WorldClim `bio_12` (annual precipitation), `bio_14` (driest-month precipitation) | Airless: treated as one-sided "drier than any Earth desert" constraint, not a measured target value | Hyper-arid: same one-sided treatment | mm |
+
+### Ice / cold-trap proxy (MVP auxiliary dimension)
+
+| Body | Measurement | Why |
+|---|---|---|
+| Moon | Fraction of a cell covered by permanently shadowed regions (PSR polygon table `LPSR_80S_20MPP_ADJ_1km2.csv`) | Cold traps are the resource/ice story for a south-pole base |
+| Earth | `bio_6` cold extremes (coldest-month minimum air temperature) | Best available global proxy for persistent cold; **not** a radiation or vacuum proxy |
+| Mars | Not in MVP | No comparable mapped cold-trap product in the downloaded data |
+
+The ice proxy is reported as a separate sub-score, not silently mixed into the six terrain/climate features.
+
+## Definitions in detail
+
+### 1. Relief
+Robust elevation range within a moving window of **20 km**: `p95(z) − p5(z)`.
+A percentile range is used instead of max−min so a single artefact or crater rim
+does not dominate. Earth ETOPO is first resampled to the common grid; lunar and
+Martian DEMs are measured in their native projected grids, where the pixel size
+is known in metres.
+
+### 2. Slope
+Gradient magnitude of the DEM in the local projected coordinate system,
+expressed in degrees, summarised by the **median** over a 20 km window.
+For the Moon the published `SLP_800M` / `SLP_1600M` products are used as a
+cross-check; the DEM-derived value is used for like-for-like comparison.
+Never compute lunar slope from `ldem_16.tif` (no georeferencing, distorted pole).
+
+### 3. Roughness (multi-scale)
+Residual elevation after removing a local planar trend, summarised by the
+standard deviation (`std`) in windows of **5, 10 and 20 km**. The three values
+are kept as separate sub-features so a site that is smooth at 5 km but broken at
+20 km is not flattened into one number. Lunar `ROUGH_800M` and `ROUGH_1600M`
+provide independent published checks.
+
+### 4. Scale-robust roughness
+How roughness changes with scale. On the Moon, use the published **Hurst
+exponent** (`H`) and **spectral slope** (`SPSLP`) products. On Earth, estimate a
+Hurst exponent from the slope of `log(std of elevation difference)` versus
+`log(lag)` for lags from 2 to 32 km within each analysis window. Mars: attempt
+the same over lags ≥ 2 MOLA pixels (~7.4 km); if too few lags are stable, mark
+the feature **unavailable** rather than inventing a value.
+
+### 5. Temperature statistics and swing
+Five sub-features: annual mean, diurnal range, warmest-month maximum,
+coldest-month minimum, annual range.
+
+- Earth: WorldClim `bio_1`, `bio_2`, `bio_5`, `bio_6`, `bio_7` — **air**
+  temperature, 1970–2000 climatology, 2.5 arc-minute.
+- Moon and Mars: values read only from the hand-made, cited literature CSVs
+  (`feature,value,units,source`). Each target value carries its source and its
+  measurement type (surface vs air, day vs night, equator vs pole).
+- No satellite temperature raster is used or implied. Missing literature values
+  are reported as missing; they are never filled with guesses.
+
+### 6. Dryness
+Earth: `bio_12` annual precipitation and `bio_14` driest-month precipitation.
+The Moon has no atmosphere and Mars is hyper-arid, so dryness is a **one-sided
+constraint**: an Earth site can be "not dry enough", but a wet target value is
+not fabricated. This dimension mainly separates true desert candidates from
+merely cold or rocky ones.
+
+## Normalization and scoring (Phase 3 preview)
+
+1. Convert each feature to a percentile rank **within its own body's valid
+   cells** (Earth land; Moon polar tile; Mars target region).
+2. Sub-score for feature *f*: `1 − |p_earth,f − p_target,f|` (0–1).
+3. Overall score: weighted mean of available sub-scores; weights adjustable in
+   the UI, with presets for rover mobility, cold-trap/ice and thermal cycling.
+4. Report the weight vector, the per-feature sub-scores, and any feature that is
+   unavailable for a body. A high score with an unavailable ice proxy must not
+   look like a high-confidence ice analog.
+
+## Window and resolution policy
+
+| Source | Native resolution | Role |
+|---|---|---|
+| LOLA polar DEM | 80 m | Moon terrain truth |
+| LOLA derived products | 1 km | Moon roughness/slope/Hurst cross-checks |
+| MOLA MEGDR | 16 ppd (~3.7 km) | Mars terrain; smallest honest window ≥ ~7.4 km |
+| ETOPO 2022 | 60 arc-sec (~1.85 km) | Earth terrain |
+| WorldClim 2.1 | 2.5 arc-min (~4.6 km) | Earth climate |
+
+Analysis windows are defined in kilometres (5, 10, 20, 2–32 km). Where a target
+body cannot resolve a window, the feature is marked as limited or unavailable
+rather than silently comparing a 5 km Earth texture with a 3.7 km Mars pixel.
