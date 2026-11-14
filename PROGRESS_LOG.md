@@ -49,11 +49,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## ashok
 
-**Now working on:** —
+**Now working on:** dataset documentation
 
 <!-- entries -->
 
-_No entries yet._
+#### 2026-11-14 15:56 — Added dataset catalog
+- **Did:** Added the Moon, Mars, and Earth dataset inventory with source links, feature mappings, and limitations.
+- **Files:** `docs/DATASETS.md`
+- **Next:** Team integrates the documented datasets into the processing pipeline.
+- **Blockers:** none
 
 ---
 
