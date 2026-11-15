@@ -26,7 +26,7 @@ from rasterio.transform import from_origin
 from rasterio.warp import reproject
 from backend.config import AppConfig, load_config
 from backend.features import registry
-from backend.targets import thermal
+from backend.targets import constraints, thermal
 from backend.targets.distribution import profile_entry
 from backend.targets.geometry import local_aeqd, sphere_crs
 
@@ -226,6 +226,7 @@ def analyse_mars(config: AppConfig | None = None) -> dict[str, Any]:
     thermal_entries.update(thermal.qualitative_thermal_features(config, table, mars))
     thermal.apply_thermal_unavailable(thermal_entries, mars)
     entries.update(thermal_entries)
+    entries.update(constraints.dryness_constraint_entries(config, mars))
     # Configured exclusions win over the literature table: Mars is documented as
     # having no surface-temperature range, so those features stay unavailable
     # even if a table row ever appears, and the weight is renormalised instead.

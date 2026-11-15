@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 12:16 by ashok (Phase 3 complete: similarity engine, presets, score maps, NMS top sites, analog checks and thermal sensitivity)
+**Last updated:** 2026-11-15 13:33 by ashok (Phase 3b complete: declared no-precipitation constraint, per-site stability, ice/substrate caveats, analog provenance)
 
 ---
 
@@ -107,6 +107,8 @@ Status values: `not started` · `in progress` · `blocked` · `done`
 
 > The 8–13 h milestone is **complete** (2026-11-15 11:01 UTC): the engine writes `data/processed/scores_moon.nc` and `scores_mars.nc` (per-group grids plus one score per preset), `data/processed/top_sites.json` and `docs/phase3_report.md` in ~82 s. Top site, Moon balanced: −5.925, 146.525 (0.830). Top site, Mars balanced: −71.725, −72.825 (0.951, terrain-only). Phase 4 (API) is next.
 
+> **Phase 3b complete** (2026-11-15 13:33): the no-precipitation constraint is scored on both targets with the same engine, every candidate carries a stability value from the nine sensitivity runs, the site lists carry both with/without-famous forms plus ice/substrate caveat flags, and analog provenance is explicit. Engine runtime 287 s (stability now ranks variants exactly like the report list). Post-3b coverage: Moon 10/13 features, 6/7 groups; Mars 6/13, 4/7. Top site, Moon balanced: −10.275, −77.575 (0.795, stability 0.78). Top site, Mars balanced: 25.675, 34.575 (0.917).
+
 ## 7. Decisions log
 
 Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision — why`
@@ -145,6 +147,11 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 12:16 — ashok — **Four presets in `config/presets.yaml`**: `balanced`, `rover_mobility` (terrain only, temperature weight 0), `cold_trap_ice` (terrain + temperature), `thermal_cycling` (heavier roughness + temperature). For Mars, `cold_trap_ice` collapses to the same ranking as `balanced` because only terrain features are usable; the engine emits `equivalent_to` and the report labels it "not independent evidence".
 - 2026-11-15 12:16 — ashok — **Thermal sensitivity verdict kept as found**: varying band edges by ±5 °C and the temperature weight over {0, 0.25, 0.5} gives a **minimum top-N overlap of 0.20** against the balanced baseline (Spearman rho ≥ 0.975). Rankings change materially, so the thermal contribution is reported as **weak evidence, not a ranking driver**. Nothing was tuned to change this.
 - 2026-11-15 12:16 — ashok — **Composition gap recorded, not papered over**: this build has no Earth substrate, mineralogy or thermal-inertia map, so a smooth ice sheet and a smooth rock plain are indistinguishable to the terrain features. That is why the Mars ranking puts Antarctic plateau cells on top; the report calls Mars a terrain result, not a composition result.
+- 2026-11-15 13:33 — ashok — **Dryness is a physical constraint on both targets.** The Moon and Mars have no rainfall and no vegetation, so the target is **0 mm** with a declared tolerance band (0–50 mm annual, 0–4 mm driest month) in `config/config.yaml`, scored by the same rank + absolute engine and labelled `constraint` / `declared_tolerance`. Weight **0.25** in `balanced` and `cold_trap_ice` (the same low weight as the qualitative thermal anchors) and **0** in `rover_mobility` and `thermal_cycling`; it is never tuned to flatter an analog.
+- 2026-11-15 13:33 — ashok — **Per-site stability from the sensitivity runs.** A site's stability is the fraction of the nine thermal settings in which it stays in the top-N, matched within 25 km (half the 50 km separation, configured). It is stored on every balanced Moon site, ranked in the report, and never folded into the score. The sensitivity variants now rank sites exactly as the report list does (NMS → area-weighted site score), fixing a spurious zero-stability artefact from comparing aggregated sites with raw peaks.
+- 2026-11-15 13:33 — ashok — **Ice/substrate caveat is a heuristic flag, not a mask.** Two config-declared boxes (Greenland, Antarctic) mark regions where this feature set cannot distinguish ice cover from bare ground; a site inside one carries "our data cannot distinguish ice cover from bare ground". The boxes include ice-free coast, nunataks, the Dry Valleys and Ross Island, and say so in config.
+- 2026-11-15 13:33 — ashok — **Analog provenance is explicit and never over-claimed.** Coordinates were reviewed on 2026-11-15; Licancabur (Cabrol et al. 2009 JGR 114 G00D06, DOI fetched) and Mistastin (Mader et al. 2010 GeoCanada abstract, PDF found) are marked citation-verified; Rio Tinto keeps its from-memory source with a spot-check warning; Mauna Kea has no citation and `display_source: false`, so its source string is never shown. Going forward an unchecked reference is labelled "proposed, unverified", never presented as a citation.
+- 2026-11-15 13:33 — ashok — **Both site lists are guaranteed for every preset**: `top_sites.json` and the report carry `sites` and `sites_excluding_famous`, and the famous list now covers McMurdo Station, Ross Island, Mount Erebus and McMurdo Dry Valleys (proposed, reviewed: false, awaiting team confirmation).
 
 ## 8. Open questions
 
@@ -157,24 +164,24 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - [x] Lunar PSR CSV has no CRS metadata — **read as metres in the LDEM south-polar-stereographic CRS**; all 1,531 polygons fall inside the DEM extent and the rasterised PSRs sit on topographic lows, which is the evidence. The ~76°S tile corner does not clip the 85°S cap (429.9 km > 151.7 km). Confirmed 2026-11-15.
 - [x] Provide `moon_thermal_literature.csv` and `mars_thermal_literature.csv` — **supplied 2026-11-15** (Moon: 10 reference quantities; Mars: 4 thermal-inertia quantities, no temperatures). Read and reported in `docs/phase2_report.md` under "Thermal literature".
 - [x] **Thermal scoring mapping** — **option A, banded polar anchors** chosen 2026-11-15; equatorial values stay context-only, Mars temperature stays unavailable.
-- [ ] **Validation sites for Phase 3** — the seven original spot checks plus four proposed analogs (Licancabur, Mistastin Lake, Mauna Kea, Rio Tinto) are scored in `docs/phase3_report.md`, but the four proposals are marked `reviewed: false` until the team confirms coordinates and sources.
+- [x] **Validation sites for Phase 3** — four analogs were reviewed on 2026-11-15; `reviewed: true` is set in `config/validation_sites.yaml` as instructed, and the conflicting line asking to leave them `false` is flagged at the phase gate. Reviewing them changed no score. Two citations are verified, Rio Tinto is marked from-memory and Mauna Kea has no citation and is never displayed.
 - [x] **Presets** — `balanced`, `rover_mobility`, `cold_trap_ice` and `thermal_cycling` defined in `config/presets.yaml` 2026-11-15, with weights, top-N and separation all in config.
 
 ## 9. Results so far
 
-Top NMS site per target and preset, after area weighting and the configured separation. **Moon and Mars scores are not comparable** — different feature sets and different coverage (Moon 8/13 features, 5/7 groups; Mars 4/13, 3/7).
+Top NMS site per target and preset, after area weighting and the configured separation. **Moon and Mars scores are not comparable** — different feature sets and different coverage (Moon 10/13 features, 6/7 groups; Mars 6/13, 4/7).
 
-| Target | Preset | Top site (lat, lon) | Score | One-line why |
-|---|---|---|---|---|
-| Moon | balanced | −5.925, 146.525 | 0.830 | Tropical mountain terrain: matched relief, slope and roughness; not cold, and the preset gives temperature only a small share |
-| Moon | rover_mobility | −5.925, 146.525 | 0.858 | Same site on terrain alone — the most traversable relief/slope/roughness match |
-| Moon | cold_trap_ice | −77.525, 167.725 | 0.808 | Antarctic (Ross Island area) cold desert: terrain plus the coldest band |
-| Moon | thermal_cycling | −64.375, −60.025 | 0.805 | Antarctic Peninsula: high roughness with a cold band match |
-| Mars | balanced | −71.725, −72.825 | 0.951 | Antarctic plateau: smooth, low-relief terrain matches Jezero's surroundings — **terrain only**, no substrate data |
-| Mars | rover_mobility | −71.725, −72.825 | 0.953 | Same plateau on terrain alone |
-| Mars | cold_trap_ice | −71.725, −72.825 | 0.951 | *Reduces to the same ranking as `balanced`* (Mars has no thermal or dryness feature), so not independent evidence |
-| Mars | thermal_cycling | −76.175, −148.375 | 0.940 | Antarctic plateau with rougher micro-relief, still terrain-driven |
+| Target | Preset | Top site (lat, lon) | Score | Stability | One-line why |
+|---|---|---|---|---|---|
+| Moon | balanced | −10.275, −77.575 | 0.795 | 0.78 | High Andean terrain: matched relief/slope/roughness plus an almost dry driest month (annual ≈279 mm); the constraint demoted the wet tropical peak that led before |
+| Moon | rover_mobility | −5.925, 146.525 | 0.858 | — | Terrain-only optimum (New Guinea highlands): the most traversable relief/slope/roughness match |
+| Moon | cold_trap_ice | −84.325, 175.525 | 0.783 | — | High Antarctic plateau: smooth cold terrain with the coldest configured band; flagged `ice-substrate` |
+| Moon | thermal_cycling | −64.375, −60.025 | 0.805 | — | Antarctic Peninsula: high roughness with a cold band match; flagged `ice-substrate` |
+| Mars | balanced | 25.675, 34.575 | 0.917 | — | Eastern Desert (Egypt): smooth low-relief terrain closest to Jezero, now also very dry — **terrain + dryness only** |
+| Mars | rover_mobility | −71.725, −72.825 | 0.953 | — | Antarctic plateau on terrain alone |
+| Mars | cold_trap_ice | 25.675, 34.575 | 0.921 | — | Same top cell as balanced but a different ranking (dryness participates); not emitted as equivalent |
+| Mars | thermal_cycling | −76.175, −148.375 | 0.940 | — | Antarctic plateau with rougher micro-relief, still terrain-driven; flagged `ice-substrate` |
 
-Known analogs, scored as found and **not** tuned for (`docs/phase3_report.md` §5): Moon balanced — Mauna Kea 0.855, Licancabur 0.802, Dry Valleys 0.611, Iceland 0.505, Atacama 0.417, Mistastin Lake 0.208, Devon Island 0.220. Mars balanced — Rio Tinto 0.881, Atacama 0.849, Devon Island 0.824, Death Valley 0.586, Sahara 0.583, Dry Valleys 0.044, Licancabur 0.001, Mauna Kea 0.000. The Mars column rewards smooth low-relief terrain rather than the classic astrobiological analogs, which is the honest result of a terrain-only feature set.
+Known analogs, scored as found and **not** tuned for (`docs/phase3_report.md` §5): Moon balanced — Mauna Kea 0.807, Licancabur 0.786, Dry Valleys 0.605, Death Valley 0.492, Iceland 0.477, Atacama 0.440, Sahara 0.219, Devon Island 0.217, Mistastin Lake 0.196, Amazon 0.144. Mars balanced — Atacama 0.847, Rio Tinto 0.824, Devon Island 0.773, Iceland 0.732, Sahara 0.610, Death Valley 0.578, Amazon 0.438, Dry Valleys 0.079, Licancabur 0.040, Mauna Kea 0.000. The Mars column rewards smooth low-relief, dry terrain rather than the classic astrobiological analogs, which is the honest result of a terrain + dryness feature set. Adding the constraint changed every analog score (mostly downward: Moon Mauna Kea 0.855 → 0.807, Mars Rio Tinto 0.881 → 0.824; a few already-dry sites moved slightly up, e.g. Atacama 0.417 → 0.440 on the Moon), because an Earth site receiving more than 0 mm is physically unlike the target.
 
-Thermal sensitivity (Moon): top-N overlap with the balanced baseline falls as low as **0.20** while Spearman rho stays ≥ 0.975 — the thermal term changes which sites reach the top, so it is labelled weak evidence, not a driver.
+Thermal sensitivity (Moon): top-N overlap with the balanced baseline falls as low as **0.64** (after the ranking consistency fix; previously 0.20) while Spearman rho stays ≥ 0.978 — still labelled weak evidence, not a ranking driver. Per-site stability across the nine settings ranges from 0.56 to 1.00; the top balanced site survives 7/9, while the terrain-only optimum survives 9/9.
