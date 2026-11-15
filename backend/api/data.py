@@ -14,11 +14,10 @@ import numpy as np
 from matplotlib import cm
 from netCDF4 import Dataset
 
-from backend.engine.similarity import ALL_FEATURES, ICE, PRESETS
+from backend.engine.similarity import ALL_FEATURES, ICE, MATCH, PARTIAL, PRESETS
 from backend.paths import DOCS_DIR, PROCESSED_DIR
 
 LAT0, RES = 89.975, 0.05
-MATCH, PARTIAL = 80.0, 60.0
 ICE_WINDOW = 2
 CANNOT_REPLICATE = ["reduced gravity (Moon 1/6 g, Mars 0.38 g)", "vacuum / thin atmosphere",
                     "radiation environment", "WorldClim is air temperature, not surface skin temperature"]

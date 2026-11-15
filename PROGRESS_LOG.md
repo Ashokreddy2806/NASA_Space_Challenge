@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 5 frontend built (`frontend/`); next: site write-ups, Mars temperature/minerals, polish
+**Now working on:** site write-ups done (`docs/site_writeups.md`); next: Mars temperature/minerals, frontend polish, submission material
 
 <!-- entries -->
+
+#### 2026-11-15 12:10 — Site write-ups (W8 draft)
+- **Did:** `docs/site_writeups.md`: 16 data-backed site cards (Moon balanced top 5 without famous sites + cold-trap top 3; Jezero balanced top 5 + rover-mobility top 3). Each lists Earth vs target values with sub-scores, what matches, what does not (with numbers), the target's own spread, preset-keyed exploration guidance and what Earth cannot replicate; closes with what the ranking cannot tell yet and the failed validation analogs. Place names are offline GeoNames nearest places (CC BY 4.0).
+- **Files:** `backend/engine/write_sites.py`, `tests/test_write_sites.py`, `docs/site_writeups.md`, `requirements.txt` (reverse_geocoder), `MATCH/PARTIAL` moved to `similarity.py`
+- **Next:** site-specific context (literature, field logistics) needs a person; Mars temperature/minerals; submission slides.
+- **Blockers:** none.
 
 #### 2026-11-15 11:30 — Phase 5 frontend
 - **Did:** Vite + MapLibre + deck.gl + Plotly app: score-map overlay (client-side reprojected to Mercator), numbered top-site markers, click-any-land site panel (score ring, radar, match/partial/mismatch table, what does not match, not scored, what Earth cannot replicate), target/preset/hide-famous controls, custom weight sliders. Checked in the browser against the live API; `npm run build` passes.

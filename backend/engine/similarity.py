@@ -29,6 +29,7 @@ LOG_FEATURES = {"relief_20km_m", "slope_20km_deg", "roughness_5km_m", "roughness
 # Precipitation is log1p(x / ref) with ref near Earth's driest 5%, so a 15 mm desert stays close to a 0 mm target.
 PRECIP_REF_MM = {"precip_annual_mm": 30.0, "precip_driest_month_mm": 3.0}
 ICE = "ice_proxy"
+MATCH, PARTIAL = 80.0, 60.0
 ALL_FEATURES = [*GRID_FEATURES, ICE]
 
 # Relative weights per preset. The ice proxy is reported as its own sub-score and
