@@ -46,8 +46,19 @@ ice proxy does not rest on an assumption.
 
 ## 5. Verdict
 
-- PSRs sit on topographic lows: **True**
-- PSRs sit on lower slopes than their surroundings: **False**
+- PSRs sit on topographic lows: **True** — this is the
+  alignment evidence that matters (elevation offset and the fraction below the
+  background median elevation, both above).
+- PSRs sit on lower slopes than their surroundings: **False** — **expected, not a failure**.
+
+  The slope test is deliberately strict and it does not pass. That is the
+  expected outcome, not a defect: a PSR polygon is the shadowed floor *plus*
+  the crater wall and rim that cast the shadow, so the polygon necessarily
+  contains steep terrain. A PSR median slope at or slightly above the regional
+  background is what the geometry predicts. The topographic-low test is the
+  valid alignment check; the slope numbers stay in the table above so the
+  observation is on the record rather than hidden.
+
 - The 85°S target cap is unaffected by the ~75.9°S tile-corner clip: **True**
 
 The ~75.9°S figure is the radius of the **square tile corner**, not a latitude

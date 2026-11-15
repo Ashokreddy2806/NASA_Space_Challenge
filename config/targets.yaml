@@ -32,7 +32,7 @@ moon:
   not_applicable:
     temperature: >-
       lunar surface temperature and thermal inertia come only from the cited
-      thermal table, never from a raster or a guess
+      thermal table, never from a raster or a guess.
     dryness: >-
       the Moon has no atmosphere and no precipitation; dryness is represented by
       the PSR ice proxy instead
@@ -58,21 +58,22 @@ mars:
   sample_stride_px: 1
   thermal_csv: thermal
   thermal_groups: [temperature]
-  # The supplied literature explicitly has no surface-temperature range for
-  # Mars: these are unavailable and excluded from its score (weights renormalised).
+  # The supplied Mars table holds thermal-inertia retrievals only and no surface
+  # temperatures at all: the temperature features are unavailable and excluded
+  # from the Mars score (weights renormalised).
   unavailable_features:
     - temp_diurnal_range_c
     - temp_annual_range_c
   not_applicable:
     temperature: >-
       Martian surface temperature and thermal inertia come only from the cited
-      thermal table, never from a raster or a guess
+      thermal table, never from a raster or a guess.
     temp_diurnal_range_c: >-
-      the supplied literature has no surface-temperature range for Mars, so this
-      feature is unavailable and excluded from the Mars score
+      the supplied Mars table has no surface temperatures at all (thermal inertia
+      only), so this feature is unavailable and excluded from the Mars score
     temp_annual_range_c: >-
-      the supplied literature has no surface-temperature range for Mars, so this
-      feature is unavailable and excluded from the Mars score
+      the supplied Mars table has no surface temperatures at all (thermal inertia
+      only), so this feature is unavailable and excluded from the Mars score
     dryness: >-
       Mars has no rainfall record of this kind; the thin atmosphere is not a
       precipitation analog and no dryness value is invented

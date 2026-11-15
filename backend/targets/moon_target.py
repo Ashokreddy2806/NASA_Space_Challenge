@@ -501,7 +501,10 @@ def analyse_moon(config: AppConfig | None = None) -> dict[str, Any]:
             "available": table["available"],
             "path": table["path"],
             "reason": table["reason"],
+            "schema": table.get("schema"),
             "entries": table["table"],
+            "references": table.get("references", []),
+            "derived": table.get("derived", []),
         },
         "runtime_seconds": time.perf_counter() - started,
     }

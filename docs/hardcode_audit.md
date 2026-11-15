@@ -143,9 +143,10 @@ expected bounds from the same YAML files; `tests/test_config.py` asserts that
 config values are what the code uses, that the proof overrides change only their
 intended keys, that targets and distribution percentiles come from YAML, and that
 the registry refuses unknown feature functions. `tests/test_phase2.py` adds PSR
-parsing/rasterising/verification, the thermal reader (synthetic CSV + missing
-table), the Mars profile's unavailable-window reasons, and group-weight
-renormalisation. `pytest` → **72 passed**.
+parsing/rasterising/verification, the thermal readers (long statistic table, flat
+reference table, exact Kelvin conversion, derived ranges, missing table),
+the Mars profile's unavailable-window reasons, and group-weight renormalisation.
+`pytest` → **75 passed**.
 
 ## 7. Reproducing the audit
 

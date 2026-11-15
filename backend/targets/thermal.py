@@ -6,15 +6,26 @@ interpolated or guessed here. If a table is missing, the affected features are
 reported as **unavailable with the exact path that is missing** — the pipeline
 never substitutes a number.
 
-Expected schema (long format, one row per quantity)::
+Two schemas are accepted, and which one a file uses is detected from its header:
+
+**Long format** — one row per statistic of a named feature::
 
     body,feature,statistic,value,units,source,notes
     moon,temp_mean_k,median,215,K,"Williams et al. 2017 (Diviner)","..."
-    moon,temp_diurnal_range_k,median,280,K,"Vasavada et al. 2012","..."
 
-Required columns: ``feature`` and ``value``. Optional: ``body``, ``statistic``
-(default ``median``), ``units``, ``source``, ``notes``, ``min``, ``max``,
-``n_cells``. A feature may appear several times with different statistics.
+**Flat reference format** — one row per cited quantity, no statistic column::
+
+    feature,value,units,source
+    moon_night_surface_temp_typical,100,K,"Paige et al. 2010 ..."
+
+The flat format is what the team's tables use. It records *reference numbers*
+(bracketing extremes, thresholds), not per-cell feature maps, so it is exposed
+as ``references`` and never silently turned into a target distribution. Bracketing
+``*_min``/``*_max`` rows may be combined into a derived range; every derived value
+is labelled with the rule and the two cited inputs it came from.
+
+Required columns: ``feature`` and ``value``. Optional: ``body``, ``statistic``,
+``units``, ``source``, ``notes``, ``min``, ``max``, ``n_cells``.
 """
 
 from __future__ import annotations
@@ -78,6 +89,101 @@ def load_thermal_table(path: Path) -> dict[str, dict[str, Any]]:
     return table
 
 
+def load_reference_table(path: Path) -> list[dict[str, Any]]:
+    """Read a flat ``feature,value,units,source`` table into ordered rows.
+
+    Each row is one cited quantity. Nothing is combined or interpreted here;
+    ``derive_reference_ranges`` does the (explicitly labelled) arithmetic.
+    """
+    if not path.exists():
+        raise FileNotFoundError(path)
+
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or "feature" not in reader.fieldnames:
+            raise ValueError(f"{path} must have a 'feature' column; got {reader.fieldnames}")
+        if "value" not in reader.fieldnames:
+            raise ValueError(f"{path} must have a 'value' column; got {reader.fieldnames}")
+        for order, row in enumerate(reader):
+            name = str(row["feature"]).strip()
+            if not name:
+                continue
+            raw = str(row["value"]).strip()
+            if not raw:
+                continue
+            units = str(row.get("units") or "").strip()
+            value = float(raw)
+            entry: dict[str, Any] = {
+                "name": name,
+                "value": value,
+                "units": units,
+                "source": str(row.get("source") or "").strip(),
+                "notes": str(row.get("notes") or "").strip(),
+                "order": order,
+            }
+            converted, offset = _kelvin_to_celsius(value, units)
+            if offset is not None:
+                entry["value_degc"] = converted
+                entry["conversion"] = "K -> degC (subtract 273.15)"
+            rows.append(entry)
+    return rows
+
+
+def derive_reference_ranges(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Combine bracketing ``*_min``/``*_max`` rows into labelled ranges.
+
+    Only exact stems are paired, so ``foo_min`` needs ``foo_max``. The result
+    records the rule and both cited inputs; it is arithmetic on cited numbers,
+    never an estimate.
+    """
+    by_name = {row["name"]: row for row in rows}
+    derived: list[dict[str, Any]] = []
+    for row in rows:
+        name = row["name"]
+        if not name.endswith("_min"):
+            continue
+        stem = name[: -len("_min")]
+        other = by_name.get(f"{stem}_max")
+        if other is None:
+            continue
+        if row["units"] != other["units"]:
+            continue
+        low, high = row["value"], other["value"]
+        if high < low:
+            low, high = high, low
+        entry: dict[str, Any] = {
+            "name": stem,
+            "kind": "derived_range",
+            "units": row["units"],
+            "min": low,
+            "max": high,
+            "width": high - low,
+            "rule": f"{stem}_max - {stem}_min of the two cited rows",
+            "inputs": [f"{stem}_min", f"{stem}_max"],
+            "sources": [source for source in (row["source"], other["source"]) if source],
+        }
+        converted_low, offset = _kelvin_to_celsius(low, row["units"])
+        if offset is not None:
+            converted_high, _ = _kelvin_to_celsius(high, row["units"])
+            entry.update(
+                {
+                    "min_degc": converted_low,
+                    "max_degc": converted_high,
+                    "width_degc": converted_high - converted_low,
+                    "conversion": "K -> degC (subtract 273.15)",
+                }
+            )
+        derived.append(entry)
+    return derived
+
+
+def _header_fields(path: Path) -> list[str]:
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.reader(handle)
+        return [field.strip() for field in next(reader, [])]
+
+
 def thermal_availability(config: AppConfig, body: str) -> dict[str, Any]:
     """Describe whether the body's thermal table exists, without inventing values."""
     path = thermal_path(config, body)
@@ -89,10 +195,34 @@ def thermal_availability(config: AppConfig, body: str) -> dict[str, Any]:
                 f"cited thermal table {path} is not on disk; Moon/Mars temperatures and "
                 "thermal inertia are not estimated"
             ),
+            "schema": None,
             "table": {},
+            "references": [],
+            "derived": [],
         }
-    table = load_thermal_table(path)
-    return {"available": True, "path": str(path), "reason": "", "table": table}
+
+    fields = _header_fields(path)
+    if "statistic" in fields:
+        return {
+            "available": True,
+            "path": str(path),
+            "reason": "",
+            "schema": "long",
+            "table": load_thermal_table(path),
+            "references": [],
+            "derived": [],
+        }
+
+    references = load_reference_table(path)
+    return {
+        "available": True,
+        "path": str(path),
+        "reason": "",
+        "schema": "flat_reference",
+        "table": {},
+        "references": references,
+        "derived": derive_reference_ranges(references),
+    }
 
 
 def _kelvin_to_celsius(value: float, units: str) -> tuple[float, float | None]:
@@ -148,15 +278,23 @@ def match_thermal_features(
         ]
         row = next((table[name] for name in candidates if name in table), None)
         if row is None:
+            if availability.get("references"):
+                note = (
+                    f"the cited table lists {len(availability['references'])} reference "
+                    "quantities, not per-cell rows; qualitative mapping is pending user "
+                    "approval"
+                )
+            else:
+                note = (
+                    f"no row for {feature_id} in the cited thermal table "
+                    f"{availability['path']}"
+                )
             out[feature_id] = {
                 "units": definition.units,
                 "long_name": definition.long_name,
                 "group": definition.group,
                 "resolution": "unavailable",
-                "resolution_note": (
-                    f"no row for {feature_id} in the cited thermal table "
-                    f"{availability['path']}"
-                ),
+                "resolution_note": note,
                 "n_cells": 0,
                 "median": float("nan"),
             }

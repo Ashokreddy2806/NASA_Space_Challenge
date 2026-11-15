@@ -183,21 +183,31 @@ the polygons are read as metres in the LDEM south-polar-stereographic CRS taken
 from the DEM. All 1,531 polygons fall inside the DEM extent, 366 lie in the
 85°S disc, and the rasterised PSRs sit 1,213 m below the background median
 elevation (77% of PSR pixels below it). Their median slope is **10.30° vs 9.18°**
-for the background, i.e. PSRs are slightly *steeper*, so the strict "low slopes"
-verdict is **false** — reported as found rather than assumed. The ~76°S
-tile-corner radius (429.9 km) is far outside the 151.7 km target cap, so the
-corner clip cannot truncate the region of interest.
+for the background, i.e. PSRs are slightly *steeper* than their surroundings.
+That is the **expected** result, not a failure: a PSR polygon is the shadowed
+floor *plus* the crater wall and rim that cast the shadow, so a strict
+"lower slopes than background" test cannot pass by construction. The numbers
+stay in the report; the topographic-low test is the alignment evidence. The
+~76°S tile-corner radius (429.9 km) is far outside the 151.7 km target cap, so
+the corner clip cannot truncate the region of interest.
 
 **Earth Hurst robustness.** Recomputing on 504 random ETOPO patches, dropping the
 2 km lag (ETOPO native ≈1.85 km) shifts the median H by +0.040 and leaves the two
 estimates correlated at r=0.990 (`docs/hurst_sensitivity.md`). The nested fit is
 robust enough to compare across bodies, with that small positive bias recorded.
 
-**Thermal values.** `moon_thermal_literature.csv` and
-`mars_thermal_literature.csv` were still **missing** when Phase 2 ran. The
-reader is implemented and converts cited kelvin values exactly, but the features
-are reported unavailable with the exact missing path. No temperature is
-estimated.
+**Thermal values.** Both hand-made tables arrived on 2026-11-15 and are read from
+disk, never guessed. They use a flat `feature,value,units,source` schema: **10
+cited Moon quantities** (subsolar maximum, night typical, PSR and cold-crater
+bounds, cold-trap threshold) and **4 Mars quantities, all thermal inertia** —
+Mars has *no* surface temperatures at all. Kelvin values are converted to °C by
+exact −273.15 offset, and two bracketing `*_min`/`*_max` pairs per body are
+combined into **derived ranges** that name both inputs and the rule. These are
+reference numbers, not per-cell maps, so they are deliberately **not** turned
+into target distributions and **not** compared numerically with WorldClim 2 m
+air temperature. All temperature features therefore remain `unavailable` for
+Moon and Mars, and the qualitative-anchor mapping is a Phase 3 decision awaiting
+approval.
 
 ## Normalization and scoring (Phase 3 contract)
 

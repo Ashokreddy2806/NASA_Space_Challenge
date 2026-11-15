@@ -237,6 +237,84 @@ def test_match_thermal_features_does_not_guess_a_missing_row(
     assert "no row" in entries["temp_mean_c"]["resolution_note"]
 
 
+def _write_reference_csv(path: Path) -> None:
+    """The flat schema the team's literature tables actually use."""
+    path.write_text(
+        "feature,value,units,source\n"
+        "body_night_temp_typical,100,K,Test 2020\n"
+        "body_day_temp_max_min,300,K,Test 2020\n"
+        "body_day_temp_max_max,400,K,Test 2020\n"
+        "body_inertia_min,180,J m-2 K-1 s-1/2,Test 2021\n"
+        "body_inertia_max,605,J m-2 K-1 s-1/2,Test 2021\n",
+        encoding="utf-8",
+    )
+
+
+def test_reference_reader_detects_flat_schema_and_converts_kelvin(
+    config, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "reference.csv"
+    _write_reference_csv(path)
+    monkeypatch.setattr(thermal, "thermal_path", lambda cfg, body: path)
+    availability = thermal.thermal_availability(config, "moon")
+    assert availability["schema"] == "flat_reference"
+    assert availability["table"] == {}
+    assert len(availability["references"]) == 5
+    assert len(availability["derived"]) == 2
+
+    rows = availability["references"]
+    night = next(row for row in rows if row["name"] == "body_night_temp_typical")
+    assert night["value"] == 100.0
+    assert night["value_degc"] == pytest.approx(100.0 - 273.15)
+    assert night["conversion"] == "K -> degC (subtract 273.15)"
+    # A compound unit that merely contains K must not be treated as kelvin.
+    inertia = next(row for row in rows if row["name"] == "body_inertia_min")
+    assert "value_degc" not in inertia
+    assert inertia["units"] == "J m-2 K-1 s-1/2"
+
+
+def test_derived_ranges_pair_min_and_max_without_estimating(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "reference.csv"
+    _write_reference_csv(path)
+    derived = thermal.derive_reference_ranges(thermal.load_reference_table(path))
+    by_name = {row["name"]: row for row in derived}
+    day = by_name["body_day_temp_max"]
+    assert day["min"] == 300.0 and day["max"] == 400.0
+    assert day["width"] == 100.0
+    assert day["width_degc"] == pytest.approx(100.0)
+    assert day["inputs"] == ["body_day_temp_max_min", "body_day_temp_max_max"]
+    inertia = by_name["body_inertia"]
+    assert inertia["min"] == 180.0 and inertia["max"] == 605.0
+    assert "min_degc" not in inertia
+
+
+def test_flat_table_schema_is_reported_as_reference_only(
+    config, tmp_path: Path
+) -> None:
+    path = tmp_path / "reference.csv"
+    _write_reference_csv(path)
+    rows = thermal.load_reference_table(path)
+    availability = {
+        "available": True,
+        "path": str(path),
+        "reason": "",
+        "schema": "flat_reference",
+        "table": {},
+        "references": rows,
+        "derived": thermal.derive_reference_ranges(rows),
+    }
+    entries = thermal.match_thermal_features(
+        config, availability, config.targets["moon"]
+    )
+    assert entries["temp_mean_c"]["resolution"] == "unavailable"
+    assert "reference quantities, not per-cell rows" in (
+        entries["temp_mean_c"]["resolution_note"]
+    )
+    assert "pending user approval" in entries["temp_mean_c"]["resolution_note"]
+
+
 # --- Group summaries and weight renormalisation ------------------------------
 
 
@@ -362,7 +440,8 @@ def test_mars_profile_marks_unresolvable_windows_as_unavailable(config) -> None:
     # Configured exclusions win over the literature table.
     for feature_id in mars.get("unavailable_features") or []:
         assert features[feature_id]["resolution"] == "unavailable"
-        assert "no surface-temperature range" in features[feature_id]["resolution_note"]
+        note = features[feature_id]["resolution_note"]
+        assert "Mars" in note and "unavailable" in note
 
 
 def test_target_profiles_json_is_publishable(config) -> None:

@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 01:24 by ashok (Phase 2 complete: Moon/Mars target profiles, PSR and Hurst checks, config-driven)
+**Last updated:** 2026-11-15 10:50 by ashok (Phase 3 started: thermal CSVs ingested as cited reference values; PSR slope recorded as expected)
 
 ---
 
@@ -132,6 +132,9 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 01:20 — ashok — Moon terrain is **recomputed from the 80 m LDEM** with the same windows and lags as Earth; LOLA H/SPSLP/ROUGH are cross-checks only. LOLA `H` is nearly saturated (median 0.971) so it is documented as a weak cross-check; slope r=0.983 and 800 m roughness r=0.882 are the informative ones.
 - 2026-11-15 01:20 — ashok — Mars has **no surface-temperature range** in the cited literature, so `temp_diurnal_range_c` and `temp_annual_range_c` are unavailable by config, excluded from its score, and the remaining group weights are renormalised.
 - 2026-11-15 01:20 — ashok — Phase 3 must output **both** rank-based similarity and the **absolute gap in real units** per feature, with a plain-language note where rank similarity hides a large real-unit difference (e.g. lunar day–night swing vs any Earth desert).
+- 2026-11-15 10:50 — ashok — Both thermal literature CSVs arrived and are now ingested, not guessed: flat `feature,value,units,source` schema, 10 Moon reference quantities and 4 Mars quantities (**thermal inertia only — no Mars temperatures**). Kelvin→°C is an exact −273.15 offset, and bracketing `*_min`/`*_max` rows become **derived ranges** that name both inputs. They are reference numbers, not per-cell maps, so they are **not** matched numerically to WorldClim air temperature; all temperature features stay `unavailable` until the qualitative-anchor mapping is approved.
+- 2026-11-15 10:50 — ashok — The PSR "lower slopes than background" test is recorded as an **expected result, not a failure**: a PSR polygon includes the shadowed crater wall and rim that cast the shadow, so a strict slope test cannot pass by construction. Numbers stay in `docs/psr_verification.md`; the topographic-low test (1,213 m below background median, 77% of PSR pixels) is the alignment evidence.
+- 2026-11-15 10:50 — ashok — `docs/phase2_report.md` now takes its timestamp from the JSON `created_utc` instead of wall-clock time, so report header and artifact can no longer drift apart.
 
 ## 8. Open questions
 
@@ -142,7 +145,10 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - [ ] How to weight features, and should users be able to change weights in the UI? (Phase 3 defaults, Phase 5 controls.)
 - [ ] Who owns which workstream? (W1–W4 done by ashok; W5–W9 unassigned.)
 - [x] Lunar PSR CSV has no CRS metadata — **read as metres in the LDEM south-polar-stereographic CRS**; all 1,531 polygons fall inside the DEM extent and the rasterised PSRs sit on topographic lows, which is the evidence. The ~76°S tile corner does not clip the 85°S cap (429.9 km > 151.7 km). Confirmed 2026-11-15.
-- [ ] Provide `moon_thermal_literature.csv` and `mars_thermal_literature.csv` — still missing; Phase 2 reports Moon/Mars temperature as unavailable by exact path.
+- [x] Provide `moon_thermal_literature.csv` and `mars_thermal_literature.csv` — **supplied 2026-11-15** (Moon: 10 reference quantities; Mars: 4 thermal-inertia quantities, no temperatures). Read and reported in `docs/phase2_report.md` under "Thermal literature".
+- [ ] **Thermal scoring mapping** — qualitative anchors (banded / cold-tail ordinal / context-only) proposed for approval; nothing thermal is scored until the option is chosen. Neither body can be compared to WorldClim numerically.
+- [ ] **Validation sites for Phase 3** — propose coordinates and sources for known analogs beyond the current spot-checks; user reviews before they are used to report rank performance.
+- [ ] **Presets** — rover mobility (terrain), cold-trap/ice and thermal cycling (qualitative) to be defined in `config/presets.yaml`.
 
 ## 9. Results so far
 
