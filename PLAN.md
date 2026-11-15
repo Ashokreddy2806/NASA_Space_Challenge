@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-14 21:36 by rahul (data downloads, HF upload; Phase 0 by ashok)
+**Last updated:** 2026-11-14 22:07 by ashok (Phase 1 complete: Earth 0.05° feature grid built)
 
 ---
 
@@ -18,7 +18,7 @@ Targets (each teammate will focus on one part; parts are **not assigned yet**):
 ## 2. Approach
 
 1. **Common feature space.** Pick a small set of features that can be measured on Earth *and* on the target body (e.g. surface temperature stats, slope, roughness, elevation range, albedo, hydrogen/ice proxy, mineral proxy, dryness, vegetation = 0).
-2. **Global Earth grid.** Resample each Earth dataset to one common coarse grid (~0.05°, ≈5 km). Store as one `xarray` dataset / Zarr or NetCDF.
+2. **Global Earth grid.** Resample each Earth dataset to one common coarse grid (~0.05°, ≈5 km). Store as one compressed, chunked NetCDF4 dataset (Zarr is unavailable on this machine; see Decisions).
 3. **Target profiles.** For each target site, compute the same features from Moon/Mars data → one feature vector (plus value ranges).
 4. **Similarity engine.** Normalize features, compute weighted distance per Earth cell → overall score + per-feature sub-scores. User-adjustable weights (e.g. "geology only", "thermal only").
 5. **Zoom in.** Take the top N candidates, filter out famous sites (Atacama, Antarctica Dry Valleys, Iceland, Hawaii, Devon Island, Death Valley) to surface **overlooked** sites, pull higher-res data for a few.
@@ -41,7 +41,7 @@ docs/              write-up, figures, submission material
 ```
 
 - **Backend:** Python (xarray, rioxarray/rasterio, numpy, pandas, scikit-learn) + **FastAPI**.
-- **Frontend (proposed, not decided):** a polished web map — e.g. **deck.gl + MapLibre** (3D globe, heatmap layer of similarity scores, clickable sites) with **Plotly** radar/bar charts for feature comparisons. Alternative: Streamlit + pydeck (faster, less polished).
+- **Frontend:** **deck.gl + MapLibre GL JS + Plotly** (confirmed 2026-11-14) — a polished web map with a 3D globe, heatmap layer of similarity scores and clickable sites; Plotly radar/bar charts for feature comparisons.
 
 ## 4. Candidate datasets (pick, then record choice in Decisions)
 
@@ -81,7 +81,7 @@ docs/              write-up, figures, submission material
 | # | Workstream | Owner | Status |
 |---|---|---|---|
 | W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | ashok | done |
-| W2 | Earth data pipeline: download + regrid to common global grid | — | not started |
+| W2 | Earth data pipeline: download + regrid to common global grid | ashok | done |
 | W3 | Moon target profile (lunar south pole features) | — | not started |
 | W4 | Mars target profile (choose site + features) | — | not started |
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
@@ -96,12 +96,14 @@ Status values: `not started` · `in progress` · `blocked` · `done`
 
 | Hours | Milestone | Done? |
 |---|---|---|
-| 0–2 | Repo + env set up, datasets chosen, feature list agreed | [ ] |
+| 0–2 | Repo + env set up, datasets chosen, feature list agreed | [x] |
 | 2–8 | Earth grid built for core features; Moon + Mars target vectors computed | [ ] |
 | 8–13 | Similarity engine produces a global score map for each target | [ ] |
 | 13–19 | API + visualization working end-to-end; top sites identified | [ ] |
 | 19–22 | Site write-ups, polish visuals, "overlooked site" story | [ ] |
 | 22–24 | Demo video, slides, submit | [ ] |
+
+> Earth half of the 2–8 h milestone is **complete** (2026-11-14 22:07): 13 features + land mask on the 0.05° grid. Moon and Mars target vectors move to Phase 2.
 
 ## 7. Decisions log
 
@@ -116,13 +118,22 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-14 16:38 — ashok — Pin `rasterio<1.5` in `requirements.txt` — 1.5.2's `_base` DLL is blocked by this machine's Windows Application Control policy; 1.4.3 imports and reads every raster normally.
 - 2026-11-14 16:38 — ashok — Compute terrain features in km-sized windows on an equal-area working grid, then sample them onto the 0.05° lon/lat search grid — meets the "matched physical window" rule; 0.05° cells shrink in longitude toward the poles, which the ranker must not hide.
 - 2026-11-14 21:53 — rahul — Normalize all features against the **Earth reference distribution** (target value placed on Earth's percentile scale), not within each body — percentiles within a body force a median lunar value to match a median Earth value. See `docs/FEATURES.md`.
+- 2026-11-14 17:05 — ashok — Frontend confirmed: **deck.gl + MapLibre GL JS + Plotly** — approved by the team; best visual quality for the global heat layer and site comparison charts.
+- 2026-11-14 17:05 — ashok — MVP feature list confirmed: **relief, slope, multi-scale roughness, scale-robust roughness (Hurst), temperature stats/day–night swing, dryness**, plus a **separate ice/cold-trap proxy** — recorded in `docs/FEATURES.md`; no extra features until the MVP works.
+- 2026-11-14 17:05 — ashok — Use the raw MOLA `megt90n000eb.img` directly; do **not** create `mars_elev.npy` — the file is verified int16 16 ppd, north-up, 0–360°E.
+- 2026-11-14 17:05 — ashok — Hand-made `moon_thermal_literature.csv` and `mars_thermal_literature.csv` will be supplied by the team before Phase 2 — no temperature values will be guessed.
+- 2026-11-14 21:40 — ashok — Store the Earth grid as chunked, compressed **NetCDF4** (`data/processed/earth_features.nc`) instead of Zarr — `numcodecs`' Jenkins DLL is blocked by Windows Application Control, but NetCDF4/HDF5 gives the same chunking and compression; `zarr` was removed from `requirements.txt`.
+- 2026-11-14 21:40 — ashok — Terrain features are computed per 10° tile on a **2 km local azimuthal-equidistant grid** (1° halo), then area-averaged onto the 0.05° grid — this keeps every window in kilometres and avoids stretching 0.05° cells near the poles.
+- 2026-11-14 21:40 — ashok — Locked terrain estimators: relief = **p95−p5 in 20 km**, slope = **mean of per-2 km gradient magnitude in 20 km**, roughness = **std of a Gaussian high-pass residual** at 5/10/20 km (`σ = window/2`), Hurst = **half the log–log structure-function slope** for lags 2/4/8/16/32 km. Phase 2 must use exactly the same estimators; recorded in `docs/FEATURES.md`.
+- 2026-11-14 21:40 — ashok — Before filtering, **ocean cells are filled with the nearest land elevation** using the WorldClim land mask — ETOPO includes bathymetry, and without this a 20 km coastal window would report a fake 3–5 km relief cliff along every coast.
+- 2026-11-14 21:40 — ashok — Earth land mask and climate features come from **WorldClim ocean nodata** (majority-valid at 0.05°); all published features are NaN over ocean — ETOPO cannot supply a land mask because it includes the sea floor.
 
 ## 8. Open questions
 
+- [x] Frontend: **deck.gl + MapLibre GL JS with Plotly radar/bar charts** — confirmed 2026-11-14.
+- [x] Final feature list: **six MVP features + separate ice proxy** — confirmed 2026-11-14; see `docs/FEATURES.md`.
 - [ ] Which Mars site is the target (Jezero? another)? Ask again in Phase 2.
 - [ ] Confirm the lunar target region: poleward of 85°S vs specific candidate base sites. Ask in Phase 2.
-- [ ] Frontend: **proposal** deck.gl + MapLibre GL JS with Plotly radar/bar charts (alternative: Streamlit + pydeck). Awaiting confirmation; not recorded as a decision yet.
-- [ ] Final feature list: **proposal** is the six MVP features + separate ice proxy in `docs/FEATURES.md`. Awaiting confirmation; not recorded as a decision yet.
 - [ ] How to weight features, and should users be able to change weights in the UI? (Phase 3 defaults, Phase 5 controls.)
 - [ ] Who owns which workstream? (W1 done by ashok; others unassigned.)
 - [ ] Lunar PSR CSV has no CRS metadata and its square tile reaches ~76°S at the corners (not a strict 80°S cut). Confirm the intended projection for the Phase 2 polygon overlay.

@@ -2,7 +2,9 @@
 
 Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site**, explain the match feature by feature, and show where the analogy breaks down.
 
-> **Status: Phase 0 complete.** Data inventory verified, Python environment pinned, repository scaffolded. The Earth feature grid, target profiles, similarity engine, API and map follow in Phases 1–7.
+> **Status: Phase 1 complete.** The Earth 0.05° feature grid is built: 13
+> terrain/climate variables plus a WorldClim land mask, with figures and a
+> coverage report. Phase 2 (Moon/Mars target profiles) is next.
 
 ## What this is
 
@@ -25,12 +27,26 @@ python -m venv .venv
 python -m pip install -r NASA_Space_Challenge/requirements.txt
 cd NASA_Space_Challenge
 python -m backend.pipeline.inspect_datasets   # writes docs/data_inventory.md
-python -m pytest -q                           # Phase 0 smoke tests
+python -m backend.pipeline.earth_climate      # WorldClim -> 0.05° climate + land mask (~1 min)
+python -m backend.pipeline.earth_terrain      # ETOPO -> 0.05° terrain features (~8 min)
+python -m backend.pipeline.build_earth_features  # merge, mask, figures, report (~2 min)
+python -m pytest -q                           # Phase 0 + Phase 1 smoke tests
 ```
 
 The raw datasets are expected in `../Datasets/` (`Moon/`, `Mars/`, `Earth/`) and are **not** committed. Set `NASA_DATA_ROOT` to override the location.
 Teammates can fetch the shared copy (private Hugging Face dataset, ask Rahul for access) with
 `hf download rahuloruganti/nasa-analog-data --repo-type dataset --local-dir ../Datasets`.
+
+### Phase 1 outputs
+
+| Path | Contents |
+|---|---|
+| `data/processed/earth_features.nc` | 7200 × 3600 0.05° grid: relief, slope, three roughness scales, Hurst, five temperature statistics, two precipitation variables (all NaN over ocean), plus `land_mask` and `land_fraction` |
+| `data/processed/earth_features_meta.json` | machine-readable ranges, coverage and spot checks |
+| `docs/earth_grid_report.md` | coverage, polar notes, spot checks and limits |
+| `docs/figures/earth_*.png` | one quick-look map per feature plus a combined overview |
+
+Intermediate files (`earth_terrain.nc`, `earth_climate.nc`) are deleted after a successful merge; run with `--keep-intermediates` to retain them.
 
 ## Repository layout
 
@@ -78,4 +94,5 @@ Full file-level details, local names, sizes and verification results: [`docs/dat
 - [PROGRESS_LOG.md](PROGRESS_LOG.md) — who did what
 - [docs/DATASETS.md](docs/DATASETS.md) — dataset manifest
 - [docs/data_inventory.md](docs/data_inventory.md) — Phase 0 verification
-- [docs/FEATURES.md](docs/FEATURES.md) — feature definitions (proposed, locked in Phase 1)
+- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions and Phase 1 implementation record
+- [docs/earth_grid_report.md](docs/earth_grid_report.md) — Phase 1 grid coverage and limits
