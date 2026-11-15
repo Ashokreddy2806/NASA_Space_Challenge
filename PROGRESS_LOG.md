@@ -6,20 +6,7 @@ Who did what, and when. Each team member has **their own section**. Only write i
 
 1. Go to **your** section below.
 2. Update the **Now working on** line.
-3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->
-
-#### 2026-11-15 15:10 — Horizon frontend (globe, elevation, detail panel)
-- **Did:** Picked the "Horizon" design (3 options mocked in a design canvas). Rebuilt `frontend/` as a full-bleed MapLibre 5.6 globe: Esri imagery + AWS Terrarium hillshade/3D terrain, soft amber similarity glow, pins with pulsing ring and match-% pill, Moon/Mars toggle, preset dropdown, "Hide famous" toggle, detail panel (group bars, elevation + relief, one-line "not replicable on Earth", Plotly Compare modal). Minimal text. Checked in browser pane against the live API, no console errors.
-- **Files:** `frontend/index.html`, `frontend/style.css`, `frontend/panel.css`, `frontend/js/globe.js`, `frontend/js/panel.js`; `frontend/app.js` deleted (staged, not committed)
-- **Next:** restore ice/substrate caveat chip in the panel; fix `/presets` listing `thermal_cycling` as available while `/top-sites` returns 422; add place names; test mobile (<900px) and pin click on globe; cross-check Antarctic elevation (-52 m).
-- **Blockers:** none (globe needs internet for imagery/DEM tiles)
-
-#### 2026-11-15 14:26 — main repaired; plan to replace WorldClim with NASA data
-- **Did:** `main` did not start (`backend/api/data.py` missing after the revert `6b2cae8`); re-applied the merge locally (`10adde3`, not pushed), 122 tests pass, app runs. Reviewed data against the challenge resources: WorldClim is not NASA and is air temperature. Drafted the replacement plan (MOD11C3/MYD11C3 LST, GPM_3IMERGM precipitation, MCD12C1 land mask); sizes checked in CMR (74 MB/month, 18 MB/month, 1.2 GB).
-- **Files:** `PLAN.md` (decision + open question), `PROGRESS_LOG.md`
-- **Next:** on go-ahead: download script, new climate pipeline, rebuild features/targets/scores, re-approve Moon temperature bands.
-- **Blockers:** no Earthdata login on this machine (`~/.netrc` missing); HDF4 reader (`pyhdf`) not installed; ETOPO is NOAA, team to decide whether it stays.
- marker.
+3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->` marker.
 4. Use this format:
 
 ```markdown
@@ -39,6 +26,30 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 **Now working on:** Horizon frontend polish (caveat chip, mobile); plan to replace WorldClim with NASA Earthdata products (MODIS LST, GPM IMERG, MODIS land cover); awaiting go-ahead and an Earthdata login
 
 <!-- entries -->
+
+#### 2026-11-15 15:19 — 30-second demo video
+- **Did:** Recorded a 30 s, 1920x1080, 30 fps demo of the live app (headless Chrome screencast, scripted take: intro title, Moon top site in the Peruvian Andes 80%, Compare radar, switch to Mars, Egypt Eastern Desert 92%, end card). Captions are overlaid by the script; the app code is unchanged. Audio is a synthesized ambient pad (ffmpeg), no licensed music.
+- **Files:** `docs/video/analog_earth_30s.mp4` (21 MB, not committed), `docs/video/capture.js`
+- **Next:** team review of caption wording; re-record after the frontend polish lands (`node capture.js <framesDir>` with the server on :8000, needs `playwright-core`).
+- **Blockers:** none
+
+#### 2026-11-15 15:16 — Documentation and repository cleanup
+- **Did:** Rewrote `README.md` (pitch, results, pipeline diagram, macOS/Linux/Windows quick start, credits, limits); new `docs/README.md` index; rewrote `docs/API.md`, `frontend/README.md`, `docs/SITE_ANALYSIS.md` and `docs/SUBMISSION.md` against the current engine outputs (0-1 scores, `moon`/`mars` targets, Horizon frontend). Untracked 35 files: 28 `docs/figures/proof_*.png` and the two `docs/proof_*_report.md` (regenerable, now git-ignored), stale `docs/make_architecture.py` + `architecture.png`, old-UI screenshots `frontend_{moon,mars}.png`, empty `notebooks/`. Tracked files 29 MB -> 14 MB. New screenshot `docs/figures/app_globe.png`. Moved two log entries that had landed inside the "How to add an entry" instructions into this section. Fixed `tests/test_phase4.py::test_frontend_served` for the Horizon frontend (122 tests pass).
+- **Files:** `README.md`, `.gitignore`, `docs/{README,API,SITE_ANALYSIS,SUBMISSION}.md`, `frontend/README.md`, `tests/test_phase4.py`, `PLAN.md`, `PROGRESS_LOG.md`
+- **Next:** team review, then commit; decide on a LICENSE; commit the two thermal literature CSVs or document where to get them.
+- **Blockers:** proof outputs and `hardcode_audit.md` are Ashok's, removal of the proof outputs needs his OK before commit.
+
+#### 2026-11-15 15:10 — Horizon frontend (globe, elevation, detail panel)
+- **Did:** Picked the "Horizon" design (3 options mocked in a design canvas). Rebuilt `frontend/` as a full-bleed MapLibre 5.6 globe: Esri imagery + AWS Terrarium hillshade/3D terrain, soft amber similarity glow, pins with pulsing ring and match-% pill, Moon/Mars toggle, preset dropdown, "Hide famous" toggle, detail panel (group bars, elevation + relief, one-line "not replicable on Earth", Plotly Compare modal). Minimal text. Checked in browser pane against the live API, no console errors.
+- **Files:** `frontend/index.html`, `frontend/style.css`, `frontend/panel.css`, `frontend/js/globe.js`, `frontend/js/panel.js`; `frontend/app.js` deleted (staged, not committed)
+- **Next:** restore ice/substrate caveat chip in the panel; fix `/presets` listing `thermal_cycling` as available while `/top-sites` returns 422; add place names; test mobile (<900px) and pin click on globe; cross-check Antarctic elevation (-52 m).
+- **Blockers:** none (globe needs internet for imagery/DEM tiles)
+
+#### 2026-11-15 14:26 — main repaired; plan to replace WorldClim with NASA data
+- **Did:** `main` did not start (`backend/api/data.py` missing after the revert `6b2cae8`); re-applied the merge locally (`10adde3`, not pushed), 122 tests pass, app runs. Reviewed data against the challenge resources: WorldClim is not NASA and is air temperature. Drafted the replacement plan (MOD11C3/MYD11C3 LST, GPM_3IMERGM precipitation, MCD12C1 land mask); sizes checked in CMR (74 MB/month, 18 MB/month, 1.2 GB).
+- **Files:** `PLAN.md` (decision + open question), `PROGRESS_LOG.md`
+- **Next:** on go-ahead: download script, new climate pipeline, rebuild features/targets/scores, re-approve Moon temperature bands.
+- **Blockers:** no Earthdata login on this machine (`~/.netrc` missing); HDF4 reader (`pyhdf`) not installed; ETOPO is NOAA, team to decide whether it stays.
 
 #### 2026-11-15 13:40 — Merge plan: rahul/data-setup into main
 - **Did:** Confirmed origin/main is an ancestor of this branch (fast-forward, no conflicts); restored regenerated-timestamp noise in `docs/`; pushing the branch and opening a PR (merge commit, no squash, so Ashok's commits stay authored).

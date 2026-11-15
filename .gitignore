@@ -8,22 +8,33 @@ data/
 *.h5
 *.he5
 *.img
+*.npy
+
+# Shared raw data (lives next to the repo; never commit)
+Datasets/
+
+# Regenerable outputs of the configuration proofs (see docs/hardcode_audit.md)
+docs/proof_*_report.md
+docs/figures/proof_*.png
 
 # Python
 __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
 .ipynb_checkpoints/
 
 # Secrets (Earthdata login etc.)
 .env
 .netrc
 
-# OS / editors
+# OS / editors / assistants
 .DS_Store
 .vscode/
 .idea/
+.claude/
+*.bak
 
 # Frontend
 node_modules/
@@ -31,6 +42,3 @@ dist/
 
 # Local resources (links live in PROBLEM_STATEMENT.md)
 resources/
-
-# Shared raw data (lives next to the repo; never commit)
-Datasets/

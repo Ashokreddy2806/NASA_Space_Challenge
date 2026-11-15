@@ -1,79 +1,106 @@
-# Top-site analysis (Phase 6)
+# Top-site analysis
 
-Six Earth candidates chosen from the Phase 3 rankings (`docs/top_sites.json`), covering both targets and mixing well-known regions with ones outside our "famous analogs" list. Numbers come from `GET /targets/{t}/site` (0.05° cells, about 5 km); Earth values are the cell's, target values are the Phase 2 medians.
+Six Earth candidates from the current rankings (`data/processed/top_sites.json`, also served by `GET /targets/{target}/top-sites`), plus two results we show as warnings. Full tables for every preset are in [phase3_report.md](phase3_report.md).
 
-> **Read this first.** (1) Place names are *my identification from coordinates*, not looked up in a gazetteer; check them on a map. (2) "Not in our famous list" means not in the nine regions we excluded, **not** that nobody has studied the place. (3) A score of 98 means the *terrain and dryness percentiles* line up. Temperatures are **not** scored (no site-specific lunar/Martian values yet), so a site can score 98 and be 19 °C warmer than any lunar cold trap. (4) Dryness sub-scores are percentile ranks: a cell with 27 mm/yr of rain scores 95 against a zero-rain target; it is dry for Earth, not rainless.
+> **Read this first.**
+> 1. Place names are our reading of the coordinates, not a gazetteer lookup. Check them on a map before quoting them.
+> 2. Scores are 0 to 1 and Earth-relative. Moon and Mars scores are not comparable.
+> 3. "Site score" is the average over a 25 km radius, so it is lower than the best single cell.
+> 4. None of these sites is on our famous-analog list. That does not mean nobody has studied them.
+> 5. No site matches everything. Each entry says what it is good for and what it is not.
 
 ## Summary
 
-| # | Site (approx.) | Target | Lat, Lon | Score | Story in one line |
-|---|---|---|---|---|---|
-| 1 | Nazca / Ica desert, Peru | Jezero | -14.93, -74.97 | 98 | Terrain almost identical to Jezero (relief 428 vs 427 m, slope 1.55° vs 1.52°) in a ~3 mm/yr desert |
-| 2 | Eastern Desert / Red Sea Hills, Egypt | Jezero | 27.82, 33.08 | 98 | Hyper-arid wadi terrain with matching relief, slope and Hurst exponent |
-| 3 | Lop Nur region, NW China | Jezero | 40.47, 91.72 | 97 | Best roughness match (5 km: 15.7 vs 15.7 m); cold-winter desert, known for wind-carved yardangs |
-| 4 | Transantarctic region, Antarctica | Lunar pole | -84.68, 171.98 | 98 (cold-trap preset) | The only lunar candidate that is also cold: coldest-month air minimum -63 °C |
-| 5 | Western Kunlun / Aksai Chin, Tibetan Plateau | Lunar pole | 36.47, 80.53 | 98 | Near-perfect terrain match (relief 1739 vs 1773 m), but not cold enough |
-| 6 | Southern Peruvian Andes (Arequipa area) | Lunar pole | -16.03, -72.57 | 98 | Terrain match next to Atacama, on the less-visited side; warm |
+| # | Site (approx.) | Target | Lat, Lon | Preset | Site score | In one line |
+|---|---|---|---|---|---|---|
+| 1 | Peruvian Andes, western slope | Moon | -10.28, -77.58 | balanced | 0.80 | Lunar-like relief and multi-scale roughness with a nearly dry driest month |
+| 2 | New Guinea highlands | Moon | -5.93, 146.53 | rover mobility | 0.86 | Best terrain match on Earth, in a rainforest: terrain only |
+| 3 | Hindu Kush, Afghanistan | Moon | 35.13, 68.88 | balanced | 0.77 | Rugged, seasonally dry mountain terrain |
+| 4 | Transantarctic region, Antarctica | Moon | -84.33, 175.53 | cold-trap / ice | 0.78 | The only candidate that is also cold and dry; on an ice sheet |
+| 5 | Eastern Desert, Egypt | Mars | 25.68, 34.58 | balanced | 0.92 | Jezero-like slope and roughness at 6 mm of rain a year |
+| 6 | Southern Libya | Mars | 22.53, 19.03 | balanced | 0.90 | Same family as 5, deeper in the Sahara |
 
-## Moon: lunar south pole (poleward of 85°S)
+## Moon: south polar cap (poleward of 85°S)
 
-Target: relief 1773 m, slope 6.9°, roughness 64/152/359 m at 5/10/20 km, Hurst 0.71; permanently shadowed regions cover 9.8% of the disk.
+Target medians: relief 1789 m, slope 9.3°, roughness 77 / 170 / 374 m at 5 / 10 / 20 km, Hurst exponent 0.68. Permanently shadowed regions cover 9.8% of the cap (7,107 of 72,308 km²); that figure is context, not a scored feature, because Earth has no equivalent map. Temperature enters only as two qualitative bands at low weight.
 
-### 4. Transantarctic region, Antarctica (-84.68, 171.98), cold-trap preset 98
+### 1. Peruvian Andes, western slope (-10.28, -77.58), balanced 0.80
 
-- **Matches:** relief 2188 vs 1773 m (100), slope 10.3° vs 6.9° (99), roughness 51/135/536 vs 64/152/359 m (97-99), annual precipitation 22 mm (96), coldest-month minimum -63 °C (the closest Earth gets to a cold-trap story).
-- **Does not match:** Hurst 0.60 vs 0.71 (83: smoother at large scale); relief and slope run higher; air temperature is still ~100 K warmer than a permanently shadowed crater (below 110 K annual maximum, Sefton-Nash et al. 2019). Ice here is a glacier, not buried regolith ice.
-- **Exploration use:** crew training and traverse planning in polar darkness and cold; testing drills and sample handling at -40 to -60 °C; practising navigation on steep, low-sun terrain; resource-prospecting rehearsal (ground-penetrating radar on ice-rich ground).
-- **Earth cannot replicate:** vacuum, 1/6 g, radiation, regolith (this is rock and ice sheet), true 110 K cold traps, and months of near-horizontal sunlight at a fixed spot.
+- **Matches:** relief 1749 m vs 1789 m; Hurst 0.68 vs 0.68; roughness at 10 km 191 m vs 170 m and at 20 km 340 m vs 374 m; driest month 0.2 mm.
+- **Does not match:** slope 7.2° vs 9.3°; roughness at 5 km 107 m vs 77 m (rougher at fine scale); 279 mm of rain a year against a target of zero; warm, so the temperature group scores only 0.26.
+- **Stability:** stays in the top list in 7 of 9 thermal sensitivity runs.
+- **Exploration use:** rover mobility and traverse planning on steep, lunar-scale relief; instrument field tests during the dry season.
 
-### 5. Western Kunlun / Aksai Chin (36.47, 80.53), balanced 98
+### 2. New Guinea highlands (-5.93, 146.53), rover mobility 0.86
 
-- **Matches:** relief 1739 vs 1773 m (100), slope 6.1° vs 6.9° (99), roughness 73/159/364 vs 64/152/359 m (98-100), Hurst 0.70 vs 0.71 (99), annual precipitation 31 mm (95).
-- **Does not match:** ice/cold proxy 65: coldest-month minimum is only -14 °C; mean air temperature +7 °C; no mapped permanent shadow. Hurst and terrain match is the whole case.
-- **Exploration use:** rover mobility and instrument testing on lunar-like crater-free rugged terrain at high altitude (thin air is a weak, partial atmosphere analog); logistics practice for a remote, hard-to-reach site.
-- **Earth cannot replicate:** vacuum, reduced gravity, radiation, regolith dust behaviour, extreme thermal swing (air diurnal range here is 15 K versus roughly 300 K on the lunar equator).
+- **Matches:** relief 1831 m vs 1789 m; roughness at 20 km 348 m vs 374 m; slope 7.8° vs 9.3°. It tops the terrain-only preset and stays in the balanced top list in all 9 sensitivity runs.
+- **Does not match:** 2,405 mm of rain a year and 82 mm in the driest month: the dryness group scores 0. It is warm and wet enough to be forested (background knowledge; vegetation is not in our data). Roughness at 5 km is 127 m vs 77 m.
+- **What this shows:** terrain geometry alone finds this site; nothing else about it resembles the Moon. It is the clearest case for reading the per-group bars and not just the headline score.
+- **Exploration use:** limited to terrain-shape studies (slope and roughness statistics for mobility models). Not a field analog.
 
-### 6. Southern Peruvian Andes (-16.03, -72.57), balanced 98
+### 3. Hindu Kush, Afghanistan (35.13, 68.88), balanced 0.77
 
-- **Matches:** relief 1926 vs 1773 m (100), slope 6.3° vs 6.9° (99), roughness 67/170/387 m (99-100), Hurst 0.72 vs 0.71 (99), annual precipitation 27 mm (95).
-- **Does not match:** ice/cold proxy 28 (coldest-month minimum +10 °C, mean 19 °C). It is a terrain and dryness analog only.
-- **Exploration use:** same family as Atacama (which it neighbours) for rover and instrument field tests, with a second, less congested site; useful as a control when separating "terrain effect" from "site fame".
-- **Earth cannot replicate:** as above. Also note it sits close to Atacama, so it adds little independent information about the lunar pole.
+- **Matches:** roughness at 10 km 191 m vs 170 m; relief 1443 m vs 1789 m; Hurst 0.64 vs 0.68; driest month 2.4 mm.
+- **Does not match:** slope 6.7° vs 9.3°; 773 mm of precipitation a year; roughness at 5 km 117 m vs 77 m.
+- **Stability:** 7 of 9 sensitivity runs.
+- **Exploration use:** rugged-terrain mobility analog with cold winters. Access is a practical obstacle.
 
-## Mars: Jezero Crater (18.38°N, 77.58°E, 50 km disk)
+### 4. Transantarctic region, Antarctica (-84.33, 175.53), cold-trap / ice 0.78
 
-Target: relief 427 m, slope 1.52°, roughness 16/35/71 m, Hurst 0.66 (reduced lags, indicative). Mars 5 km roughness is resolution-limited and given weight 0; Mars temperatures are not scored.
+- **Matches:** roughness at 20 km 373 m vs 374 m; relief 1568 m vs 1789 m; coldest temperature band (temperature group 1.0); 24 mm of precipitation a year and none in the driest month.
+- **Does not match:** Hurst 0.57 vs 0.68 (smoother across scales); slope 7.1° vs 9.3°. Even here, air temperature is far above a lunar cold trap.
+- **Flag:** inside the Antarctic ice-sheet region. Our data cannot tell ice cover from bare ground, so the terrain match may be an ice surface, not rock.
+- **Exploration use:** crew operations and drilling in sustained cold and low sun angles; logistics rehearsal for a remote polar base.
 
-### 1. Nazca / Ica desert, Peru (-14.93, -74.97), score 98 (highest-ranked Mars cell)
+## Mars: Jezero crater (18.36°N, 77.59°E, 150 km disc)
 
-- **Matches:** relief 428 vs 427 m (100), slope 1.55° vs 1.52° (100), roughness 10/20 km 34/68 vs 35/71 m (99), Hurst 0.66 vs 0.66 (99), annual precipitation 2.9 mm (99).
-- **Does not match:** 5 km roughness 11 vs 16 m (94; Mars value is a biased-low, resolution-limited estimate); air temperature mean 20 °C and diurnal range 11 K, nowhere near Mars's (Viking 1 diurnal range 58 K, global mean 214 K); no clay-bearing delta deposits are mapped here.
-- **Exploration use:** rover drive tests and autonomous navigation on low-relief desert terrain; instrument calibration under hyper-arid conditions; low-cost, accessible field campaign site.
-- **Earth cannot replicate:** 0.38 g, a 6 mbar CO2 atmosphere, radiation, perchlorate soils, and Jezero's specific fluvial-lacustrine geology.
+Target medians: relief 472 m, slope 1.47°, roughness 40 m at 10 km and 85 m at 20 km. Roughness at 5 km and the Hurst exponent are not scored because MOLA (about 3.7 km per pixel) cannot resolve them. **No temperature is scored for Mars.** The ranking is terrain plus dryness.
 
-### 2. Eastern Desert / Red Sea Hills, Egypt (27.82, 33.08), score 98
+### 5. Eastern Desert, Egypt (25.68, 34.58), balanced 0.92
 
-- **Matches:** relief 405 vs 427 m (99), slope 1.55° vs 1.52° (100), roughness 22/36/64 vs 16/35/71 m (95-100), Hurst 0.66 (100), annual precipitation 6.3 mm (99).
-- **Does not match:** warm (mean 22 °C, warmest month 36 °C); 5 km roughness a little high; weights are terrain and dryness only.
-- **Exploration use:** dry wadi and basement-rock traverses for rover navigation; sample-selection training; a natural comparison for ancient channel systems (Jezero's inlet valley is a dry river system).
-- **Earth cannot replicate:** gravity, atmosphere, radiation, global dust storms.
+- **Matches:** slope 1.44° vs 1.47°; roughness at 10 km 35 m vs 40 m; relief 393 m vs 472 m; 6 mm of rain a year and none in the driest month.
+- **Does not match:** roughness at 20 km 61 m vs 85 m (smoother at long scale); hot, which the score does not see.
+- **Exploration use:** rover drive and autonomous-navigation tests on low-relief, hyper-arid ground; dry channel (wadi) systems as a comparison for Jezero's inlet valley. The wadi comparison is background knowledge, not something our data verifies.
 
-### 3. Lop Nur region, NW China (40.47, 91.72), score 97
+### 6. Southern Libya (22.53, 19.03), balanced 0.90
 
-- **Matches:** relief 394 vs 427 m (98), slope 1.52° vs 1.52° (100), roughness 15.7/35.5/75 vs 15.7/35/71 m (99-100), Hurst 0.69 vs 0.66 (96), annual precipitation 20 mm (97).
-- **Does not match:** relief about 8% low; much colder winters than Nazca (coldest-month minimum -15 °C, a little closer to Mars) but its mean air temperature (+9.5 °C) is still about 70 K above Mars's global mean (214 K).
-- **Exploration use:** aeolian-process study: this basin is widely described as having wind-carved yardangs, which is the process-not-place angle the challenge rewards for Mars dust and wind erosion; also dry-lake-bed (playa) deposit sampling. The yardang claim is background knowledge, not something our data verifies.
-- **Earth cannot replicate:** gravity and atmosphere set Mars's wind and sediment transport; dust-storm dynamics differ.
+- **Matches:** roughness at 10 km 38 m vs 40 m; slope 1.34° vs 1.47°; 13 mm of rain a year.
+- **Does not match:** relief 322 m vs 472 m; roughness at 20 km 62 m vs 85 m.
+- **Exploration use:** as for site 5. It is an independent second location of the same terrain type, useful as a control.
 
-## What to do next
+## Two results to read as warnings
 
-1. **Finish temperatures.** Lunar mean and annual-max surface temperatures now come from Diviner (see PLAN.md Decisions), but Earth is still WorldClim air temperature, and Jezero (MEDA) and lunar diurnal/minimum values are missing. Remaining gap: site-specific literature values for the lunar south pole (Diviner / Williams et al. 2019) and Jezero (MEDA) would let us score thermal analogs and demote sites such as #5 and #6.
-2. **Verify each cell** in Worldview/Earthdata before claiming it in the pitch (place name, imagery, access).
-3. **Look for minerals.** Our features are geometry and dryness only; EMIT or ASTER mineral maps are the natural next layer for Jezero-style clay/carbonate analogs.
-4. **Sensitivity check.** Rerun with Phase 3 weights changed to confirm these sites stay on top.
+- **Solomon Islands region (-6.73, 156.43), Mars rover mobility 0.95.** Slope 1.44° vs 1.47° and roughness at 20 km 85.0 m vs 85.2 m, with 3,441 mm of rain a year. The terrain-only preset ignores climate by definition, so a rainforest island can lead it.
+- **West Antarctica (-71.73, -72.83), Mars rover mobility 0.95.** The top terrain-only Mars cell lies in the ice-sheet region and carries the ice flag. A smooth ice surface is not a Jezero analog.
 
-## Honest limits of this write-up
+## How the known analogs score
 
-- Percentile distance compresses real differences near the extremes; many cells score 97-98, so rank order among them is weak evidence.
-- Earth cells are about 5 km; the Moon region is 300 km across and Jezero 50 km, so a "match" is a regional statistical resemblance, not a one-to-one landform.
-- Earth cannot reproduce reduced gravity, vacuum or thin atmosphere, or the radiation environment.
+They were scored as found and never tuned for.
+
+| Target | Higher | Lower |
+|---|---|---|
+| Moon (balanced) | Mauna Kea summit 0.81, Licancabur 0.79, Dry Valleys 0.61 (98th percentile of land), Death Valley 0.49, Iceland 0.48, Atacama 0.44 | Sahara 0.22, Devon Island 0.22, Mistastin Lake 0.20, Amazon 0.14 |
+| Mars (balanced) | Atacama 0.85 (93rd percentile), Rio Tinto 0.82, Devon Island 0.77, Iceland 0.73 | Sahara 0.61, Death Valley 0.58, Amazon 0.44, Dry Valleys 0.08, Licancabur 0.04, Mauna Kea 0.00 |
+
+The Amazon is a deliberate negative control and scores low for both. Devon Island scoring low for the Moon, and the volcanic summits scoring near zero for Jezero, follow from terrain: these features measure shape and dryness, not geology or process.
+
+## What Earth cannot replicate
+
+- Reduced gravity: about 1/6 g on the Moon, 0.38 g on Mars.
+- Vacuum on the Moon; a thin carbon dioxide atmosphere on Mars.
+- The radiation environment.
+- Lunar regolith and permanently shadowed cold traps; Martian soil chemistry and global dust storms.
+
+## Limits of this analysis
+
+- The features describe terrain shape and dryness. There is no mineralogy, substrate or ice layer.
+- Earth temperature is air temperature (WorldClim), compared with lunar surface values only as coarse bands.
+- Earth cells are about 5 km; the lunar cap is about 300 km across and the Jezero disc 150 km. A match is a regional statistical resemblance, not a one-to-one landform.
+- Many cells score within a few hundredths of each other, so the order among the top sites is weak evidence. The stability values show this.
+
+## Next steps
+
+1. Check each site in satellite imagery (NASA Worldview) and confirm the place names.
+2. Replace WorldClim with NASA surface-temperature and precipitation products (see the decisions log in [PLAN.md](../PLAN.md)).
+3. Add a composition layer (EMIT or ASTER minerals) for Jezero-style clay and carbonate analogs.
+4. Add a land-cover or ice mask so ice sheets and vegetation are separated in the data, not only flagged.

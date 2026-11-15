@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 15:10 by rahul (Horizon frontend built; decision logged)
+**Last updated:** 2026-11-15 15:19 by rahul (30 s demo video recorded: `docs/video/analog_earth_30s.mp4`)
 
 ---
 
@@ -178,6 +178,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 13:40 — rahul — **Merge `rahul/data-setup` into `main` via PR with a merge commit (no squash)** — branch already contains origin/main so it fast-forwards; keeps Ashok's authored commits.
 - 2026-11-15 14:26 — rahul — **Replace WorldClim with NASA products from the challenge's Earthdata resource** (plan drafted, not implemented; products proposed, pending rahul's confirmation): temperature from MODIS LST CMG 0.05° (`MOD11C3`/`MYD11C3` v061, LP DAAC, https://doi.org/10.5067/MODIS/MOD11C3.061), precipitation from GPM IMERG Final monthly 0.1° (`GPM_3IMERGM` V07, GES DISC, https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07), land mask from MODIS land cover CMG 0.05° (`MCD12C1` v061, https://doi.org/10.5067/MODIS/MCD12C1.061) — WorldClim is not a NASA product and is air temperature, while the Moon/Mars targets are surface temperatures. Supersedes the WorldClim choice once built; needs an Earthdata login.
 - 2026-11-15 15:10 — rahul — **Frontend look: "Horizon"** — full-bleed globe (MapLibre 5.6 globe + deck-free overlay, Esri imagery, Terrarium DEM terrain, Plotly compare), minimal text; chosen from three mocked directions (paper atlas, dark console, full-bleed). Keeps MapLibre + Plotly from the earlier decision; heat layer is a PNG overlay, not deck.gl. Imagery/DEM tiles are fetched live (Esri World Imagery, AWS Terrarium, both keyless) — record them as datasets.
+- 2026-11-15 15:16 — rahul — **Docs and repo cleanup**: README rewritten, `docs/README.md` index added, API/frontend/site-analysis/submission docs rewritten against the current engine; proof outputs (`docs/proof_*_report.md`, `docs/figures/proof_*.png`) are now git-ignored and regenerated on demand (commands in `docs/hardcode_audit.md`); stale architecture script/figure, old-UI screenshots and empty `notebooks/` removed from git — the docs described an older engine and half the tracked size was regenerable figures. Not committed yet; removal of Ashok's proof outputs awaits his OK.
 
 ## 8. Open questions
 
@@ -192,16 +193,8 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 
 ## 9. Results so far
 
-Full write-up: [docs/SITE_ANALYSIS.md](docs/SITE_ANALYSIS.md). Place names are approximate (identified from coordinates); temperatures are not scored.
+Per-site write-up with matches and mismatches: [docs/SITE_ANALYSIS.md](docs/SITE_ANALYSIS.md). (rahul's earlier table here used the superseded 0-100 engine and was removed 2026-11-15; the current results are in the table further down.)
 
-| Target | Site (approx.) | Lat, Lon | Score | Why |
-|---|---|---|---|---|
-| Jezero | Nazca / Ica desert, Peru | -14.93, -74.97 | 98 | relief 428 vs 427 m, slope 1.55° vs 1.52°, ~3 mm/yr |
-| Jezero | Eastern Desert, Egypt | 27.82, 33.08 | 98 | hyper-arid wadi terrain, matching relief/slope/Hurst |
-| Jezero | Lop Nur region, NW China | 40.47, 91.72 | 97 | roughness match 15.7 vs 15.7 m; wind-carved landscape (background knowledge) |
-| Lunar pole | Transantarctic region, Antarctica | -84.68, 171.98 | 98 (cold-trap) | terrain match plus coldest-month min -63 °C |
-| Lunar pole | Western Kunlun / Aksai Chin | 36.47, 80.53 | 98 | relief 1739 vs 1773 m; not cold (min -14 °C) |
-| Lunar pole | Southern Peruvian Andes | -16.03, -72.57 | 98 | terrain match, warm; close to Atacama |
 - [x] Which Mars site is the target — **Jezero crater** (18.3628°N 77.5945°E, 150 km disc) — confirmed 2026-11-15.
 - [x] Confirm the lunar target region — **poleward of 85°S**, a 151.713 km disc around the pole — confirmed 2026-11-15.
 - [x] How to weight features, and should users be able to change weights in the UI? — **Phase 3 defaults are four config presets** (`balanced`, `rover_mobility`, `cold_trap_ice`, `thermal_cycling`); user-facing weight controls remain a Phase 5 frontend item.

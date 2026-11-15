@@ -2,48 +2,48 @@
 
 ## One-line pitch
 
-We rank every place on Earth by how closely its measured terrain and dryness match a lunar south-pole or Jezero target, show the feature-by-feature match, and state plainly what Earth can never replicate.
+We score every land cell on Earth for how closely its measured terrain and dryness match the lunar south pole or Jezero crater, show the match feature by feature, and state plainly what Earth can never replicate.
 
 ## Demo video storyboard (about 1:45)
 
 | Time | Shot | Voice-over |
 |---|---|---|
-| 0:00-0:10 | Slow Moon/Mars images, then title card | "Space agencies test rovers and crews at a handful of Earth analog sites chosen by expert intuition. Did we miss better ones?" |
-| 0:10-0:25 | Architecture figure (`docs/figures/architecture.png`) | "We measure the same terrain features on Earth, the lunar south pole and Jezero, then place every target on Earth's own percentile scale." |
-| 0:25-0:45 | Map app, Moon target, balanced preset; heat layer appears | "Brighter means more similar. Each Earth cell is scored on relief, slope, roughness at three scales, scale-robust roughness and dryness." |
-| 0:45-1:05 | Click top Moon site; radar chart and table | "Click anywhere for a breakdown: what matches, how closely, and what does not." |
-| 1:05-1:20 | Switch to cold-trap preset; Antarctica lights up; toggle "hide famous sites" | "With the cold-trap priority, Antarctica leads. Hide the famous analog regions and the list changes." |
-| 1:20-1:35 | Switch to Jezero; click Nazca, then Lop Nur | "Peru's Nazca desert matches Jezero's relief to within a metre (428 vs 427), and a cold-winter basin in China matches its roughness." |
-| 1:35-1:45 | Pan to "Where the analogy breaks down" and "Earth cannot replicate" panels | "We say what Earth cannot reproduce: gravity, vacuum, thin atmosphere and radiation. Temperatures are not scored yet, and we flag that." |
+| 0:00-0:10 | Globe rotating slowly, title on screen | "Space agencies test rovers and crews at a handful of Earth analog sites chosen by expert judgement. Did we miss better ones?" |
+| 0:10-0:25 | Pipeline diagram from the README | "We measure the same terrain features on Earth, the lunar south pole and Jezero, over the same window sizes, and score all 8.7 million land cells." |
+| 0:25-0:45 | Moon target, balanced preset; amber glow and pins | "The glow marks the land most like the lunar south pole. The pins are the top sites, at least 50 km apart." |
+| 0:45-1:05 | Select the Peruvian Andes site; panel bars, then Compare | "Each site shows its match by group. Here relief and roughness match the Moon; dryness and temperature do not, and the panel says so." |
+| 1:05-1:20 | Switch to cold-trap / ice; Antarctica; toggle "Hide famous" | "Prioritise cold and Antarctica leads. Hide the famous analogs and the list changes." |
+| 1:20-1:35 | Switch to Mars; select the Eastern Desert site | "For Jezero, Egypt's Eastern Desert matches slope and roughness at six millimetres of rain a year. Atacama, a known Mars analog, scores in the top 7% without being tuned for." |
+| 1:35-1:45 | Panel line "Not replicable on Earth" | "No site matches everything. Gravity, vacuum, thin atmosphere and radiation cannot be reproduced on Earth, and Mars temperature is not scored at all." |
 
-Recording tips: browser at 1600x900 (matches `docs/figures/frontend_*.png`), run `make serve` first, allow ~10 s for the basemap to load, zoom to a site before clicking so markers are visible.
+Recording tips: browser at 1600 × 900, run `make serve` first, wait about 10 seconds for imagery to load, and interact with the globe once to stop the idle rotation before selecting a site.
 
 ## Slide outline (8 slides)
 
 1. **Title and one-line pitch.**
-2. **Problem:** analog sites are chosen by intuition; no site matches everything; judges reward data-backed, overlooked, honest answers.
-3. **Approach:** feature vector per cell; same estimators on Earth, Moon and Mars; Earth-percentile normalization (why: within-body percentiles would force a median lunar value to match a median Earth value). Architecture figure.
-4. **Data:** LOLA, MOLA, ETOPO 2022, WorldClim 2.1, PSR table, with citations (README credits table).
-5. **Validation:** Atacama, Dry Valleys, Devon Island, Death Valley, Iceland pass 9 of 9 expected-feature checks; Devon Island ranks only 72nd percentile for the Moon, reported rather than hidden.
-6. **Results:** top sites table ([SITE_ANALYSIS](SITE_ANALYSIS.md)); map screenshots `docs/figures/frontend_moon.png`, `frontend_mars.png`.
-7. **Where it breaks down:** temperatures unscored; air vs surface temperature; percentile compression; gravity, vacuum, atmosphere, radiation.
-8. **Impact and next steps:** instrument tests, crew training, prospecting rehearsal; add site-specific temperatures, mineral maps (EMIT/ASTER), field verification.
+2. **Problem.** Analog sites are chosen by judgement; no single site matches everything; the challenge rewards data-backed, overlooked and honest answers.
+3. **Approach.** One feature registry for three bodies; kilometre-sized windows so different data resolutions stay comparable; per-feature evidence in real units and by rank; preset weights. Pipeline diagram.
+4. **Data.** LOLA, MOLA, ETOPO 2022, WorldClim 2.1, the lunar PSR table, with citations (README credits table).
+5. **Validation.** Known analogs scored as found: Atacama 0.85 and Rio Tinto 0.82 for Jezero; Licancabur 0.79 and Dry Valleys 0.61 for the Moon; the Amazon negative control scores low for both. Devon Island scores only 0.22 for the Moon, reported and explained.
+6. **Results.** Site table from [SITE_ANALYSIS.md](SITE_ANALYSIS.md); app screenshot `figures/app_globe.png`.
+7. **Where it breaks down.** Air versus surface temperature; no Mars temperature; no composition or ice layer; terrain-only presets can pick rainforest; gravity, vacuum, atmosphere, radiation.
+8. **Impact and next steps.** Instrument tests, crew training, prospecting rehearsal; NASA surface temperature and precipitation, mineral maps (EMIT, ASTER), field verification.
 
 ## Judging checklist
 
 | Judge criterion | Where we address it |
 |---|---|
-| Data-backed similarity, not "looks like" | per-feature values, percentiles and sub-scores in the site panel and `docs/target_profiles.json` |
-| Whole-planet systematic search | 0.05° global grid, 8.7 M land cells |
-| Not just famous sites | "hide famous sites" toggle and `top_without_famous_sites` lists |
-| Scale | features measured in 5-32 km windows; targets 50-300 km regions |
-| Honesty about Earth's limits | panels in the app, `earth_cannot_replicate` in every API response, README limits |
-| Processes, not just places | Lop Nur wind-erosion story (background knowledge, flagged as such) |
-| Visual quality | map app screenshots in `docs/figures/` |
+| Data-backed similarity, not "looks like" | Per-feature Earth and target values, real-unit gaps and rank similarity in the API and reports |
+| Whole-planet systematic search | 0.05° global grid, 8.7 million land cells |
+| Not just famous sites | "Hide famous" toggle; `sites_excluding_famous` in every ranking |
+| Scale | Features measured in 5 to 32 km windows; targets are a 300 km polar cap and a 150 km disc |
+| Honesty about Earth's limits | Panel line in the app, `earth_cannot_replicate` and `not_scored` in API responses, README limits, warnings in the site analysis |
+| Visual quality | Full-screen globe with satellite imagery, 3D terrain and a comparison chart |
 
-## Before submitting (checklist)
+## Before submitting
 
-- [ ] Add site-specific temperature values (lunar south pole, Jezero) or keep the "not scored" statements in the video and slides.
-- [ ] Verify the place names of the six candidates on a map and in Worldview.
-- [ ] Record the video from `make serve`; check it runs from a fresh clone (README steps).
+- [ ] Verify the place names of the candidate sites on a map and in NASA Worldview.
+- [ ] Record the video from `make serve`.
+- [ ] Check the project runs from a fresh clone using the README steps.
 - [ ] Confirm team names and credits.
+- [ ] Decide whether the WorldClim replacement lands before submission; if not, keep the temperature limits in the video and slides.
