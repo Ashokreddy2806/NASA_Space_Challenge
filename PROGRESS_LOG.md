@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 3 complete — waiting for approval of Phase 4
+**Now working on:** Phase 4 complete — waiting for approval of Phase 5
 
 <!-- entries -->
+
+#### 2026-11-15 10:30 — Phase 4 backend API
+- **Did:** FastAPI app with targets, presets, top sites (JSON/GeoJSON, with/without famous sites), per-site feature breakdown (match/partial/mismatch, not-scored, Earth-cannot-replicate), score PNG with preset or custom weights. Latency 2–270 ms. 53 tests pass.
+- **Files:** `backend/api/main.py`, `backend/api/data.py`, `docs/API.md`, `tests/test_phase4.py`, `requirements.txt`
+- **Next:** Phase 5 frontend (awaiting approval).
+- **Blockers:** none for the API; temperature scoring still needs site-specific values.
 
 #### 2026-11-15 10:05 — Phase 3 similarity engine
 - **Did:** Percentile-distance engine with 4 presets, score maps for both targets, top-10 sites with and without famous sites, validation vs Atacama / Dry Valleys / Devon / Death Valley / Iceland (all 9 expected-feature checks pass). Top Moon sites: Andes–Atacama, Kunlun (36N 81E), East Antarctica; Mars: Andes, Egypt/Sudan desert. 46 tests pass.
