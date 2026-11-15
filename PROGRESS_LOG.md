@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 2 complete — waiting for approval of Phase 3
+**Now working on:** Phase 3 complete — waiting for approval of Phase 4
 
 <!-- entries -->
+
+#### 2026-11-15 10:05 — Phase 3 similarity engine
+- **Did:** Percentile-distance engine with 4 presets, score maps for both targets, top-10 sites with and without famous sites, validation vs Atacama / Dry Valleys / Devon / Death Valley / Iceland (all 9 expected-feature checks pass). Top Moon sites: Andes–Atacama, Kunlun (36N 81E), East Antarctica; Mars: Andes, Egypt/Sudan desert. 46 tests pass.
+- **Files:** `backend/engine/similarity.py`, `backend/engine/run_scoring.py`, `tests/test_phase3.py`, `docs/top_sites.json`, `docs/validation.md`, `docs/figures/score_*.png`; scores in `data/processed/similarity_*.nc` (git-ignored)
+- **Next:** Phase 4 API (awaiting approval).
+- **Blockers:** thermal_cycling preset and all temperature scoring need site-specific temperatures.
 
 #### 2026-11-15 09:40 — Phase 1 merged, Phase 2 target profiles
 - **Did:** Merged Ashok's Phase 1 from main, rebuilt the Earth grid locally (matches his report). Measured the lunar south pole (<85°S) and Jezero with the Earth estimators on a 2 km grid; placed each on Earth's area-weighted percentile scale (Moon relief 99th pct, slope 99th; Jezero relief 83rd). Moon PSR cover 9.8% of the disk. 39 tests pass.

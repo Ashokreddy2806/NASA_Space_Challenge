@@ -1,0 +1,2625 @@
+{
+  "generated": "2026-11-15T08:48+00:00",
+  "limits": "Earth cannot reproduce reduced gravity, vacuum or thin atmosphere, or the radiation environment.",
+  "method": "Earth-percentile weighted L1 distance; see docs/FEATURES.md",
+  "targets": {
+    "moon_south_pole": {
+      "label": "Lunar south pole",
+      "target_percentiles": {
+        "relief_20km_m": 99.4,
+        "slope_20km_deg": 98.5,
+        "roughness_5km_m": 91.6,
+        "roughness_10km_m": 95.1,
+        "roughness_20km_m": 98.6,
+        "hurst_2_32km": 72.4,
+        "precip_annual_mm": 0.0,
+        "precip_driest_month_mm": 0.0,
+        "ice_proxy": 0.0
+      },
+      "dropped_features": {
+        "temp_mean_c": "missing_site_specific_literature_value",
+        "temp_diurnal_range_c": "missing_site_specific_literature_value",
+        "temp_max_warmest_c": "missing_site_specific_literature_value",
+        "temp_min_coldest_c": "missing_site_specific_literature_value",
+        "temp_annual_range_c": "missing_site_specific_literature_value"
+      },
+      "feature_weight_factors": {
+        "relief_20km_m": 1.0,
+        "slope_20km_deg": 1.0,
+        "roughness_5km_m": 1.0,
+        "roughness_10km_m": 1.0,
+        "roughness_20km_m": 1.0,
+        "hurst_2_32km": 1.0,
+        "precip_annual_mm": 1.0,
+        "precip_driest_month_mm": 1.0,
+        "ice_proxy": 1.0
+      },
+      "presets": {
+        "balanced": {
+          "features_used": [
+            "hurst_2_32km",
+            "precip_annual_mm",
+            "precip_driest_month_mm",
+            "relief_20km_m",
+            "roughness_10km_m",
+            "roughness_20km_m",
+            "roughness_5km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -24.825000000000017,
+              "lon": -70.42499999999998,
+              "score": 98.22635650634766,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.6,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.4,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 97.9,
+                "precip_annual_mm": 99.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 43.7
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -16.025000000000006,
+              "lon": -72.57499999999999,
+              "score": 97.89351654052734,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 99.3,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.5,
+                "precip_annual_mm": 95.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 27.9
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 36.474999999999994,
+              "lon": 80.525,
+              "score": 97.74939727783203,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.2,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 94.8,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 65.0
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -84.62500000000003,
+              "lon": 173.17500000000004,
+              "score": 97.6398696899414,
+              "sub_scores": {
+                "relief_20km_m": 99.3,
+                "slope_20km_deg": 99.0,
+                "roughness_5km_m": 99.9,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 97.1,
+                "precip_annual_mm": 96.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 98.2
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -13.025000000000006,
+              "lon": -76.17499999999998,
+              "score": 97.49649810791016,
+              "sub_scores": {
+                "relief_20km_m": 98.9,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.2,
+                "roughness_10km_m": 97.7,
+                "roughness_20km_m": 99.1,
+                "hurst_2_32km": 98.0,
+                "precip_annual_mm": 97.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 25.4
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -18.375000000000014,
+              "lon": -69.82499999999999,
+              "score": 97.4359359741211,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 97.6,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 99.2,
+                "hurst_2_32km": 97.6,
+                "precip_annual_mm": 94.1,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 38.3
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 38.87499999999999,
+              "lon": 88.57500000000002,
+              "score": 97.3815689086914,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 98.3,
+                "precip_annual_mm": 91.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 67.8
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -21.875000000000014,
+              "lon": -69.17499999999998,
+              "score": 97.20115661621094,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 98.5,
+                "roughness_5km_m": 98.6,
+                "roughness_10km_m": 97.6,
+                "roughness_20km_m": 97.9,
+                "hurst_2_32km": 95.0,
+                "precip_annual_mm": 97.8,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 51.0
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 38.52499999999999,
+              "lon": 76.12500000000003,
+              "score": 97.1391830444336,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.2,
+                "roughness_5km_m": 98.5,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 98.2,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 91.1,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 65.5
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 36.974999999999994,
+              "lon": 84.37500000000003,
+              "score": 96.98670196533203,
+              "sub_scores": {
+                "relief_20km_m": 99.4,
+                "slope_20km_deg": 98.5,
+                "roughness_5km_m": 98.7,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 97.9,
+                "hurst_2_32km": 99.4,
+                "precip_annual_mm": 91.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 72.4
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -16.025000000000006,
+              "lon": -72.57499999999999,
+              "score": 97.89351654052734,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 99.3,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.5,
+                "precip_annual_mm": 95.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 27.9
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 36.474999999999994,
+              "lon": 80.525,
+              "score": 97.74939727783203,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.2,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 94.8,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 65.0
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -84.62500000000003,
+              "lon": 173.17500000000004,
+              "score": 97.6398696899414,
+              "sub_scores": {
+                "relief_20km_m": 99.3,
+                "slope_20km_deg": 99.0,
+                "roughness_5km_m": 99.9,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 97.1,
+                "precip_annual_mm": 96.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 98.2
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -13.025000000000006,
+              "lon": -76.17499999999998,
+              "score": 97.49649810791016,
+              "sub_scores": {
+                "relief_20km_m": 98.9,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.2,
+                "roughness_10km_m": 97.7,
+                "roughness_20km_m": 99.1,
+                "hurst_2_32km": 98.0,
+                "precip_annual_mm": 97.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 25.4
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -18.375000000000014,
+              "lon": -69.82499999999999,
+              "score": 97.4359359741211,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 97.6,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 99.2,
+                "hurst_2_32km": 97.6,
+                "precip_annual_mm": 94.1,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 38.3
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 38.87499999999999,
+              "lon": 88.57500000000002,
+              "score": 97.3815689086914,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 98.3,
+                "precip_annual_mm": 91.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 67.8
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 38.52499999999999,
+              "lon": 76.12500000000003,
+              "score": 97.1391830444336,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.2,
+                "roughness_5km_m": 98.5,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 98.2,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 91.1,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 65.5
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 36.974999999999994,
+              "lon": 84.37500000000003,
+              "score": 96.98670196533203,
+              "sub_scores": {
+                "relief_20km_m": 99.4,
+                "slope_20km_deg": 98.5,
+                "roughness_5km_m": 98.7,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 97.9,
+                "hurst_2_32km": 99.4,
+                "precip_annual_mm": 91.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 72.4
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -80.62500000000003,
+              "lon": 158.07500000000002,
+              "score": 96.9699478149414,
+              "sub_scores": {
+                "relief_20km_m": 98.6,
+                "slope_20km_deg": 97.7,
+                "roughness_5km_m": 100.0,
+                "roughness_10km_m": 98.7,
+                "roughness_20km_m": 99.1,
+                "hurst_2_32km": 99.7,
+                "precip_annual_mm": 92.8,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 93.4
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -8.375000000000014,
+              "lon": -78.57499999999999,
+              "score": 96.65483093261719,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.0,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 98.0,
+                "hurst_2_32km": 97.2,
+                "precip_annual_mm": 86.7,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 23.4
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            }
+          ]
+        },
+        "rover_mobility": {
+          "features_used": [
+            "hurst_2_32km",
+            "relief_20km_m",
+            "roughness_10km_m",
+            "roughness_20km_m",
+            "roughness_5km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -12.575000000000017,
+              "lon": -73.87499999999999,
+              "score": 99.75550079345703,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.3,
+                "roughness_10km_m": 99.4,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.7,
+                "precip_annual_mm": 11.1,
+                "precip_driest_month_mm": 13.9,
+                "ice_proxy": 17.3
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -2.4250000000000114,
+              "lon": -78.92499999999998,
+              "score": 99.71782684326172,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.1,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.4,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 30.9,
+                "precip_driest_month_mm": 21.6,
+                "ice_proxy": 48.8
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 1.0749999999999886,
+              "lon": 34.42500000000001,
+              "score": 99.70955657958984,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.6,
+                "roughness_10km_m": 99.3,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 100.0,
+                "precip_annual_mm": 9.2,
+                "precip_driest_month_mm": 11.2,
+                "ice_proxy": 27.9
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -6.125000000000014,
+              "lon": 147.42500000000004,
+              "score": 99.69197845458984,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.8,
+                "roughness_10km_m": 100.0,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.9,
+                "precip_annual_mm": 2.4,
+                "precip_driest_month_mm": 2.1,
+                "ice_proxy": 23.1
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -16.075000000000017,
+              "lon": -72.27499999999999,
+              "score": 99.6884536743164,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.1,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 92.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 33.8
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 10.074999999999989,
+              "lon": -83.82499999999999,
+              "score": 99.68156433105469,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 98.2,
+                "precip_annual_mm": 0.4,
+                "precip_driest_month_mm": 10.6,
+                "ice_proxy": 21.1
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -13.875000000000014,
+              "lon": -70.42499999999998,
+              "score": 99.67212677001953,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 29.4,
+                "precip_driest_month_mm": 54.6,
+                "ice_proxy": 61.1
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 6.5249999999999915,
+              "lon": -72.37499999999999,
+              "score": 99.67188262939453,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.2,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 28.2,
+                "precip_driest_month_mm": 64.8,
+                "ice_proxy": 51.2
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "ice_proxy",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": 43.62499999999999,
+              "lon": 89.12500000000003,
+              "score": 99.64332580566406,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 98.1,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 98.9,
+                "precip_annual_mm": 66.7,
+                "precip_driest_month_mm": 63.6,
+                "ice_proxy": 74.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 3.2749999999999915,
+              "lon": -76.07499999999999,
+              "score": 99.62968444824219,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.9,
+                "roughness_10km_m": 99.2,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 14.8,
+                "precip_driest_month_mm": 6.7,
+                "ice_proxy": 46.5
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -12.575000000000017,
+              "lon": -73.87499999999999,
+              "score": 99.75550079345703,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.3,
+                "roughness_10km_m": 99.4,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.7,
+                "precip_annual_mm": 11.1,
+                "precip_driest_month_mm": 13.9,
+                "ice_proxy": 17.3
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -2.4250000000000114,
+              "lon": -78.92499999999998,
+              "score": 99.71782684326172,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.1,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.4,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 30.9,
+                "precip_driest_month_mm": 21.6,
+                "ice_proxy": 48.8
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 1.0749999999999886,
+              "lon": 34.42500000000001,
+              "score": 99.70955657958984,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.6,
+                "roughness_10km_m": 99.3,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 100.0,
+                "precip_annual_mm": 9.2,
+                "precip_driest_month_mm": 11.2,
+                "ice_proxy": 27.9
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -6.125000000000014,
+              "lon": 147.42500000000004,
+              "score": 99.69197845458984,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.8,
+                "roughness_10km_m": 100.0,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.9,
+                "precip_annual_mm": 2.4,
+                "precip_driest_month_mm": 2.1,
+                "ice_proxy": 23.1
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -16.075000000000017,
+              "lon": -72.27499999999999,
+              "score": 99.6884536743164,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.1,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 92.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 33.8
+              },
+              "weakest_matches": [
+                "ice_proxy",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 10.074999999999989,
+              "lon": -83.82499999999999,
+              "score": 99.68156433105469,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 98.2,
+                "precip_annual_mm": 0.4,
+                "precip_driest_month_mm": 10.6,
+                "ice_proxy": 21.1
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": -13.875000000000014,
+              "lon": -70.42499999999998,
+              "score": 99.67212677001953,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 99.5,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 29.4,
+                "precip_driest_month_mm": 54.6,
+                "ice_proxy": 61.1
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 6.5249999999999915,
+              "lon": -72.37499999999999,
+              "score": 99.67188262939453,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.2,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 28.2,
+                "precip_driest_month_mm": 64.8,
+                "ice_proxy": 51.2
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "ice_proxy",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": 43.62499999999999,
+              "lon": 89.12500000000003,
+              "score": 99.64332580566406,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 98.1,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 98.9,
+                "precip_annual_mm": 66.7,
+                "precip_driest_month_mm": 63.6,
+                "ice_proxy": 74.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            },
+            {
+              "lat": 3.2749999999999915,
+              "lon": -76.07499999999999,
+              "score": 99.62968444824219,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.9,
+                "roughness_10km_m": 99.2,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 14.8,
+                "precip_driest_month_mm": 6.7,
+                "ice_proxy": 46.5
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "ice_proxy"
+              ]
+            }
+          ]
+        },
+        "cold_trap_ice": {
+          "features_used": [
+            "ice_proxy",
+            "precip_annual_mm",
+            "precip_driest_month_mm",
+            "relief_20km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -84.67500000000001,
+              "lon": 171.97500000000005,
+              "score": 97.76432037353516,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 98.7,
+                "roughness_5km_m": 97.1,
+                "roughness_10km_m": 98.7,
+                "roughness_20km_m": 98.8,
+                "hurst_2_32km": 83.1,
+                "precip_annual_mm": 96.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 99.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -86.275,
+              "lon": -157.875,
+              "score": 97.37300872802734,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.0,
+                "roughness_5km_m": 95.6,
+                "roughness_10km_m": 96.3,
+                "roughness_20km_m": 98.9,
+                "hurst_2_32km": 59.8,
+                "precip_annual_mm": 89.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 99.5
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -81.42500000000001,
+              "lon": 158.17500000000004,
+              "score": 96.46127319335938,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 91.8,
+                "roughness_10km_m": 95.6,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 34.7,
+                "precip_annual_mm": 94.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 97.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -84.87500000000003,
+              "lon": -64.725,
+              "score": 95.69564819335938,
+              "sub_scores": {
+                "relief_20km_m": 95.9,
+                "slope_20km_deg": 95.7,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 97.1,
+                "hurst_2_32km": 85.1,
+                "precip_annual_mm": 98.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 96.3
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "slope_20km_deg"
+              ]
+            },
+            {
+              "lat": -78.07500000000002,
+              "lon": 162.62500000000003,
+              "score": 95.68431091308594,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 92.1,
+                "roughness_10km_m": 96.0,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 76.7,
+                "precip_annual_mm": 91.3,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 96.2
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -78.525,
+              "lon": -85.67499999999998,
+              "score": 95.12740325927734,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 98.6,
+                "roughness_5km_m": 91.7,
+                "roughness_10km_m": 95.1,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 49.2,
+                "precip_annual_mm": 73.0,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 98.5
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -73.92500000000001,
+              "lon": 162.47500000000005,
+              "score": 94.94095611572266,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 95.4,
+                "roughness_10km_m": 94.3,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 65.6,
+                "precip_annual_mm": 89.7,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 95.2
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -72.17500000000001,
+              "lon": 23.225000000000023,
+              "score": 93.85111236572266,
+              "sub_scores": {
+                "relief_20km_m": 95.9,
+                "slope_20km_deg": 98.4,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 97.4,
+                "roughness_20km_m": 97.9,
+                "hurst_2_32km": 62.8,
+                "precip_annual_mm": 84.9,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 95.1
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -73.47500000000002,
+              "lon": 62.07500000000002,
+              "score": 93.24095916748047,
+              "sub_scores": {
+                "relief_20km_m": 93.5,
+                "slope_20km_deg": 93.2,
+                "roughness_5km_m": 95.9,
+                "roughness_10km_m": 98.2,
+                "roughness_20km_m": 93.4,
+                "hurst_2_32km": 33.1,
+                "precip_annual_mm": 80.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 96.1
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -71.775,
+              "lon": 168.775,
+              "score": 93.19095611572266,
+              "sub_scores": {
+                "relief_20km_m": 98.7,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 92.9,
+                "roughness_10km_m": 96.5,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 69.0,
+                "precip_annual_mm": 83.3,
+                "precip_driest_month_mm": 77.8,
+                "ice_proxy": 95.4
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -84.67500000000001,
+              "lon": 171.97500000000005,
+              "score": 97.76432037353516,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 98.7,
+                "roughness_5km_m": 97.1,
+                "roughness_10km_m": 98.7,
+                "roughness_20km_m": 98.8,
+                "hurst_2_32km": 83.1,
+                "precip_annual_mm": 96.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 99.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -86.275,
+              "lon": -157.875,
+              "score": 97.37300872802734,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.0,
+                "roughness_5km_m": 95.6,
+                "roughness_10km_m": 96.3,
+                "roughness_20km_m": 98.9,
+                "hurst_2_32km": 59.8,
+                "precip_annual_mm": 89.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 99.5
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -81.42500000000001,
+              "lon": 158.17500000000004,
+              "score": 96.46127319335938,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 91.8,
+                "roughness_10km_m": 95.6,
+                "roughness_20km_m": 99.9,
+                "hurst_2_32km": 34.7,
+                "precip_annual_mm": 94.4,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 97.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -84.87500000000003,
+              "lon": -64.725,
+              "score": 95.69564819335938,
+              "sub_scores": {
+                "relief_20km_m": 95.9,
+                "slope_20km_deg": 95.7,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 99.5,
+                "roughness_20km_m": 97.1,
+                "hurst_2_32km": 85.1,
+                "precip_annual_mm": 98.6,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 96.3
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "slope_20km_deg"
+              ]
+            },
+            {
+              "lat": -78.525,
+              "lon": -85.67499999999998,
+              "score": 95.12740325927734,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 98.6,
+                "roughness_5km_m": 91.7,
+                "roughness_10km_m": 95.1,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 49.2,
+                "precip_annual_mm": 73.0,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 98.5
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -73.92500000000001,
+              "lon": 162.47500000000005,
+              "score": 94.94095611572266,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 95.4,
+                "roughness_10km_m": 94.3,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 65.6,
+                "precip_annual_mm": 89.7,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 95.2
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -72.17500000000001,
+              "lon": 23.225000000000023,
+              "score": 93.85111236572266,
+              "sub_scores": {
+                "relief_20km_m": 95.9,
+                "slope_20km_deg": 98.4,
+                "roughness_5km_m": 98.3,
+                "roughness_10km_m": 97.4,
+                "roughness_20km_m": 97.9,
+                "hurst_2_32km": 62.8,
+                "precip_annual_mm": 84.9,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 95.1
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -73.47500000000002,
+              "lon": 62.07500000000002,
+              "score": 93.24095916748047,
+              "sub_scores": {
+                "relief_20km_m": 93.5,
+                "slope_20km_deg": 93.2,
+                "roughness_5km_m": 95.9,
+                "roughness_10km_m": 98.2,
+                "roughness_20km_m": 93.4,
+                "hurst_2_32km": 33.1,
+                "precip_annual_mm": 80.2,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 96.1
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_annual_mm",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -71.775,
+              "lon": 168.775,
+              "score": 93.19095611572266,
+              "sub_scores": {
+                "relief_20km_m": 98.7,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 92.9,
+                "roughness_10km_m": 96.5,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 69.0,
+                "precip_annual_mm": 83.3,
+                "precip_driest_month_mm": 77.8,
+                "ice_proxy": 95.4
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -80.525,
+              "lon": -27.724999999999994,
+              "score": 93.15892791748047,
+              "sub_scores": {
+                "relief_20km_m": 93.2,
+                "slope_20km_deg": 90.4,
+                "roughness_5km_m": 81.5,
+                "roughness_10km_m": 87.5,
+                "roughness_20km_m": 91.5,
+                "hurst_2_32km": 88.6,
+                "precip_annual_mm": 91.9,
+                "precip_driest_month_mm": 89.0,
+                "ice_proxy": 94.5
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "roughness_10km_m",
+                "hurst_2_32km"
+              ]
+            }
+          ]
+        },
+        "thermal_cycling": {
+          "status": "unavailable",
+          "reason": "no target value for any feature of this preset"
+        }
+      }
+    },
+    "mars_jezero": {
+      "label": "Jezero Crater (Mars)",
+      "target_percentiles": {
+        "relief_20km_m": 82.6,
+        "slope_20km_deg": 77.8,
+        "roughness_5km_m": 71.1,
+        "roughness_10km_m": 73.7,
+        "roughness_20km_m": 76.2,
+        "hurst_2_32km": 65.7,
+        "precip_annual_mm": 0.0,
+        "precip_driest_month_mm": 0.0
+      },
+      "dropped_features": {
+        "temp_mean_c": "missing_site_specific_literature_value",
+        "temp_diurnal_range_c": "missing_site_specific_literature_value",
+        "temp_max_warmest_c": "missing_site_specific_literature_value",
+        "temp_min_coldest_c": "missing_site_specific_literature_value",
+        "temp_annual_range_c": "missing_site_specific_literature_value",
+        "ice_proxy": "not_in_mvp"
+      },
+      "feature_weight_factors": {
+        "relief_20km_m": 1.0,
+        "slope_20km_deg": 1.0,
+        "roughness_5km_m": 0.0,
+        "roughness_10km_m": 1.0,
+        "roughness_20km_m": 1.0,
+        "hurst_2_32km": 0.5,
+        "precip_annual_mm": 1.0,
+        "precip_driest_month_mm": 1.0
+      },
+      "presets": {
+        "balanced": {
+          "features_used": [
+            "hurst_2_32km",
+            "precip_annual_mm",
+            "precip_driest_month_mm",
+            "relief_20km_m",
+            "roughness_10km_m",
+            "roughness_20km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -14.925000000000011,
+              "lon": -74.975,
+              "score": 98.27310943603516,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 94.1,
+                "roughness_10km_m": 99.4,
+                "roughness_20km_m": 99.4,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 99.4,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 27.82499999999999,
+              "lon": 33.07500000000002,
+              "score": 97.93214416503906,
+              "sub_scores": {
+                "relief_20km_m": 99.0,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 94.7,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 98.3,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 98.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": -22.525000000000006,
+              "lon": -69.27499999999999,
+              "score": 97.8232421875,
+              "sub_scores": {
+                "relief_20km_m": 98.8,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 99.1,
+                "roughness_10km_m": 97.6,
+                "roughness_20km_m": 98.8,
+                "hurst_2_32km": 99.7,
+                "precip_annual_mm": 99.1,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_10km_m",
+                "relief_20km_m"
+              ]
+            },
+            {
+              "lat": 24.07499999999999,
+              "lon": 35.525000000000006,
+              "score": 97.74617004394531,
+              "sub_scores": {
+                "relief_20km_m": 98.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.6,
+                "roughness_10km_m": 99.0,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 97.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -84.87500000000003,
+              "lon": -66.77499999999999,
+              "score": 97.66244506835938,
+              "sub_scores": {
+                "relief_20km_m": 99.1,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 99.7,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 98.5,
+                "precip_annual_mm": 97.3,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -25.22500000000001,
+              "lon": -69.82499999999999,
+              "score": 97.61564636230469,
+              "sub_scores": {
+                "relief_20km_m": 99.2,
+                "slope_20km_deg": 99.4,
+                "roughness_5km_m": 92.6,
+                "roughness_10km_m": 95.8,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 98.8,
+                "precip_annual_mm": 98.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": 22.174999999999997,
+              "lon": 19.17500000000001,
+              "score": 97.61012268066406,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 94.5,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 99.8,
+                "hurst_2_32km": 99.6,
+                "precip_annual_mm": 95.0,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -82.57500000000002,
+              "lon": -50.67499999999998,
+              "score": 97.4483642578125,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 73.0,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 93.6,
+                "hurst_2_32km": 96.3,
+                "precip_annual_mm": 98.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": 40.474999999999994,
+              "lon": 91.725,
+              "score": 97.35746002197266,
+              "sub_scores": {
+                "relief_20km_m": 98.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 100.0,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.0,
+                "hurst_2_32km": 95.6,
+                "precip_annual_mm": 96.6,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "hurst_2_32km",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -16.575000000000017,
+              "lon": -72.17499999999998,
+              "score": 97.34632873535156,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 98.7,
+                "roughness_5km_m": 99.2,
+                "roughness_10km_m": 98.4,
+                "roughness_20km_m": 99.2,
+                "hurst_2_32km": 92.4,
+                "precip_annual_mm": 99.3,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "hurst_2_32km",
+                "roughness_10km_m"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -14.925000000000011,
+              "lon": -74.975,
+              "score": 98.27310943603516,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 94.1,
+                "roughness_10km_m": 99.4,
+                "roughness_20km_m": 99.4,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 99.4,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 27.82499999999999,
+              "lon": 33.07500000000002,
+              "score": 97.93214416503906,
+              "sub_scores": {
+                "relief_20km_m": 99.0,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 94.7,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 98.3,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 98.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": 24.07499999999999,
+              "lon": 35.525000000000006,
+              "score": 97.74617004394531,
+              "sub_scores": {
+                "relief_20km_m": 98.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.6,
+                "roughness_10km_m": 99.0,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.8,
+                "precip_annual_mm": 97.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -84.87500000000003,
+              "lon": -66.77499999999999,
+              "score": 97.66244506835938,
+              "sub_scores": {
+                "relief_20km_m": 99.1,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 99.7,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 98.5,
+                "precip_annual_mm": 97.3,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -82.57500000000002,
+              "lon": -50.67499999999998,
+              "score": 97.4483642578125,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 73.0,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 93.6,
+                "hurst_2_32km": 96.3,
+                "precip_annual_mm": 98.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": 40.474999999999994,
+              "lon": 91.725,
+              "score": 97.35746002197266,
+              "sub_scores": {
+                "relief_20km_m": 98.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 100.0,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.0,
+                "hurst_2_32km": 95.6,
+                "precip_annual_mm": 96.6,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "hurst_2_32km",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": -16.575000000000017,
+              "lon": -72.17499999999998,
+              "score": 97.34632873535156,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 98.7,
+                "roughness_5km_m": 99.2,
+                "roughness_10km_m": 98.4,
+                "roughness_20km_m": 99.2,
+                "hurst_2_32km": 92.4,
+                "precip_annual_mm": 99.3,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "hurst_2_32km",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": -82.775,
+              "lon": 155.775,
+              "score": 97.2909164428711,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 99.6,
+                "roughness_5km_m": 91.7,
+                "roughness_10km_m": 95.1,
+                "roughness_20km_m": 98.3,
+                "hurst_2_32km": 98.5,
+                "precip_annual_mm": 96.2,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_5km_m",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": 37.67499999999999,
+              "lon": 77.62500000000003,
+              "score": 97.26787567138672,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 98.3,
+                "roughness_5km_m": 98.2,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 98.1,
+                "precip_annual_mm": 95.4,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -8.275000000000006,
+              "lon": -78.975,
+              "score": 97.19207000732422,
+              "sub_scores": {
+                "relief_20km_m": 97.7,
+                "slope_20km_deg": 99.2,
+                "roughness_5km_m": 97.2,
+                "roughness_10km_m": 96.6,
+                "roughness_20km_m": 99.6,
+                "hurst_2_32km": 99.3,
+                "precip_annual_mm": 98.1,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_10km_m",
+                "roughness_5km_m"
+              ]
+            }
+          ]
+        },
+        "rover_mobility": {
+          "features_used": [
+            "hurst_2_32km",
+            "relief_20km_m",
+            "roughness_10km_m",
+            "roughness_20km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -73.42500000000001,
+              "lon": 161.025,
+              "score": 99.7947006225586,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 98.2,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 86.0,
+                "precip_driest_month_mm": 68.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 59.12499999999999,
+              "lon": -113.975,
+              "score": 99.7834243774414,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 96.4,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 99.3,
+                "precip_annual_mm": 58.2,
+                "precip_driest_month_mm": 33.2
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -22.625000000000014,
+              "lon": 16.025000000000006,
+              "score": 99.78263854980469,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 91.5,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 76.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -34.07500000000002,
+              "lon": 149.72500000000005,
+              "score": 99.78006744384766,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 95.1,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 98.5,
+                "precip_annual_mm": 30.8,
+                "precip_driest_month_mm": 8.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -68.12500000000003,
+              "lon": 49.62500000000003,
+              "score": 99.77569580078125,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 98.0,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 99.1,
+                "precip_annual_mm": 68.1,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 40.27499999999999,
+              "lon": 117.92500000000004,
+              "score": 99.76750946044922,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 91.0,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 97.8,
+                "precip_annual_mm": 45.8,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 81.475,
+              "lon": -14.924999999999983,
+              "score": 99.7280502319336,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.4,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 97.7,
+                "precip_annual_mm": 73.8,
+                "precip_driest_month_mm": 45.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 67.225,
+              "lon": -49.875,
+              "score": 99.71806335449219,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 96.6,
+                "roughness_10km_m": 99.3,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.1,
+                "precip_annual_mm": 74.6,
+                "precip_driest_month_mm": 49.7
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -42.32500000000002,
+              "lon": -68.67499999999998,
+              "score": 99.69053649902344,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.6,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 77.7,
+                "precip_driest_month_mm": 45.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 22.174999999999997,
+              "lon": 81.17500000000004,
+              "score": 99.68843841552734,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.3,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.0,
+                "hurst_2_32km": 99.5,
+                "precip_annual_mm": 21.4,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -73.42500000000001,
+              "lon": 161.025,
+              "score": 99.7947006225586,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 98.2,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 86.0,
+                "precip_driest_month_mm": 68.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 59.12499999999999,
+              "lon": -113.975,
+              "score": 99.7834243774414,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 96.4,
+                "roughness_10km_m": 99.7,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 99.3,
+                "precip_annual_mm": 58.2,
+                "precip_driest_month_mm": 33.2
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -22.625000000000014,
+              "lon": 16.025000000000006,
+              "score": 99.78263854980469,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 91.5,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 76.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -34.07500000000002,
+              "lon": 149.72500000000005,
+              "score": 99.78006744384766,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 95.1,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 98.5,
+                "precip_annual_mm": 30.8,
+                "precip_driest_month_mm": 8.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -68.12500000000003,
+              "lon": 49.62500000000003,
+              "score": 99.77569580078125,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 98.0,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 98.7,
+                "hurst_2_32km": 99.1,
+                "precip_annual_mm": 68.1,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 40.27499999999999,
+              "lon": 117.92500000000004,
+              "score": 99.76750946044922,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 91.0,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 100.0,
+                "hurst_2_32km": 97.8,
+                "precip_annual_mm": 45.8,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 81.475,
+              "lon": -14.924999999999983,
+              "score": 99.7280502319336,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 99.4,
+                "roughness_10km_m": 99.9,
+                "roughness_20km_m": 99.7,
+                "hurst_2_32km": 97.7,
+                "precip_annual_mm": 73.8,
+                "precip_driest_month_mm": 45.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 67.225,
+              "lon": -49.875,
+              "score": 99.71806335449219,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 96.6,
+                "roughness_10km_m": 99.3,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.1,
+                "precip_annual_mm": 74.6,
+                "precip_driest_month_mm": 49.7
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -42.32500000000002,
+              "lon": -68.67499999999998,
+              "score": 99.69053649902344,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 98.6,
+                "roughness_10km_m": 99.8,
+                "roughness_20km_m": 99.3,
+                "hurst_2_32km": 99.2,
+                "precip_annual_mm": 77.7,
+                "precip_driest_month_mm": 45.9
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "precip_annual_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 22.174999999999997,
+              "lon": 81.17500000000004,
+              "score": 99.68843841552734,
+              "sub_scores": {
+                "relief_20km_m": 99.7,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 96.3,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.0,
+                "hurst_2_32km": 99.5,
+                "precip_annual_mm": 21.4,
+                "precip_driest_month_mm": 63.6
+              },
+              "weakest_matches": [
+                "precip_annual_mm",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            }
+          ]
+        },
+        "cold_trap_ice": {
+          "features_used": [
+            "precip_annual_mm",
+            "precip_driest_month_mm",
+            "relief_20km_m",
+            "slope_20km_deg"
+          ],
+          "top_overall": [
+            {
+              "lat": -23.42500000000001,
+              "lon": -69.82499999999999,
+              "score": 97.05972290039062,
+              "sub_scores": {
+                "relief_20km_m": 99.5,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 97.6,
+                "roughness_10km_m": 97.6,
+                "roughness_20km_m": 98.0,
+                "hurst_2_32km": 85.7,
+                "precip_annual_mm": 99.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": -14.025000000000006,
+              "lon": -76.07499999999999,
+              "score": 97.0517578125,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.6,
+                "roughness_5km_m": 84.7,
+                "roughness_10km_m": 98.3,
+                "roughness_20km_m": 96.7,
+                "hurst_2_32km": 98.7,
+                "precip_annual_mm": 99.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": 25.374999999999986,
+              "lon": 32.37500000000003,
+              "score": 97.0013656616211,
+              "sub_scores": {
+                "relief_20km_m": 99.2,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 88.5,
+                "roughness_10km_m": 90.5,
+                "roughness_20km_m": 94.2,
+                "hurst_2_32km": 88.8,
+                "precip_annual_mm": 99.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "hurst_2_32km",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": 22.32499999999999,
+              "lon": 24.825000000000017,
+              "score": 96.95974731445312,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 81.5,
+                "roughness_10km_m": 84.6,
+                "roughness_20km_m": 88.3,
+                "hurst_2_32km": 46.8,
+                "precip_annual_mm": 99.1,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_5km_m",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": -26.025000000000006,
+              "lon": -69.87499999999999,
+              "score": 96.95120239257812,
+              "sub_scores": {
+                "relief_20km_m": 100.0,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 99.9,
+                "roughness_10km_m": 98.3,
+                "roughness_20km_m": 88.0,
+                "hurst_2_32km": 81.2,
+                "precip_annual_mm": 98.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_20km_m",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -83.87500000000003,
+              "lon": -55.474999999999994,
+              "score": 96.90731811523438,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 80.2,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 89.6,
+                "precip_annual_mm": 99.1,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": 21.974999999999994,
+              "lon": 19.475000000000023,
+              "score": 96.9037094116211,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.7,
+                "roughness_5km_m": 99.9,
+                "roughness_10km_m": 94.5,
+                "roughness_20km_m": 96.7,
+                "hurst_2_32km": 80.7,
+                "precip_annual_mm": 99.0,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": -16.875000000000014,
+              "lon": -71.975,
+              "score": 96.88406372070312,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 89.3,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 93.9,
+                "hurst_2_32km": 85.0,
+                "precip_annual_mm": 99.5,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 25.52499999999999,
+              "lon": 29.42500000000001,
+              "score": 96.87289428710938,
+              "sub_scores": {
+                "relief_20km_m": 99.3,
+                "slope_20km_deg": 99.3,
+                "roughness_5km_m": 83.8,
+                "roughness_10km_m": 85.7,
+                "roughness_20km_m": 93.3,
+                "hurst_2_32km": 77.0,
+                "precip_annual_mm": 99.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_5km_m",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": 28.224999999999994,
+              "lon": 32.82500000000002,
+              "score": 96.83596801757812,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 86.2,
+                "roughness_10km_m": 90.3,
+                "roughness_20km_m": 97.0,
+                "hurst_2_32km": 81.4,
+                "precip_annual_mm": 98.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_5km_m",
+                "precip_driest_month_mm"
+              ]
+            }
+          ],
+          "top_without_famous_sites": [
+            {
+              "lat": -14.025000000000006,
+              "lon": -76.07499999999999,
+              "score": 97.0517578125,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.6,
+                "roughness_5km_m": 84.7,
+                "roughness_10km_m": 98.3,
+                "roughness_20km_m": 96.7,
+                "hurst_2_32km": 98.7,
+                "precip_annual_mm": 99.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "roughness_20km_m"
+              ]
+            },
+            {
+              "lat": 25.374999999999986,
+              "lon": 32.37500000000003,
+              "score": 97.0013656616211,
+              "sub_scores": {
+                "relief_20km_m": 99.2,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 88.5,
+                "roughness_10km_m": 90.5,
+                "roughness_20km_m": 94.2,
+                "hurst_2_32km": 88.8,
+                "precip_annual_mm": 99.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "hurst_2_32km",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -83.87500000000003,
+              "lon": -55.474999999999994,
+              "score": 96.90731811523438,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 80.2,
+                "roughness_10km_m": 99.6,
+                "roughness_20km_m": 99.5,
+                "hurst_2_32km": 89.6,
+                "precip_annual_mm": 99.1,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "hurst_2_32km"
+              ]
+            },
+            {
+              "lat": -16.875000000000014,
+              "lon": -71.975,
+              "score": 96.88406372070312,
+              "sub_scores": {
+                "relief_20km_m": 99.6,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 89.3,
+                "roughness_10km_m": 98.6,
+                "roughness_20km_m": 93.9,
+                "hurst_2_32km": 85.0,
+                "precip_annual_mm": 99.5,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "precip_driest_month_mm",
+                "roughness_5km_m"
+              ]
+            },
+            {
+              "lat": 25.52499999999999,
+              "lon": 29.42500000000001,
+              "score": 96.87289428710938,
+              "sub_scores": {
+                "relief_20km_m": 99.3,
+                "slope_20km_deg": 99.3,
+                "roughness_5km_m": 83.8,
+                "roughness_10km_m": 85.7,
+                "roughness_20km_m": 93.3,
+                "hurst_2_32km": 77.0,
+                "precip_annual_mm": 99.9,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_5km_m",
+                "roughness_10km_m"
+              ]
+            },
+            {
+              "lat": 28.224999999999994,
+              "lon": 32.82500000000002,
+              "score": 96.83596801757812,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 86.2,
+                "roughness_10km_m": 90.3,
+                "roughness_20km_m": 97.0,
+                "hurst_2_32km": 81.4,
+                "precip_annual_mm": 98.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "hurst_2_32km",
+                "roughness_5km_m",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -20.025000000000006,
+              "lon": -69.57499999999999,
+              "score": 96.64285278320312,
+              "sub_scores": {
+                "relief_20km_m": 98.8,
+                "slope_20km_deg": 100.0,
+                "roughness_5km_m": 76.5,
+                "roughness_10km_m": 88.1,
+                "roughness_20km_m": 91.0,
+                "hurst_2_32km": 98.7,
+                "precip_annual_mm": 98.8,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "roughness_10km_m",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": 27.42499999999999,
+              "lon": 35.62500000000003,
+              "score": 96.6247787475586,
+              "sub_scores": {
+                "relief_20km_m": 99.8,
+                "slope_20km_deg": 99.5,
+                "roughness_5km_m": 98.7,
+                "roughness_10km_m": 98.9,
+                "roughness_20km_m": 96.8,
+                "hurst_2_32km": 99.0,
+                "precip_annual_mm": 98.2,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "precip_driest_month_mm",
+                "roughness_20km_m",
+                "precip_annual_mm"
+              ]
+            },
+            {
+              "lat": 23.624999999999986,
+              "lon": 35.47500000000002,
+              "score": 96.53128051757812,
+              "sub_scores": {
+                "relief_20km_m": 99.2,
+                "slope_20km_deg": 99.8,
+                "roughness_5km_m": 74.2,
+                "roughness_10km_m": 89.1,
+                "roughness_20km_m": 95.0,
+                "hurst_2_32km": 78.9,
+                "precip_annual_mm": 98.2,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "hurst_2_32km",
+                "precip_driest_month_mm"
+              ]
+            },
+            {
+              "lat": -85.525,
+              "lon": 166.87500000000003,
+              "score": 96.45553588867188,
+              "sub_scores": {
+                "relief_20km_m": 99.9,
+                "slope_20km_deg": 99.9,
+                "roughness_5km_m": 84.9,
+                "roughness_10km_m": 97.3,
+                "roughness_20km_m": 91.0,
+                "hurst_2_32km": 93.7,
+                "precip_annual_mm": 97.0,
+                "precip_driest_month_mm": 89.0
+              },
+              "weakest_matches": [
+                "roughness_5km_m",
+                "precip_driest_month_mm",
+                "roughness_20km_m"
+              ]
+            }
+          ]
+        },
+        "thermal_cycling": {
+          "status": "unavailable",
+          "reason": "no target value for any feature of this preset"
+        }
+      }
+    }
+  }
+}
