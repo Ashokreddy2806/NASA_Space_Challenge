@@ -19,7 +19,7 @@ from backend.paths import DOCS_DIR, PROCESSED_DIR
 
 LAT0, RES = 89.975, 0.05
 MATCH, PARTIAL = 80.0, 60.0
-EARTH_VAR = {ICE: "temp_min_coldest_c"}
+ICE_WINDOW = 2
 CANNOT_REPLICATE = ["reduced gravity (Moon 1/6 g, Mars 0.38 g)", "vacuum / thin atmosphere",
                     "radiation environment", "WorldClim is air temperature, not surface skin temperature"]
 _lock = threading.Lock()
@@ -73,9 +73,18 @@ class Store:
         return int(round((LAT0 - lat) / RES)), int(round((lon + 179.975) / RES))
 
     def earth_value(self, name: str, r: int, c: int) -> float | None:
+        if name == ICE:
+            return self.frozen_fraction(r, c)
         with _lock:
-            v = self.earth[EARTH_VAR.get(name, name)][r, c]
+            v = self.earth[name][r, c]
         return None if np.ma.is_masked(v) or not np.isfinite(v) else float(v)
+
+    def frozen_fraction(self, r: int, c: int) -> float | None:
+        with _lock:
+            w = np.ma.filled(self.earth["temp_max_warmest_c"][max(r - ICE_WINDOW, 0):r + ICE_WINDOW + 1,
+                                                              max(c - ICE_WINDOW, 0):c + ICE_WINDOW + 1], np.nan)
+        valid = np.isfinite(w)
+        return float((w[valid] < 0).mean()) if valid.any() and valid[min(r, ICE_WINDOW), min(c, ICE_WINDOW)] else None
 
     def site(self, target: str, lat: float, lon: float, preset: str | None, weights: dict | None) -> dict | None:
         r, c = self.cell(lat, lon)
@@ -89,15 +98,16 @@ class Store:
             with _lock:
                 sub = float(self.sim[target][f"sub_{f}"][r, c])
             pf = prof["features"].get(f, {})
-            tv = pf.get("value") if f != ICE else None
+            tv = prof["ice_cold_trap_proxy"].get("cold_trap_area_fraction") if f == ICE else pf.get("value")
             w = used.get(f, 0) * fac.get(f, 1.0)
             rows.append({
                 "feature": f, "earth_value": self.earth_value(f, r, c), "target_value": tv,
-                "units": pf.get("units", "degC" if f == ICE else ""), "sub_score": round(sub, 1),
+                "units": "fraction" if f == ICE else pf.get("units", ""), "sub_score": round(sub, 1),
                 "verdict": "match" if sub >= MATCH else "partial" if sub >= PARTIAL else "mismatch",
                 "weight": round(w, 3),
                 "note": (pf.get("limitation") or "") if f != ICE else
-                        "Earth proxy: coldest-month minimum air temperature. Lunar PSRs stay below 110 K all year.",
+                        "Share of the area whose annual maximum stays frozen: Earth warmest month below 0 C within 0.25 deg, "
+                        "Moon Diviner annual maximum below 110 K.",
             })
         return {"target": target, "lat": float(LAT0 - r * RES), "lon": float(-179.975 + c * RES),
                 "score": round(score, 1), "features": rows,

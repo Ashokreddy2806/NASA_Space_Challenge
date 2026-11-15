@@ -35,7 +35,7 @@ def test_top_sites_and_geojson(client):
     assert len(r["sites"]) == 5 and r["sites"][0]["score"] >= r["sites"][-1]["score"]
     g = client.get(f"{M}/top-sites", params={"format": "geojson", "exclude_famous": True}).json()
     assert g["type"] == "FeatureCollection" and len(g["features"]) == 10
-    assert client.get(f"{M}/top-sites", params={"preset": "thermal_cycling"}).status_code == 422
+    assert client.get("/targets/mars_jezero/top-sites", params={"preset": "thermal_cycling"}).status_code == 422
 
 
 def test_site_breakdown_atacama(client):
@@ -62,4 +62,11 @@ def test_custom_weights_match_preset(client):
 def test_score_png(client):
     r = client.get(f"{M}/score.png", params={"step": 10})
     assert r.status_code == 200 and r.content[:4] == b"\x89PNG"
-    assert client.get(f"{M}/score.png", params={"preset": "thermal_cycling"}).status_code == 422
+    assert client.get("/targets/mars_jezero/score.png", params={"preset": "thermal_cycling"}).status_code == 422
+
+
+def test_site_ice_row_is_frozen_ground_fraction(client):
+    r = client.get(f"{M}/site", params={"lat": -77.5, "lon": 162.0}).json()
+    ice = next(x for x in r["features"] if x["feature"] == "ice_proxy")
+    assert ice["units"] == "fraction" and 0.05 < ice["target_value"] < 0.2
+    assert 0 <= ice["earth_value"] <= 1 and "110 K" in ice["note"]
