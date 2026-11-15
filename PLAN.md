@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 14:30 by rahul (merged Ashok's Phase 1-3 as canonical; porting API/frontend/docs onto it)
+**Last updated:** 2026-11-15 13:40 by rahul (PR to merge rahul/data-setup into main)
 
 ---
 
@@ -167,6 +167,8 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 12:16 — ashok — **Four presets in `config/presets.yaml`**: `balanced`, `rover_mobility` (terrain only, temperature weight 0), `cold_trap_ice` (terrain + temperature), `thermal_cycling` (heavier roughness + temperature). For Mars, `cold_trap_ice` collapses to the same ranking as `balanced` because only terrain features are usable; the engine emits `equivalent_to` and the report labels it "not independent evidence".
 - 2026-11-15 12:16 — ashok — **Thermal sensitivity verdict kept as found**: varying band edges by ±5 °C and the temperature weight over {0, 0.25, 0.5} gives a **minimum top-N overlap of 0.20** against the balanced baseline (Spearman rho ≥ 0.975). Rankings change materially, so the thermal contribution is reported as **weak evidence, not a ranking driver**. Nothing was tuned to change this.
 - 2026-11-15 12:16 — ashok — **Composition gap recorded, not papered over**: this build has no Earth substrate, mineralogy or thermal-inertia map, so a smooth ice sheet and a smooth rock plain are indistinguishable to the terrain features. That is why the Mars ranking puts Antarctic plateau cells on top; the report calls Mars a terrain result, not a composition result.
+
+- 2026-11-15 13:40 — rahul — **Merge `rahul/data-setup` into `main` via PR with a merge commit (no squash)** — branch already contains origin/main so it fast-forwards; keeps Ashok's authored commits.
 
 ## 8. Open questions
 

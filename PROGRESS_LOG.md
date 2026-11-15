@@ -27,6 +27,12 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 <!-- entries -->
 
+#### 2026-11-15 13:40 — Merge plan: rahul/data-setup into main
+- **Did:** Confirmed origin/main is an ancestor of this branch (fast-forward, no conflicts); restored regenerated-timestamp noise in `docs/`; pushing the branch and opening a PR (merge commit, no squash, so Ashok's commits stay authored).
+- **Files:** `PROGRESS_LOG.md`, `PLAN.md`
+- **Next:** teammate review, merge, then everyone rebases onto main.
+- **Blockers:** `backend/api/data.py` has uncommitted in-progress edits (porting API onto Ashok's engine); deliberately not included in the PR.
+
 #### 2026-11-15 13:14 — Diviner lunar temperatures
 - **Did:** Read the already-downloaded Diviner PRP table (563k triangles poleward of 85S) and set the lunar target's `temp_mean_c` (-171 C) and `temp_max_warmest_c` (-42 C); both beyond Earth's range. Cold-trap area from Diviner (9.81%) matches the LOLA PSR table (9.81%). Added preset `thermal_surface`; `thermal_cycling` stays unavailable (table has no min/range). Reran scoring; `balanced` results unchanged. 55 tests pass.
 - **Files:** `backend/pipeline/target_profiles.py`, `backend/engine/similarity.py`, `frontend/app.js`, `tests/test_phase2.py`, `docs/target_profiles.json`, `docs/top_sites.json`, `docs/validation.md`
