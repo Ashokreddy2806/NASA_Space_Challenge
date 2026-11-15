@@ -38,8 +38,13 @@ PRESETS: dict[str, dict[str, float]] = {
                        "roughness_10km_m": 2 / 3, "roughness_20km_m": 2 / 3, "hurst_2_32km": 0.5},
     "cold_trap_ice": {ICE: 3, "relief_20km_m": 0.5, "slope_20km_deg": 0.5, "precip_annual_mm": 0.5,
                       "precip_driest_month_mm": 0.5},
-    "thermal_cycling": {"temp_diurnal_range_c": 2, "temp_annual_range_c": 1, "temp_max_warmest_c": 1,
-                        "temp_min_coldest_c": 1},
+    # Needs diurnal/annual range and minimum, which the Diviner polar table does not provide:
+    # stays unavailable until those target values exist.
+    "thermal_cycling": {"temp_diurnal_range_c": 2, "temp_annual_range_c": 1, "temp_min_coldest_c": 1},
+    # Annual mean and annual maximum temperature. Moon values are Diviner SURFACE temperatures,
+    # Earth values are WorldClim AIR temperatures; the Moon sits beyond Earth's cold end, so this
+    # preset ranks Earth cells by coldness only.
+    "thermal_surface": {"temp_mean_c": 1, "temp_max_warmest_c": 1},
 }
 # Target status -> weight multiplier (resolution-limited values must not drive the ranking).
 STATUS_FACTOR = {"measured": 1.0, "reduced_lags": 0.5, "resolution_limited": 0.0}

@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 14:00 by rahul (Phase 7 submission pack; NOTE main has Ashok's parallel Phase 2/3, not yet reconciled)
+**Last updated:** 2026-11-15 13:14 by rahul (Diviner lunar temperatures added; NOTE main has Ashok's parallel Phase 2/3, not yet reconciled)
 
 ---
 
@@ -82,7 +82,7 @@ docs/              write-up, figures, submission material
 |---|---|---|---|
 | W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | ashok | done |
 | W2 | Earth data pipeline: download + regrid to common global grid | ashok | done |
-| W3 | Moon target profile (lunar south pole features) | rahul | done (terrain + PSR; temperatures missing) |
+| W3 | Moon target profile (lunar south pole features) | rahul | done (terrain + PSR + Diviner mean/max temperature; no min/range) |
 | W4 | Mars target profile (choose site + features) | rahul | done (Jezero default; temperatures missing) |
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
 | W6 | Backend API (FastAPI) serving scores and site details | rahul | done |
@@ -132,6 +132,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 10:30 — rahul — API: FastAPI serving precomputed outputs only (`backend/api/main.py`, `data.py`); endpoints targets / presets / top-sites (json+geojson) / site breakdown / score.png; custom weights recomputed from the stored per-feature sub-score layers. Score map is an equirectangular PNG overlay (bounds in `/score-map-info`), not XYZ tiles. Documented in `docs/API.md`. Added `httpx` to requirements for tests.
 - 2026-11-15 12:50 — rahul — Frontend: static deck.gl 8.9 + MapLibre 4.7 + Plotly 2.35 app in `frontend/` (no build step), served by the FastAPI app at `/`; heat layer is the API's equirectangular PNG drawn with `_imageCoordinateSystem: LNGLAT`. Mars 5 km roughness / Hurst caveat shown in the breakdown panel.
 - 2026-11-15 14:00 — rahul — Submission pack: final README (reproduction via `make all`, credits, limits), `docs/SUBMISSION.md` (storyboard, slides, checklist), `docs/figures/architecture.png`; Makefile targets targets/score/serve/all; `GridStore` now creates its output folder. **Conflict flag:** origin/main contains Ashok's separate Phase 2/3 implementation (`docs/phase2_report.md`, `phase3_report.md`); it overlaps `backend/engine/similarity.py` and `tests/test_phase{2,3}.py` on this branch. Not merged; team must choose one implementation or combine.
+- 2026-11-15 13:14 — rahul — Lunar target temperatures now come from the Diviner south polar resource product `Datasets/Moon/pds/diviner/dlre_prp_south.tab` (area-weighted median over the 85S disk, 563k triangles): `temp_mean_c` = annual mean surface T (-171 C), `temp_max_warmest_c` = annual max surface T (-42 C). Both lie beyond Earth's cold end (percentile 0), compared with WorldClim AIR temperature, so they only rank Earth by coldness. The table has no minimum or range, so diurnal/annual/min stay null and `thermal_cycling` stays unavailable; new preset `thermal_surface` (mean + max). `balanced` is unchanged. Cross-check: Diviner cold-trap area (annual max < 110 K) 9.81% vs LOLA PSR table 9.81%, which also supports the shared-CRS assumption.
 - 2026-11-14 21:40 — ashok — Store the Earth grid as chunked, compressed **NetCDF4** (`data/processed/earth_features.nc`) instead of Zarr — `numcodecs`' Jenkins DLL is blocked by Windows Application Control, but NetCDF4/HDF5 gives the same chunking and compression; `zarr` was removed from `requirements.txt`.
 - 2026-11-14 21:40 — ashok — Terrain features are computed per 10° tile on a **2 km local azimuthal-equidistant grid** (1° halo), then area-averaged onto the 0.05° grid — this keeps every window in kilometres and avoids stretching 0.05° cells near the poles.
 - 2026-11-14 21:40 — ashok — Locked terrain estimators: relief = **p95−p5 in 20 km**, slope = **mean of per-2 km gradient magnitude in 20 km**, roughness = **std of a Gaussian high-pass residual** at 5/10/20 km (`σ = window/2`), Hurst = **half the log–log structure-function slope** for lags 2/4/8/16/32 km. Phase 2 must use exactly the same estimators; recorded in `docs/FEATURES.md`.

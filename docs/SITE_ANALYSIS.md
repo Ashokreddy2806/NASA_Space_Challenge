@@ -67,7 +67,7 @@ Target: relief 427 m, slope 1.52°, roughness 16/35/71 m, Hurst 0.66 (reduced la
 
 ## What to do next
 
-1. **Add temperatures.** The one decisive gap: site-specific literature values for the lunar south pole (Diviner / Williams et al. 2019) and Jezero (MEDA) would let us score thermal analogs and demote sites such as #5 and #6.
+1. **Finish temperatures.** Lunar mean and annual-max surface temperatures now come from Diviner (see PLAN.md Decisions), but Earth is still WorldClim air temperature, and Jezero (MEDA) and lunar diurnal/minimum values are missing. Remaining gap: site-specific literature values for the lunar south pole (Diviner / Williams et al. 2019) and Jezero (MEDA) would let us score thermal analogs and demote sites such as #5 and #6.
 2. **Verify each cell** in Worldview/Earthdata before claiming it in the pitch (place name, imagery, access).
 3. **Look for minerals.** Our features are geometry and dryness only; EMIT or ASTER mineral maps are the natural next layer for Jezero-style clay/carbonate analogs.
 4. **Sensitivity check.** Rerun with Phase 3 weights changed to confirm these sites stay on top.

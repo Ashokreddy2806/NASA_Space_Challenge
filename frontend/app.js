@@ -5,7 +5,7 @@ const LABEL = {
   roughness_10km_m: "Roughness 10 km", roughness_20km_m: "Roughness 20 km", hurst_2_32km: "Hurst exponent",
   precip_annual_mm: "Annual precip.", precip_driest_month_mm: "Driest-month precip.", ice_proxy: "Ice / cold proxy",
 };
-const PRESET_LABEL = { balanced: "Balanced", rover_mobility: "Rover mobility", cold_trap_ice: "Cold trap / ice", thermal_cycling: "Thermal cycling" };
+const PRESET_LABEL = { balanced: "Balanced", rover_mobility: "Rover mobility", cold_trap_ice: "Cold trap / ice", thermal_cycling: "Thermal cycling", thermal_surface: "Cold surface (Diviner)" };
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const $ = id => document.getElementById(id);
 const fmt = (v, u) => v == null ? "—" : `${Math.abs(v) >= 100 ? Math.round(v) : +v.toFixed(2)}${u && u !== "unitless" ? " " + u : ""}`;
@@ -68,7 +68,7 @@ function renderPresets() {
   const pr = state.target.presets;
   $("presets").innerHTML = Object.keys(pr).map(k => {
     const on = !state.custom && state.preset === k;
-    return `<button data-k="${k}" class="${on ? "on" : ""}" ${pr[k].available ? "" : "disabled title=\"Unavailable: no site-specific target temperatures yet\""}>${PRESET_LABEL[k]}</button>`;
+    return `<button data-k="${k}" class="${on ? "on" : ""}" ${pr[k].available ? "" : "disabled title=\"Unavailable: no target values for this preset yet\""}>${PRESET_LABEL[k]}</button>`;
   }).join("") + (state.custom ? `<button class="on">Custom</button>` : "");
   $("presets").querySelectorAll("button[data-k]").forEach(b => b.onclick = () => setPreset(b.dataset.k));
   const feats = state.target.features_scored;

@@ -149,6 +149,37 @@ def mars_dem_2km() -> np.ndarray:
 
 # ------------------------------------------------------- shared helpers
 
+def _wquantile(values: np.ndarray, weights: np.ndarray, qs) -> list[float]:
+    order = np.argsort(values)
+    v, cw = values[order], np.cumsum(weights[order])
+    return [float(v[np.searchsorted(cw, q * cw[-1])]) for q in qs]
+
+
+def moon_diviner_thermal() -> dict:
+    """Surface temperatures poleward of 85 S from the Diviner south polar resource product.
+
+    Each row is a surface triangle (3D corners in km) with annual-mean and annual-maximum
+    surface temperature (K). Area-weighted median and p10-p90 over the 85 S disk. The table
+    has no minimum or diurnal/annual range, so only the mean and the maximum are returned.
+    """
+    import pandas as pd
+
+    cols = [f"tri{i}_{a}" for i in (1, 2, 3) for a in "xyz"] + ["tri_clat", "temp_avg", "temp_max"]
+    df = pd.read_csv(RAW["moon"] / "pds" / "diviner" / "dlre_prp_south.tab", skipinitialspace=True)
+    df.columns = [c.strip() for c in df.columns]
+    df = df[df["tri_clat"] < MOON_LAT_LIMIT][cols]
+    df = df[(df["temp_avg"] > 0) & (df["temp_max"] > 0)]  # drop -999 fill values
+    p = df.to_numpy()
+    area = 0.5 * np.linalg.norm(np.cross(p[:, 3:6] - p[:, 0:3], p[:, 6:9] - p[:, 0:3]), axis=1)
+    out = {"n_triangles": int(len(df)), "area_km2": float(area.sum())}
+    for src, key in (("temp_avg", "temp_mean_c"), ("temp_max", "temp_max_warmest_c")):
+        t = df[src].to_numpy() - 273.15
+        lo, med, hi = _wquantile(t, area, (0.1, 0.5, 0.9))
+        out[key] = {"value": med, "p10": lo, "p90": hi, "units": "degC"}
+    out["cold_trap_area_fraction"] = float(area[df["temp_max"].to_numpy() < 110.0].sum() / area.sum())
+    return out
+
+
 def summarize(values: np.ndarray) -> dict:
     p10, p50, p90 = np.percentile(values, [10, 50, 90])
     return {"value": float(p50), "p10": float(p10), "p90": float(p90), "n_cells": int(values.size)}
@@ -194,15 +225,26 @@ def earth_context(scale, key, value) -> dict:
 
 # ------------------------------------------------------------ profiles
 
-def build_profile(meta, terrain, scale, notes, extra) -> dict:
+def build_profile(meta, terrain, scale, notes, extra, thermal=None) -> dict:
     features = {}
+    thermal = thermal or {}
     for k in TERRAIN:
         features[k] = {**terrain[k], "units": TERRAIN_UNITS[k], **earth_context(scale, k, terrain[k]["value"]),
                        **notes.get(k, {"status": "measured"})}
     for k in TEMPERATURE:
-        features[k] = {"value": None, "status": "missing_site_specific_literature_value", "units": "degC",
-                       "limitation": "No site-specific cited value yet; reference values below are equatorial/global "
-                                     "and must not be used as the target."}
+        if k in thermal:
+            features[k] = {**thermal[k], **earth_context(scale, k, thermal[k]["value"]),
+                           "status": "measured_surface_vs_air",
+                           "limitation": "Moon: Diviner SURFACE temperature (annual " +
+                                         ("mean" if k == "temp_mean_c" else "maximum") +
+                                         ") vs Earth AIR temperature (WorldClim, " +
+                                         ("annual mean" if k == "temp_mean_c" else "mean daily max of warmest month") +
+                                         "); different quantities, and the Moon is far colder than any Earth cell, "
+                                         "so this feature only ranks Earth by coldness."}
+        else:
+            features[k] = {"value": None, "status": "missing_site_specific_literature_value", "units": "degC",
+                           "limitation": "No site-specific cited value yet; reference values below are equatorial/global "
+                                         "and must not be used as the target."}
     for k in DRYNESS:
         features[k] = {"value": 0.0, "units": "mm", "status": "one_sided_constraint",
                        "limitation": meta["dryness_note"], **earth_context(scale, k, 0.0)}
@@ -245,7 +287,11 @@ def main() -> None:
 
     dem = moon_dem_2km()
     moon_terrain = terrain_summary(dem, MOON_RADIUS_M)
+    diviner = moon_diviner_thermal()
     moon_extra = {
+        "diviner_thermal": {"source": "LRO Diviner south polar resource product DLRE_PRP_SOUTH v2 (PDS)",
+                            **{k: diviner[k] for k in ("n_triangles", "area_km2", "cold_trap_area_fraction")},
+                            "cold_trap_definition": "area fraction with annual maximum surface temperature < 110 K"},
         "ice_cold_trap_proxy": {**psr_fraction(), "status": "measured",
             "limitation": "PSR table lists shadowed areas > 1 km2 only (lower bound); CRS assumed equal to the DEM "
                           "grid. Earth has no PSR analogue; its proxy temp_min_coldest_c is a different quantity."},
@@ -260,7 +306,8 @@ def main() -> None:
          "resolution_note": "80 m source, 2 km working grid, windows 5-32 km",
          "dryness_note": "Airless body: no precipitation by definition. Treated as 'drier than any Earth desert', "
                          "not a measured value."},
-        moon_terrain, scale, {}, moon_extra)
+        moon_terrain, scale, {}, moon_extra,
+        thermal={k: diviner[k] for k in ("temp_mean_c", "temp_max_warmest_c")})
 
     mars_terrain = terrain_summary(mars_dem_2km(), MARS_RADIUS_M, hurst_lags=(8, 16, 32))
     mars_notes = {

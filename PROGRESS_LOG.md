@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 7 complete — main has Ashok's parallel Phase 2/3; need team decision on reconciling
+**Now working on:** Using unused NASA data: Diviner lunar temperatures done; next MODIS LST for Earth, Mars thermal inertia; Phase 2/3 reconcile with main still open
 
 <!-- entries -->
+
+#### 2026-11-15 13:14 — Diviner lunar temperatures
+- **Did:** Read the already-downloaded Diviner PRP table (563k triangles poleward of 85S) and set the lunar target's `temp_mean_c` (-171 C) and `temp_max_warmest_c` (-42 C); both beyond Earth's range. Cold-trap area from Diviner (9.81%) matches the LOLA PSR table (9.81%). Added preset `thermal_surface`; `thermal_cycling` stays unavailable (table has no min/range). Reran scoring; `balanced` results unchanged. 55 tests pass.
+- **Files:** `backend/pipeline/target_profiles.py`, `backend/engine/similarity.py`, `frontend/app.js`, `tests/test_phase2.py`, `docs/target_profiles.json`, `docs/top_sites.json`, `docs/validation.md`
+- **Next:** MODIS MOD11C3 surface temperature for Earth (needs Earthdata login) so the comparison is surface vs surface; Mars thermal inertia.
+- **Blockers:** Earth side is still WorldClim air temperature; Jezero temperatures still null.
 
 #### 2026-11-15 14:00 — Phase 7 submission pack
 - **Did:** Final README (reproduction, credits, limits), `docs/SUBMISSION.md` (1:45 storyboard, 8-slide outline, judging checklist), architecture figure, Makefile `all/serve/targets/score`, `GridStore` creates its output dir. Fresh-clone reproduction test run (result below in PLAN/summary).

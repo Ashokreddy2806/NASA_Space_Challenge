@@ -4,15 +4,15 @@ Balanced preset. *Score* is the 0-100 similarity at the site's grid cell; *rank 
 
 ## Lunar south pole
 
-Features dropped (no target value): temp_mean_c, temp_diurnal_range_c, temp_max_warmest_c, temp_min_coldest_c, temp_annual_range_c.
+Features dropped (no target value): temp_diurnal_range_c, temp_min_coldest_c, temp_annual_range_c.
 
 | Site | Score | Rank pct | Checks (sub-score) | Best matches | Worst matches |
 |---|---|---|---|---|---|
-| Atacama | 80.8 | 94.2 | precip_annual_mm 96.1 OK, precip_driest_month_mm 89.0 OK | hurst_2_32km, precip_annual_mm, precip_driest_month_mm | ice_proxy, relief_20km_m, slope_20km_deg |
+| Atacama | 80.8 | 94.2 | precip_annual_mm 96.1 OK, precip_driest_month_mm 89.0 OK | hurst_2_32km, precip_annual_mm, precip_driest_month_mm | ice_proxy, temp_mean_c, temp_max_warmest_c |
 | Dry Valleys | 87.6 | 98.7 | precip_annual_mm 88.5 OK, ice_proxy 87.9 OK | roughness_20km_m, slope_20km_deg, relief_20km_m | hurst_2_32km, precip_driest_month_mm, ice_proxy |
-| Devon Island / Haughton | 67.0 | 71.6 | ice_proxy 91.2 OK | ice_proxy, roughness_5km_m, roughness_10km_m | hurst_2_32km, relief_20km_m, precip_driest_month_mm |
-| Death Valley | 88.2 | 98.8 | precip_annual_mm 91.3 OK, relief_20km_m 91.6 OK | hurst_2_32km, slope_20km_deg, relief_20km_m | ice_proxy, precip_driest_month_mm, roughness_10km_m |
-| Iceland | 72.8 | 81.8 | relief_20km_m 92.7 OK, roughness_20km_m 87.7 OK | hurst_2_32km, relief_20km_m, roughness_20km_m | precip_driest_month_mm, precip_annual_mm, ice_proxy |
+| Devon Island / Haughton | 67.0 | 71.6 | ice_proxy 91.2 OK | temp_mean_c, ice_proxy, temp_max_warmest_c | hurst_2_32km, relief_20km_m, precip_driest_month_mm |
+| Death Valley | 88.2 | 98.8 | precip_annual_mm 91.3 OK, relief_20km_m 91.6 OK | hurst_2_32km, slope_20km_deg, relief_20km_m | temp_max_warmest_c, temp_mean_c, ice_proxy |
+| Iceland | 72.8 | 81.8 | relief_20km_m 92.7 OK, roughness_20km_m 87.7 OK | hurst_2_32km, relief_20km_m, temp_max_warmest_c | precip_driest_month_mm, precip_annual_mm, ice_proxy |
 
 ## Jezero Crater (Mars)
 

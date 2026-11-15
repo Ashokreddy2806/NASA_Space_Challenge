@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-15T08:36+00:00",
+  "generated": "2026-11-15T12:12+00:00",
   "earth_reference": "area-weighted Earth land cells of data/processed/earth_features.nc",
   "earth_limits": "Earth cannot reproduce reduced gravity, vacuum or thin atmosphere, or the radiation environment.",
   "targets": {
@@ -101,10 +101,19 @@
           "status": "measured"
         },
         "temp_mean_c": {
-          "value": null,
-          "status": "missing_site_specific_literature_value",
+          "value": -171.48899999999998,
+          "p10": -221.79299999999998,
+          "p90": -129.83799999999997,
           "units": "degC",
-          "limitation": "No site-specific cited value yet; reference values below are equatorial/global and must not be used as the target."
+          "earth_percentile": 0.0,
+          "beyond_earth_range": true,
+          "earth_min": -54.7473030090332,
+          "earth_p5": -30.254066467285156,
+          "earth_median": 14.919962882995605,
+          "earth_p95": 27.501916885375977,
+          "earth_max": 31.06389808654785,
+          "status": "measured_surface_vs_air",
+          "limitation": "Moon: Diviner SURFACE temperature (annual mean) vs Earth AIR temperature (WorldClim, annual mean); different quantities, and the Moon is far colder than any Earth cell, so this feature only ranks Earth by coldness."
         },
         "temp_diurnal_range_c": {
           "value": null,
@@ -113,10 +122,19 @@
           "limitation": "No site-specific cited value yet; reference values below are equatorial/global and must not be used as the target."
         },
         "temp_max_warmest_c": {
-          "value": null,
-          "status": "missing_site_specific_literature_value",
+          "value": -42.03599999999997,
+          "p10": -159.52999999999997,
+          "p90": 6.491000000000042,
           "units": "degC",
-          "limitation": "No site-specific cited value yet; reference values below are equatorial/global and must not be used as the target."
+          "earth_percentile": 0.0,
+          "beyond_earth_range": true,
+          "earth_min": -29.988889694213867,
+          "earth_p5": -13.399999618530273,
+          "earth_median": 29.748889923095703,
+          "earth_p95": 41.301334381103516,
+          "earth_max": 48.41466522216797,
+          "status": "measured_surface_vs_air",
+          "limitation": "Moon: Diviner SURFACE temperature (annual maximum) vs Earth AIR temperature (WorldClim, mean daily max of warmest month); different quantities, and the Moon is far colder than any Earth cell, so this feature only ranks Earth by coldness."
         },
         "temp_min_coldest_c": {
           "value": null,
@@ -156,6 +174,13 @@
           "earth_p95": 82.72222137451172,
           "earth_max": 495.1666564941406
         }
+      },
+      "diviner_thermal": {
+        "source": "LRO Diviner south polar resource product DLRE_PRP_SOUTH v2 (PDS)",
+        "n_triangles": 563336,
+        "area_km2": 73353.3364343037,
+        "cold_trap_area_fraction": 0.09811160016209734,
+        "cold_trap_definition": "area fraction with annual maximum surface temperature < 110 K"
       },
       "ice_cold_trap_proxy": {
         "psr_area_fraction": 0.0981493016352616,
