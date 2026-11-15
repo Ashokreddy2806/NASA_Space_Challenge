@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 11:00 by rahul (Phase 3 fixes plus Phase 4 FastAPI backend merged)
+**Last updated:** 2026-11-15 11:30 by rahul (Phase 3 fixes, Phase 4 API merged, Phase 5 frontend built)
 
 ---
 
@@ -99,7 +99,7 @@ Status values: `not started` · `in progress` · `blocked` · `done`
 | 0–2 | Repo + env set up, datasets chosen, feature list agreed | [x] |
 | 2–8 | Earth grid built for core features; Moon + Mars target vectors computed | [x] |
 | 8–13 | Similarity engine produces a global score map for each target | [x] |
-| 13–19 | API + visualization working end-to-end; top sites identified | [ ] |
+| 13–19 | API + visualization working end-to-end; top sites identified | [x] |
 | 19–22 | Site write-ups, polish visuals, "overlooked site" story | [ ] |
 | 22–24 | Demo video, slides, submit | [ ] |
 

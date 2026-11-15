@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 4 API merged onto the Phase 3 fixes; next: Phase 5 frontend
+**Now working on:** Phase 5 frontend built (`frontend/`); next: site write-ups, Mars temperature/minerals, polish
 
 <!-- entries -->
+
+#### 2026-11-15 11:30 — Phase 5 frontend
+- **Did:** Vite + MapLibre + deck.gl + Plotly app: score-map overlay (client-side reprojected to Mercator), numbered top-site markers, click-any-land site panel (score ring, radar, match/partial/mismatch table, what does not match, not scored, what Earth cannot replicate), target/preset/hide-famous controls, custom weight sliders. Checked in the browser against the live API; `npm run build` passes.
+- **Files:** `frontend/` (src/main.js, map.js, panel.js, controls.js, api.js, reproject.js, labels.js, style.css, vite.config.js), `frontend/README.md`
+- **Next:** per-site write-ups and exploration use cases; Antarctica alignment check; split the 6.4 MB Plotly bundle; globe view above 85° latitude.
+- **Blockers:** basemap tiles need internet; Mars temperature and minerals still missing.
 
 #### 2026-11-15 10:45 — Phase 3 fixes after review (Diviner temperatures, scaled scoring)
 - **Did:** Moon temperatures now from Diviner PRP south (<85°S, area-weighted): mean −171.5 °C, max −42.0 °C, cold-trap fraction 9.81 %. Scoring switched to scaled physical distance with a like-for-like frozen-ground proxy; validation now checks overall rank ≥ 75 (Devon Island fails for the Moon; Dry Valleys and Iceland fail for Jezero). Rebuilt the Earth grid on Windows (matches the Mac numbers). 56 tests pass.

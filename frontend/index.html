@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Earth Analog Finder</title>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <aside class="card" id="controls" aria-label="Map controls">
+      <header class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>Earth Analog Finder</h1>
+          <p>Earth places that look like a space target</p>
+        </div>
+      </header>
+
+      <div class="field">
+        <span class="label" id="target-label">Target</span>
+        <div class="segmented" id="targets" role="group" aria-labelledby="target-label"></div>
+      </div>
+
+      <div class="field">
+        <span class="label" id="preset-label">Preset</span>
+        <div class="chips" id="presets" role="group" aria-labelledby="preset-label"></div>
+        <p class="note" id="preset-note"></p>
+      </div>
+
+      <label class="switch">
+        <input type="checkbox" id="exclude-famous" />
+        <span class="track"><span class="thumb"></span></span>
+        <span>Hide famous analog sites</span>
+      </label>
+
+      <div class="field">
+        <span class="label">Similarity score</span>
+        <div class="legend-bar" role="img" aria-label="Magma colour scale from 40 to 100"></div>
+        <div class="legend-scale"><span>40</span><span>70</span><span>100</span></div>
+      </div>
+
+      <details class="custom" id="custom">
+        <summary>Custom weights <span class="badge" id="custom-badge" hidden>Active</span></summary>
+        <div class="sliders" id="sliders"></div>
+        <button class="ghost" id="reset-weights" type="button">Reset to preset</button>
+        <p class="note">Top-site markers come from the preset rankings. Custom weights update the map and the selected site.</p>
+      </details>
+    </aside>
+
+    <aside class="panel" id="panel" aria-label="Selected site">
+      <header class="panel-head">
+        <div>
+          <span class="eyebrow">Selected site</span>
+          <h2 id="panel-coords"></h2>
+          <p class="panel-context" id="panel-context"></p>
+        </div>
+        <button class="icon-btn" id="close-panel" type="button" aria-label="Close site panel">&times;</button>
+      </header>
+      <div class="panel-body" id="panel-body"></div>
+    </aside>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <footer class="footnote">
+      <p>Methodology: scaled physical distance; Moon temperatures from LRO Diviner surface values vs Earth air temperature — not like-for-like.</p>
+      <p>Data: LRO LOLA/Diviner, MOLA, WorldClim 2.1, ETOPO 2022.</p>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
