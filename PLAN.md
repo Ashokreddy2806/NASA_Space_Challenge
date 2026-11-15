@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 12:50 by rahul (Phase 5 complete: frontend)
+**Last updated:** 2026-11-15 13:20 by rahul (Phase 6 complete: top-site analysis)
 
 ---
 
@@ -87,7 +87,7 @@ docs/              write-up, figures, submission material
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
 | W6 | Backend API (FastAPI) serving scores and site details | rahul | done |
 | W7 | Frontend visualization (map, site cards, comparison charts) | rahul | done |
-| W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | — | not started |
+| W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | rahul | done |
 | W9 | Submission: demo video, slides, final README | — | not started |
 
 Status values: `not started` · `in progress` · `blocked` · `done`
@@ -149,4 +149,13 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 
 ## 9. Results so far
 
-_Nothing yet. Add top candidate sites here as they appear (name, lat/lon, target, score, one-line why)._
+Full write-up: [docs/SITE_ANALYSIS.md](docs/SITE_ANALYSIS.md). Place names are approximate (identified from coordinates); temperatures are not scored.
+
+| Target | Site (approx.) | Lat, Lon | Score | Why |
+|---|---|---|---|---|
+| Jezero | Nazca / Ica desert, Peru | -14.93, -74.97 | 98 | relief 428 vs 427 m, slope 1.55° vs 1.52°, ~3 mm/yr |
+| Jezero | Eastern Desert, Egypt | 27.82, 33.08 | 98 | hyper-arid wadi terrain, matching relief/slope/Hurst |
+| Jezero | Lop Nur region, NW China | 40.47, 91.72 | 97 | roughness match 15.7 vs 15.7 m; wind-carved landscape (background knowledge) |
+| Lunar pole | Transantarctic region, Antarctica | -84.68, 171.98 | 98 (cold-trap) | terrain match plus coldest-month min -63 °C |
+| Lunar pole | Western Kunlun / Aksai Chin | 36.47, 80.53 | 98 | relief 1739 vs 1773 m; not cold (min -14 °C) |
+| Lunar pole | Southern Peruvian Andes | -16.03, -72.57 | 98 | terrain match, warm; close to Atacama |

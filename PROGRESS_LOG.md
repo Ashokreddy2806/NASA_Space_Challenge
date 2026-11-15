@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 5 complete — waiting for approval of Phase 6
+**Now working on:** Phase 6 complete — waiting for approval of Phase 7
 
 <!-- entries -->
+
+#### 2026-11-15 13:20 — Phase 6 top-site analysis
+- **Did:** Wrote `docs/SITE_ANALYSIS.md`: six candidates (3 Jezero, 3 lunar pole) with matches, mismatches, exploration use, what Earth cannot replicate, and next steps; added them to PLAN.md section 9. Flags: place names approximate, temperatures unscored, sub-scores are percentile ranks.
+- **Files:** `docs/SITE_ANALYSIS.md`, `PLAN.md`
+- **Next:** Phase 7 submission pack (awaiting approval).
+- **Blockers:** site-specific temperatures (lunar pole, Jezero); minerals not in the feature set.
 
 #### 2026-11-15 12:50 — Phase 5 frontend
 - **Did:** Interactive map app: Moon/Mars target picker, preset chips, weight sliders, top-10 with hide-famous toggle, click-anywhere site panel (radar, feature table, "where the analogy breaks down", "Earth cannot replicate"). Verified end to end in a browser incl. custom weights; screenshots captured. 54 tests pass.
