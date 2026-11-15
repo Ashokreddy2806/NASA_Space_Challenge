@@ -4,7 +4,7 @@
 python -m uvicorn backend.api.main:app --port 8000     # interactive docs: http://localhost:8000/docs
 ```
 
-Needs the precomputed outputs: `python -m backend.pipeline.build_earth_features`, `python -m backend.pipeline.target_profiles`, `python -m backend.engine.run_scoring`. Targets: `moon_south_pole`, `mars_jezero`. Custom weights: `weights={"slope_20km_deg":3,"precip_annual_mm":1}` (JSON, keys from `/presets`).
+Needs the precomputed outputs: `python -m backend.pipeline.build_earth_features`, `python -m backend.targets.build_target_profiles`, `python -m backend.engine.build_scores`. Targets: `moon_south_pole`, `mars_jezero`. Custom weights: `weights={"slope_20km_deg":3,"precip_annual_mm":1}` (JSON, keys from `/presets`).
 
 | Endpoint | Purpose |
 |---|---|

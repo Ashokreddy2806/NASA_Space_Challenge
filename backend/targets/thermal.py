@@ -242,6 +242,10 @@ def qualitative_thermal_features(
     mapping = target.get("thermal_mapping") or {}
     if str(mapping.get("mode", "")) != "banded":
         return {}
+    if not availability.get("available"):
+        # Literature table absent (optional input): the thermal features stay
+        # "unavailable" and are excluded from scoring instead of failing the build.
+        return {}
 
     references = {row["name"]: row for row in availability.get("references", [])}
     definitions = {definition.id: definition for definition in config.all_features}

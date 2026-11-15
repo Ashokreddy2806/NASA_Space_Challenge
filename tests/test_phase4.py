@@ -74,5 +74,6 @@ def test_validation_and_png(client):
 
 def test_frontend_served(client):
     r = client.get("/")
-    assert r.status_code == 200 and "Earth Analog Finder" in r.text
-    assert client.get("/app.js").status_code == 200
+    assert r.status_code == 200 and "Analog Earth" in r.text
+    for asset in ("/js/globe.js", "/js/panel.js", "/style.css"):
+        assert client.get(asset).status_code == 200

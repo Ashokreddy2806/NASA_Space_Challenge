@@ -20,7 +20,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = PROJECT_ROOT.parent
 
 # Downloaded source data. Do not copy it into the repo: it is git-ignored.
-DATA_ROOT = Path(os.environ.get("NASA_DATA_ROOT", REPO_ROOT / "Datasets")).resolve()
+# Default: ``Datasets/`` inside the project folder (git-ignored); falls back to a
+# sibling ``../Datasets`` for older layouts. ``NASA_DATA_ROOT`` overrides both.
+_LOCAL_DATA = PROJECT_ROOT / "Datasets"
+DATA_ROOT = Path(
+    os.environ.get("NASA_DATA_ROOT", _LOCAL_DATA if _LOCAL_DATA.exists() else REPO_ROOT / "Datasets")
+).resolve()
 
 RAW: dict[str, Path] = {
     "moon": DATA_ROOT / "Moon",
