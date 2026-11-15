@@ -63,3 +63,9 @@ def test_score_png(client):
     r = client.get(f"{M}/score.png", params={"step": 10})
     assert r.status_code == 200 and r.content[:4] == b"\x89PNG"
     assert client.get(f"{M}/score.png", params={"preset": "thermal_cycling"}).status_code == 422
+
+
+def test_frontend_served(client):
+    r = client.get("/")
+    assert r.status_code == 200 and "Earth Analog Finder" in r.text
+    assert client.get("/app.js").status_code == 200

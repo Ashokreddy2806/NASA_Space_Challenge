@@ -16,7 +16,10 @@ from functools import lru_cache
 
 import numpy as np
 from fastapi import FastAPI, HTTPException, Query, Response
+from pathlib import Path
+
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.api.data import CANNOT_REPLICATE, render_png, store
 from backend.engine.similarity import ALL_FEATURES
@@ -128,3 +131,8 @@ def score_png(target: str, preset: str | None = None, weights: str | None = None
 def score_map_info():
     return {"bounds_west_south_east_north": BOUNDS, "projection": "EPSG:4326 (equirectangular)",
             "colormap": "magma", "value_range": [40, 100], "transparent": "ocean / no data"}
+
+
+FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
+if FRONTEND.joinpath("index.html").exists():  # keep last: serves the map app at /
+    app.mount("/", StaticFiles(directory=FRONTEND, html=True), name="frontend")

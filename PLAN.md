@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 10:30 by rahul (Phase 4 complete: FastAPI backend)
+**Last updated:** 2026-11-15 12:50 by rahul (Phase 5 complete: frontend)
 
 ---
 
@@ -86,7 +86,7 @@ docs/              write-up, figures, submission material
 | W4 | Mars target profile (choose site + features) | rahul | done (Jezero default; temperatures missing) |
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
 | W6 | Backend API (FastAPI) serving scores and site details | rahul | done |
-| W7 | Frontend visualization (map, site cards, comparison charts) | — | not started |
+| W7 | Frontend visualization (map, site cards, comparison charts) | rahul | done |
 | W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | — | not started |
 | W9 | Submission: demo video, slides, final README | — | not started |
 
@@ -130,6 +130,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 10:05 — rahul — Presets: balanced (default, ice excluded and reported as its own sub-score), rover_mobility, cold_trap_ice, thermal_cycling (**unavailable** until site-specific temperature values exist). Mars roughness_5km weight 0 (resolution-limited), Mars Hurst weight ×0.5.
 - 2026-11-15 10:05 — rahul — "Famous sites" excluded from the second top-N list = Atacama, Dry Valleys, Devon/Haughton, Death Valley, Iceland, Hawaii, Mojave, Svalbard, Sahara within 300–600 km; sites separated by ≥300 km.
 - 2026-11-15 10:30 — rahul — API: FastAPI serving precomputed outputs only (`backend/api/main.py`, `data.py`); endpoints targets / presets / top-sites (json+geojson) / site breakdown / score.png; custom weights recomputed from the stored per-feature sub-score layers. Score map is an equirectangular PNG overlay (bounds in `/score-map-info`), not XYZ tiles. Documented in `docs/API.md`. Added `httpx` to requirements for tests.
+- 2026-11-15 12:50 — rahul — Frontend: static deck.gl 8.9 + MapLibre 4.7 + Plotly 2.35 app in `frontend/` (no build step), served by the FastAPI app at `/`; heat layer is the API's equirectangular PNG drawn with `_imageCoordinateSystem: LNGLAT`. Mars 5 km roughness / Hurst caveat shown in the breakdown panel.
 - 2026-11-14 21:40 — ashok — Store the Earth grid as chunked, compressed **NetCDF4** (`data/processed/earth_features.nc`) instead of Zarr — `numcodecs`' Jenkins DLL is blocked by Windows Application Control, but NetCDF4/HDF5 gives the same chunking and compression; `zarr` was removed from `requirements.txt`.
 - 2026-11-14 21:40 — ashok — Terrain features are computed per 10° tile on a **2 km local azimuthal-equidistant grid** (1° halo), then area-averaged onto the 0.05° grid — this keeps every window in kilometres and avoids stretching 0.05° cells near the poles.
 - 2026-11-14 21:40 — ashok — Locked terrain estimators: relief = **p95−p5 in 20 km**, slope = **mean of per-2 km gradient magnitude in 20 km**, roughness = **std of a Gaussian high-pass residual** at 5/10/20 km (`σ = window/2`), Hurst = **half the log–log structure-function slope** for lags 2/4/8/16/32 km. Phase 2 must use exactly the same estimators; recorded in `docs/FEATURES.md`.

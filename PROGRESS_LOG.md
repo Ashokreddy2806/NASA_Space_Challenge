@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 4 complete — waiting for approval of Phase 5
+**Now working on:** Phase 5 complete — waiting for approval of Phase 6
 
 <!-- entries -->
+
+#### 2026-11-15 12:50 — Phase 5 frontend
+- **Did:** Interactive map app: Moon/Mars target picker, preset chips, weight sliders, top-10 with hide-famous toggle, click-anywhere site panel (radar, feature table, "where the analogy breaks down", "Earth cannot replicate"). Verified end to end in a browser incl. custom weights; screenshots captured. 54 tests pass.
+- **Files:** `frontend/{index.html,style.css,app.js,README.md}`, `backend/api/main.py` (serves `/`), `docs/figures/frontend_{moon,mars}.png`
+- **Next:** Phase 6 top-site analysis (awaiting approval).
+- **Blockers:** needs internet for CDN libs and basemap; temperatures still unscored.
 
 #### 2026-11-15 10:30 — Phase 4 backend API
 - **Did:** FastAPI app with targets, presets, top sites (JSON/GeoJSON, with/without famous sites), per-site feature breakdown (match/partial/mismatch, not-scored, Earth-cannot-replicate), score PNG with preset or custom weights. Latency 2–270 ms. 53 tests pass.
