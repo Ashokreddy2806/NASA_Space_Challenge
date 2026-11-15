@@ -3,12 +3,15 @@ import json
 
 import pytest
 
-from backend.paths import DOCS_DIR, PROCESSED_DIR
+from backend.config import load_config
 
-need = [DOCS_DIR / "top_sites.json", PROCESSED_DIR / "similarity_moon_south_pole.nc", PROCESSED_DIR / "earth_features.nc"]
-pytestmark = pytest.mark.skipif(not all(p.exists() for p in need), reason="run Phase 1-3 first")
-
-M = "/targets/moon_south_pole"
+try:
+    _c = load_config()
+    need = [_c.output(k) for k in ("target_profiles", "top_sites", "scores_moon", "scores_mars", "earth_features")]
+    HAVE = all(p.exists() for p in need)
+except Exception:
+    HAVE = False
+pytestmark = pytest.mark.skipif(not HAVE, reason="run `make all` first")
 
 
 @pytest.fixture(scope="module")
@@ -20,49 +23,53 @@ def client():
 
 def test_targets_and_health(client):
     assert client.get("/health").json()["status"] == "ok"
-    ts = client.get("/targets").json()
-    assert {t["id"] for t in ts} == {"moon_south_pole", "mars_jezero"}
-    assert any("temp_mean_c" in t["not_scored"] for t in ts)
+    ts = {t["id"]: t for t in client.get("/targets").json()}
+    assert set(ts) == {"moon", "mars"}
+    assert any(n["feature"] == "hurst_2_32km" for n in ts["mars"]["not_scored"])  # unresolved at MOLA resolution
     assert client.get("/targets/nope").status_code == 404
 
 
 def test_profile_has_limits(client):
-    assert client.get(M).json()["earth_cannot_replicate"]
+    p = client.get("/targets/moon").json()
+    assert p["earth_cannot_replicate"] and p["ice_proxy"]["value"] > 0
 
 
 def test_top_sites_and_geojson(client):
-    r = client.get(f"{M}/top-sites", params={"n": 5}).json()
-    assert len(r["sites"]) == 5 and r["sites"][0]["score"] >= r["sites"][-1]["score"]
-    g = client.get(f"{M}/top-sites", params={"format": "geojson", "exclude_famous": True}).json()
-    assert g["type"] == "FeatureCollection" and len(g["features"]) == 10
-    assert client.get(f"{M}/top-sites", params={"preset": "thermal_cycling"}).status_code == 422
+    r = client.get("/targets/moon/top-sites", params={"n": 5}).json()
+    assert len(r["sites"]) == 5 and r["sites"][0]["site_score"] >= r["sites"][-1]["site_score"]
+    assert r["sites"][0]["features"]
+    g = client.get("/targets/moon/top-sites", params={"format": "geojson", "exclude_famous": True}).json()
+    assert g["type"] == "FeatureCollection" and not any(f["properties"]["famous"] for f in g["features"])
+    assert client.get("/targets/moon/top-sites", params={"preset": "nope"}).status_code == 422
 
 
-def test_site_breakdown_atacama(client):
-    r = client.get(f"{M}/site", params={"lat": -23.5, "lon": -68.5}).json()
+def test_site_evidence(client):
+    r = client.get("/targets/mars/site", params={"lat": -26.8, "lon": 16.2}).json()
     f = {x["feature"]: x for x in r["features"]}
-    assert f["precip_annual_mm"]["verdict"] == "match" and f["precip_annual_mm"]["earth_value"] is not None
-    assert r["earth_cannot_replicate"] and r["not_scored"]
+    assert "absolute_gap" in f["relief_20km_m"] and "rank_similarity" in f["relief_20km_m"]
+    assert 0 <= r["score"] <= 1 and r["earth_cannot_replicate"]
+    assert any(n["feature"] == "roughness_5km_m" for n in r["not_scored"])
 
 
 def test_site_ocean_404_and_bad_params(client):
-    assert client.get(f"{M}/site", params={"lat": 0, "lon": -30}).status_code == 404
-    assert client.get(f"{M}/site", params={"lat": 95, "lon": 0}).status_code == 422
-    assert client.get(f"{M}/site", params={"lat": -23.5, "lon": -68.5, "weights": "{\"bogus\": 1}"}).status_code == 422
+    assert client.get("/targets/moon/site", params={"lat": 0, "lon": -30}).status_code == 404
+    assert client.get("/targets/moon/site", params={"lat": 95, "lon": 0}).status_code == 422
+    assert client.get("/targets/moon/site", params={"lat": -13, "lon": -73.5, "weights": '{"bogus": 1}'}).status_code == 422
 
 
 def test_custom_weights_match_preset(client):
-    pre = client.get(f"{M}/site", params={"lat": -23.5, "lon": -68.5, "preset": "rover_mobility"}).json()["score"]
-    w = json.dumps({"slope_20km_deg": 3, "relief_20km_m": 1, "roughness_5km_m": 2 / 3, "roughness_10km_m": 2 / 3,
-                    "roughness_20km_m": 2 / 3, "hurst_2_32km": 0.5})
-    cus = client.get(f"{M}/site", params={"lat": -23.5, "lon": -68.5, "weights": w}).json()["score"]
-    assert abs(pre - cus) < 1.0  # uint8 rounding only
+    pre = client.get("/targets/moon/site", params={"lat": -12.9, "lon": -73.6, "preset": "rover_mobility"}).json()["score"]
+    w = json.dumps({"relief": 1, "slope": 1.5, "roughness": 1, "scale_robust_roughness": 0.5})
+    cus = client.get("/targets/moon/site", params={"lat": -12.9, "lon": -73.6, "weights": w}).json()["score"]
+    assert abs(pre - cus) < 1e-4
 
 
-def test_score_png(client):
-    r = client.get(f"{M}/score.png", params={"step": 10})
+def test_validation_and_png(client):
+    v = client.get("/targets/moon/validation").json()
+    assert any(s["name"] == "Atacama" for s in v["sites"])
+    r = client.get("/targets/moon/score.png", params={"step": 10})
     assert r.status_code == 200 and r.content[:4] == b"\x89PNG"
-    assert client.get(f"{M}/score.png", params={"preset": "thermal_cycling"}).status_code == 422
+    assert client.get("/targets/moon/score.png", params={"preset": "nope"}).status_code == 422
 
 
 def test_frontend_served(client):
