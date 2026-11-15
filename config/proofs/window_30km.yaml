@@ -1,0 +1,28 @@
+# Proof run 1: change ONE config value (relief window 20 km -> 30 km) and show
+# that the published outputs change. Nothing in backend/ is edited for this.
+#
+#   .venv/Scripts/python -m backend.pipeline.earth_climate --config config/proofs/window_30km.yaml
+#   .venv/Scripts/python -m backend.pipeline.earth_terrain --config config/proofs/window_30km.yaml
+#   .venv/Scripts/python -m backend.pipeline.build_earth_features --config config/proofs/window_30km.yaml
+#
+# Outputs are written next to the main products with a `proof_window` prefix so
+# the real Phase 1 products are never overwritten.
+
+features.yaml:
+  overrides:
+    relief_20km_m:
+      params:
+        window_km: 30.0
+      long_name: Local relief in a 30 km window
+      label: Local relief, 30 km window (m)
+      definition: p95 - p5 of the DEM within 30 km (proof override of the 20 km default)
+
+paths.yaml:
+  outputs:
+    earth_terrain: proofs/proof_window_terrain.nc
+    earth_climate: proofs/proof_window_climate.nc
+    earth_features: proofs/proof_window_features.nc
+    earth_meta: proofs/proof_window_meta.json
+    earth_report: proof_window_report.md
+    earth_figure_prefix: proof_window_
+    overview_figure: proof_window_overview.png

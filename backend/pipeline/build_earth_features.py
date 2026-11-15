@@ -1,21 +1,25 @@
 """Merge the Earth terrain and climate stores, apply the land mask, and publish.
 
-Phase 1 final step. Reads the two intermediate NetCDF stores, writes
-``data/processed/earth_features.nc`` with every MVP feature masked to land,
+Phase 1 final step. Reads the two intermediate NetCDF stores, writes the
+configured ``earth_features`` dataset with every MVP feature masked to land,
 then creates one quick-look map per feature and a coverage/limits report.
+
+Every feature id, plot style, validation site, figure setting and output path
+comes from ``config/*.yaml``.
 
 Run from ``NASA_Space_Challenge/``::
 
     python -m backend.pipeline.build_earth_features
 
-Use ``--keep-intermediates`` to retain the two source stores.
+Use ``--keep-intermediates`` to retain the two source stores, ``--refresh`` to
+regenerate figures and the report from an existing dataset, and ``--config`` to
+run a proof override.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,61 +33,11 @@ import numpy as np
 import xarray as xr
 from netCDF4 import Dataset
 
-from backend.paths import DOCS_DIR, FIGURES_DIR, PROCESSED_DIR, RAW
-from backend.pipeline.earth_grid import (
-    LAT_MAX,
-    LON_MIN,
-    NX,
-    NY,
-    RES_DEG,
-    lat_centers,
-    lon_centers,
-)
-from backend.pipeline.feature_store import CHUNK_ROWS, GridStore
-
-TERRAIN_VARIABLES = [
-    "relief_20km_m",
-    "slope_20km_deg",
-    "roughness_5km_m",
-    "roughness_10km_m",
-    "roughness_20km_m",
-    "hurst_2_32km",
-]
-CLIMATE_VARIABLES = [
-    "temp_mean_c",
-    "temp_diurnal_range_c",
-    "temp_max_warmest_c",
-    "temp_min_coldest_c",
-    "temp_annual_range_c",
-    "precip_annual_mm",
-    "precip_driest_month_mm",
-]
-FEATURE_VARIABLES = TERRAIN_VARIABLES + CLIMATE_VARIABLES
-
-PLOT_STYLE: dict[str, tuple[str, str]] = {
-    "relief_20km_m": ("terrain", "Local relief (m)"),
-    "slope_20km_deg": ("magma", "Mean slope (degrees)"),
-    "roughness_5km_m": ("cividis", "Roughness at 5 km (m)"),
-    "roughness_10km_m": ("cividis", "Roughness at 10 km (m)"),
-    "roughness_20km_m": ("cividis", "Roughness at 20 km (m)"),
-    "hurst_2_32km": ("viridis", "Hurst exponent (2-32 km)"),
-    "temp_mean_c": ("RdYlBu_r", "Mean annual air temperature (°C)"),
-    "temp_diurnal_range_c": ("plasma", "Mean diurnal range (°C)"),
-    "temp_max_warmest_c": ("inferno", "Warmest-month maximum (°C)"),
-    "temp_min_coldest_c": ("RdYlBu", "Coldest-month minimum (°C)"),
-    "temp_annual_range_c": ("plasma", "Annual temperature range (°C)"),
-    "precip_annual_mm": ("YlGnBu", "Annual precipitation (mm)"),
-    "precip_driest_month_mm": ("YlGnBu", "Driest-month precipitation (mm)"),
-}
-
-VALIDATION_SITES = [
-    ("Atacama", -23.5, -68.5),
-    ("Dry Valleys", -77.5, 162.0),
-    ("Devon Island", 75.4, -89.5),
-    ("Death Valley", 36.5, -116.9),
-    ("Iceland", 64.9, -19.0),
-    ("Sahara", 23.0, 10.0),
-]
+from backend.config import AppConfig, ValidationSite, load_config
+from backend.features import registry
+from backend.paths import PROJECT_ROOT
+from backend.pipeline.earth_grid import sample_point_rowcol
+from backend.pipeline.feature_store import GridStore
 
 
 def _copy_attrs(source, destination) -> None:
@@ -98,6 +52,7 @@ def merge_features(
     terrain_path: Path,
     climate_path: Path,
     output: Path,
+    config: AppConfig,
 ) -> dict[str, Any]:
     """Merge terrain and climate, apply the land mask, and return metadata."""
     for source_path in (terrain_path, climate_path):
@@ -108,30 +63,35 @@ def merge_features(
     if output.exists():
         output.unlink()
 
+    spec = config.grid
     started = time.perf_counter()
     with Dataset(terrain_path) as terrain, Dataset(climate_path) as climate:
         land_mask = climate.variables["land_mask"][:].astype(bool)
         land_fraction = climate.variables["land_fraction"][:].astype("float32")
 
-        with GridStore(output, mode="w") as store:
-            for name in FEATURE_VARIABLES:
-                source = terrain.variables[name] if name in terrain.variables else climate.variables[name]
-                destination = store.create_feature(name, {})
-                _copy_attrs(source, destination)
-                if name == "temp_min_coldest_c":
-                    destination.setncattr(
-                        "feature_group",
-                        "temperature; Earth cold-extreme proxy for lunar cold traps",
-                    )
-                elif name.startswith("temp"):
-                    destination.setncattr("feature_group", "temperature")
-                elif name.startswith("precip"):
-                    destination.setncattr("feature_group", "dryness")
+        with GridStore(
+            output,
+            spec,
+            mode="w",
+            compression_level=config.storage.compression_level,
+        ) as store:
+            for definition in config.all_features:
+                if definition.id in terrain.variables:
+                    source = terrain.variables[definition.id]
+                elif definition.id in climate.variables:
+                    source = climate.variables[definition.id]
                 else:
-                    destination.setncattr("feature_group", "terrain")
+                    raise KeyError(
+                        f"feature {definition.id!r} is configured but missing from both "
+                        "intermediate stores"
+                    )
+                destination = store.create_feature(definition.id, {})
+                _copy_attrs(source, destination)
+                destination.setncattr("feature_group", definition.group)
+                destination.setncattr("registry_function", definition.function)
 
-                for row0 in range(0, NY, CHUNK_ROWS):
-                    row1 = min(NY, row0 + CHUNK_ROWS)
+                for row0 in range(0, spec.ny, spec.chunk_rows):
+                    row1 = min(spec.ny, row0 + spec.chunk_rows)
                     values = source[row0:row1, :].astype("float32")
                     mask = land_mask[row0:row1, :]
                     values[~mask] = np.nan
@@ -142,7 +102,10 @@ def merge_features(
                 {
                     "long_name": "Fraction of WorldClim source cells that are land",
                     "units": "1",
-                    "definition": "area average of the WorldClim bio_1 valid mask at 0.05 degrees",
+                    "definition": (
+                        "area average of the WorldClim ocean-nodata valid mask at the "
+                        "search-grid resolution"
+                    ),
                 },
             )
             fraction_out[:] = land_fraction
@@ -152,7 +115,10 @@ def merge_features(
                 {
                     "long_name": "Earth land mask from WorldClim ocean nodata",
                     "units": "1",
-                    "definition": "1 where land_fraction >= 0.5, 0 for ocean; all features are NaN over ocean",
+                    "definition": (
+                        "1 where land_fraction is at least the configured threshold, "
+                        "0 for ocean; all features are NaN over ocean"
+                    ),
                 },
                 fill_value=-1,
                 dtype="i1",
@@ -161,27 +127,44 @@ def merge_features(
 
             store.set_attrs(
                 {
-                    "title": "Earth analog features for Moon and Mars targets, 0.05 degree grid",
+                    "title": "Earth analog features for Moon and Mars targets",
                     "phase": "Phase 1 (Earth grid)",
                     "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-                    "grid": "global 0.05 degree lon/lat, north-to-south rows, cell centres",
+                    "grid": (
+                        f"{spec.resolution_deg:g} degree lon/lat, {spec.nx} x {spec.ny} cells, "
+                        "north-to-south rows, cell centres"
+                    ),
+                    "bounds": (
+                        f"lon {spec.lon_min:g}..{spec.lon_max:g}, "
+                        f"lat {spec.lat_min:g}..{spec.lat_max:g}"
+                    ),
+                    "feature_registry": "backend.features.registry (shared by Earth, Moon, Mars)",
                     "terrain_source": "ETOPO 2022 v1 60 arc-second surface elevation (NOAA NCEI)",
                     "terrain_doi": "10.25921/fd45-gt74",
-                    "climate_source": "WorldClim 2.1 bioclimatic variables, 2.5 arc-minute (Fick & Hijmans 2017)",
+                    "climate_source": (
+                        "WorldClim 2.1 bioclimatic variables, 2.5 arc-minute "
+                        "(Fick & Hijmans 2017)"
+                    ),
                     "climate_doi": "10.1002/joc.5086",
-                    "land_mask_rule": "WorldClim ocean nodata; land where valid fraction >= 0.5",
+                    "land_mask_rule": (
+                        "WorldClim ocean nodata; land where valid fraction >= "
+                        f"{config.earth.land_mask_threshold:g}"
+                    ),
                     "terrain_method": (
-                        "10-degree tiles, local azimuthal-equidistant 2 km grid; "
+                        f"{spec.tile_deg:g} degree tiles with a {spec.halo_deg:g} degree halo, "
+                        f"local azimuthal-equidistant {spec.working_pixel_m / 1000:.2f} km grid; "
                         "relief/slope/roughness/Hurst computed in km windows; "
                         "ocean cells filled with nearest land elevation before filtering; "
-                        "area-averaged to 0.05 degrees"
+                        "area-averaged to the search grid"
                     ),
-                    "climate_method": "area average from 2.5 arc-minute, slightly coarser than 0.05 degrees",
+                    "climate_method": "area average from 2.5 arc-minute",
                     "limitations": (
                         "WorldClim is air temperature, not surface skin temperature. Earth cannot "
                         "replicate reduced gravity, vacuum/thin atmosphere, or radiation. Terrain "
-                        "windows are limited by the 1.85 km ETOPO source. 0.05-degree cells shrink "
-                        "in longitude toward the poles; feature values come from the 2 km working grid."
+                        "windows are limited by the "
+                        f"{config.earth.native_pixel_m / 1000:.2f} km ETOPO source. Search-grid "
+                        "cells shrink in longitude toward the poles; feature values come from the "
+                        f"local {spec.working_pixel_m / 1000:.2f} km working grid."
                     ),
                     "runtime_seconds": round(time.perf_counter() - started, 1),
                 }
@@ -196,15 +179,16 @@ def merge_features(
 def _plot_panel(
     axis,
     values: np.ndarray,
-    title: str,
+    label: str,
     cmap: str,
     extent: tuple[float, float, float, float],
-) -> None:
-    """Draw one global map panel with a robust colour range."""
+    config: AppConfig,
+) -> Any:
+    """Draw one map panel with a robust colour range."""
     masked = np.ma.masked_invalid(values)
     finite = masked.compressed()
     if finite.size:
-        vmin, vmax = np.percentile(finite, [2, 98])
+        vmin, vmax = (float(v) for v in np.percentile(finite, config.figures.percentile_stretch))
     else:
         vmin, vmax = 0.0, 1.0
     image = axis.imshow(
@@ -217,59 +201,70 @@ def _plot_panel(
         vmax=vmax,
         interpolation="nearest",
     )
-    axis.set_title(title, fontsize=9)
-    axis.set_xticks([-120, -60, 0, 60, 120])
-    axis.set_yticks([-60, -30, 0, 30, 60])
+    axis.set_title(label, fontsize=9)
+    axis.set_xticks(config.report.plot_xticks)
+    axis.set_yticks(config.report.plot_yticks)
     axis.tick_params(labelsize=7)
     axis.grid(color="white", alpha=0.15, linewidth=0.3)
     return image
 
 
-def write_figures(dataset_path: Path, figures_dir: Path) -> list[Path]:
+def write_figures(dataset_path: Path, config: AppConfig) -> list[Path]:
     """Write one quick-look PNG per feature plus a combined overview."""
+    figures_dir = config.outputs.figures_dir
     figures_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     dataset = xr.open_dataset(dataset_path)
-    stride = 4  # 0.2 degree quick-look, ~900 x 1800 pixels
-    extent = (-180.0, 180.0, -90.0, 90.0)
-    lon = dataset.lon.values[::stride]
-    lat = dataset.lat.values[::stride]
+    stride = config.figures.stride_cells
+    spec = config.grid
+    extent = (spec.lon_min, spec.lon_max, spec.lat_min, spec.lat_max)
+    prefix = config.outputs.figure_prefix
 
-    for name in FEATURE_VARIABLES:
-        cmap, label = PLOT_STYLE[name]
-        values = dataset[name].values[::stride, ::stride]
+    for definition in config.all_features:
+        values = dataset[definition.id].values[::stride, ::stride]
         figure, axis = plt.subplots(figsize=(14, 7), constrained_layout=True)
-        image = _plot_panel(axis, values, label, cmap, extent)
+        image = _plot_panel(
+            axis, values, definition.label, definition.cmap, extent, config
+        )
         figure.colorbar(image, ax=axis, orientation="horizontal", pad=0.06, shrink=0.7)
         axis.set_xlabel("Longitude")
         axis.set_ylabel("Latitude")
         figure.suptitle(
-            f"Earth analog feature: {label}",
+            f"Earth analog feature: {definition.label}",
             fontsize=14,
             fontweight="bold",
         )
         figure.text(
             0.5,
             -0.02,
-            "0.05° search grid · ETOPO 2022 + WorldClim 2.1 · land mask from WorldClim ocean nodata",
+            "ETOPO 2022 + WorldClim 2.1 · land mask from WorldClim ocean nodata",
             ha="center",
             fontsize=8,
             color="0.35",
         )
-        path = figures_dir / f"earth_{name}.png"
-        figure.savefig(path, dpi=160, bbox_inches="tight")
+        path = figures_dir / f"{prefix}{definition.id}.png"
+        figure.savefig(path, dpi=config.figures.dpi_single, bbox_inches="tight")
         plt.close(figure)
         written.append(path)
 
-    # Combined overview: 4 x 4 panels, compact labels.
-    figure, axes = plt.subplots(4, 4, figsize=(18, 11), constrained_layout=True)
-    for axis, name in zip(axes.flat, FEATURE_VARIABLES):
-        cmap, label = PLOT_STYLE[name]
-        _plot_panel(axis, dataset[name].values[::stride, ::stride], label, cmap, extent)
-    for axis in axes.flat[len(FEATURE_VARIABLES):]:
+    features = config.all_features
+    columns = config.figures.overview_columns
+    rows = max(1, int(np.ceil(len(features) / columns)))
+    figure, axes = plt.subplots(rows, columns, figsize=(18, 3 * rows + 2), constrained_layout=True)
+    flat = np.atleast_1d(axes).ravel()
+    for axis, definition in zip(flat, features):
+        _plot_panel(
+            axis,
+            dataset[definition.id].values[::stride, ::stride],
+            definition.label,
+            definition.cmap,
+            extent,
+            config,
+        )
+    for axis in flat[len(features):]:
         axis.axis("off")
     figure.suptitle(
-        "Earth feature grid for Moon/Mars analog search (0.05°, Phase 1)",
+        "Earth feature grid for Moon/Mars analog search",
         fontsize=16,
         fontweight="bold",
     )
@@ -282,8 +277,8 @@ def write_figures(dataset_path: Path, figures_dir: Path) -> list[Path]:
         fontsize=9,
         color="0.35",
     )
-    overview = figures_dir / "earth_features_overview.png"
-    figure.savefig(overview, dpi=150, bbox_inches="tight")
+    overview = figures_dir / config.outputs.overview_figure
+    figure.savefig(overview, dpi=config.figures.dpi_overview, bbox_inches="tight")
     plt.close(figure)
     written.append(overview)
     dataset.close()
@@ -291,18 +286,22 @@ def write_figures(dataset_path: Path, figures_dir: Path) -> list[Path]:
 
 
 def _zone_stats(
-    land_mask: np.ndarray, lat: np.ndarray, feature: np.ndarray | None = None
+    land_mask: np.ndarray,
+    lat: np.ndarray,
+    config: AppConfig,
+    feature: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Compute cell-count and area-weighted coverage in polar/temperate zones."""
     ny, nx = land_mask.shape
     weights = np.cos(np.deg2rad(lat))[:, None] * np.ones((1, nx))
+    polar = config.report.polar_circle_deg
     zones = {
-        "global": np.broadcast_to(np.ones((ny, 1), dtype=bool), land_mask.shape),
-        "arctic_ge_66.5N": np.broadcast_to(lat[:, None] >= 66.5, land_mask.shape),
+        "grid": np.broadcast_to(np.ones((ny, 1), dtype=bool), land_mask.shape),
+        f"arctic_ge_{polar:g}N": np.broadcast_to(lat[:, None] >= polar, land_mask.shape),
         "temperate": np.broadcast_to(
-            (lat[:, None] > -66.5) & (lat[:, None] < 66.5), land_mask.shape
+            (lat[:, None] > -polar) & (lat[:, None] < polar), land_mask.shape
         ),
-        "antarctic_le_66.5S": np.broadcast_to(lat[:, None] <= -66.5, land_mask.shape),
+        f"antarctic_le_{polar:g}S": np.broadcast_to(lat[:, None] <= -polar, land_mask.shape),
     }
     stats: dict[str, Any] = {}
     for zone_name, zone in zones.items():
@@ -324,67 +323,126 @@ def _zone_stats(
     return stats
 
 
+def sample_site(dataset, site: ValidationSite, config: AppConfig) -> dict[str, Any]:
+    """Read every configured feature at one validation site.
+
+    Sites outside the configured grid are reported as out of bounds instead of
+    being silently clamped to the nearest edge cell.
+    """
+    spec = config.grid
+    inside = (
+        spec.lon_min <= site.lon <= spec.lon_max
+        and spec.lat_min <= site.lat <= spec.lat_max
+    )
+    if not inside:
+        return {
+            "site": site.name,
+            "lat": site.lat,
+            "lon": site.lon,
+            "row": None,
+            "col": None,
+            "inside_grid": False,
+            "values": {definition.id: None for definition in config.all_features},
+        }
+    row, col = sample_point_rowcol(spec, site.lat, site.lon)
+    values: dict[str, Any] = {}
+    for definition in config.all_features:
+        values[definition.id] = float(dataset[definition.id].values[row, col])
+    return {
+        "site": site.name,
+        "lat": site.lat,
+        "lon": site.lon,
+        "row": row,
+        "col": col,
+        "inside_grid": True,
+        "values": values,
+    }
+
+
 def write_report(
     dataset_path: Path,
     figures: list[Path],
     intermediates: list[Path],
-    report_path: Path,
-    meta_path: Path,
+    config: AppConfig,
+    refresh_only: bool = False,
 ) -> dict[str, Any]:
-    """Write the Phase 1 coverage/limits report and a machine-readable metadata file."""
+    """Write the coverage/limits report and a machine-readable metadata file."""
+    spec = config.grid
+    report_path = config.output("earth_report")
+    meta_path = config.output("earth_meta")
     dataset = xr.open_dataset(dataset_path)
     lat = dataset.lat.values
     lon = dataset.lon.values
     land_mask = dataset.land_mask.values.astype(bool)
-    coverage = _zone_stats(land_mask, lat)
+    coverage = _zone_stats(land_mask, lat, config)
+    global_run = (
+        spec.lon_min <= -180.0
+        and spec.lon_max >= 180.0
+        and spec.lat_min <= -90.0
+        and spec.lat_max >= 90.0
+    )
+    arctic_name = f"arctic_ge_{config.report.polar_circle_deg:g}N"
+    antarctic_name = f"antarctic_le_{config.report.polar_circle_deg:g}S"
+    reaches_arctic = coverage[arctic_name]["cells"] > 0
+    reaches_antarctic = coverage[antarctic_name]["cells"] > 0
 
     feature_rows = []
-    for name in FEATURE_VARIABLES:
-        values = dataset[name].values
+    for definition in config.all_features:
+        values = dataset[definition.id].values
         valid = np.isfinite(values) & land_mask
         feature_rows.append(
             {
-                "name": name,
-                "units": str(dataset[name].attrs.get("units", "")),
-                "long_name": str(dataset[name].attrs.get("long_name", name)),
+                "name": definition.id,
+                "group": definition.group,
+                "function": definition.function,
+                "units": definition.units,
+                "long_name": definition.long_name,
                 "min": float(np.nanmin(values[valid])) if valid.any() else float("nan"),
                 "median": float(np.nanmedian(values[valid])) if valid.any() else float("nan"),
                 "max": float(np.nanmax(values[valid])) if valid.any() else float("nan"),
                 "valid_land_cells": int(valid.sum()),
-                "valid_of_land": float(valid.sum() / land_mask.sum()),
+                "valid_of_land": float(valid.sum() / max(1, land_mask.sum())),
             }
         )
 
-    # Spot checks at well-known analog / non-analog sites.
-    site_rows = []
-    for label, site_lat, site_lon in VALIDATION_SITES:
-        row = int(round((LAT_MAX - site_lat) / RES_DEG - 0.5))
-        col = int(round((site_lon - LON_MIN) / RES_DEG - 0.5))
-        row = min(max(row, 0), NY - 1)
-        col = min(max(col, 0), NX - 1)
-        site_rows.append(
-            {
-                "site": label,
-                "lat": site_lat,
-                "lon": site_lon,
-                "temp_mean_c": float(dataset.temp_mean_c.values[row, col]),
-                "temp_min_coldest_c": float(dataset.temp_min_coldest_c.values[row, col]),
-                "precip_annual_mm": float(dataset.precip_annual_mm.values[row, col]),
-                "relief_20km_m": float(dataset.relief_20km_m.values[row, col]),
-                "slope_20km_deg": float(dataset.slope_20km_deg.values[row, col]),
-                "land_mask": int(land_mask[row, col]),
-            }
-        )
+    site_rows = [sample_site(dataset, site, config) for site in config.validation_sites]
 
-    sizes = {path.name: path.stat().st_size / 1e6 for path in [dataset_path, *intermediates] if path.exists()}
+    sizes = {
+        path.name: path.stat().st_size / 1e6
+        for path in [dataset_path, *intermediates]
+        if path.exists()
+    }
     metadata = {
         "grid": {
-            "resolution_deg": RES_DEG,
-            "nx": NX,
-            "ny": NY,
-            "lon_min": float(LON_MIN),
-            "lat_max": float(LAT_MAX),
+            "resolution_deg": spec.resolution_deg,
+            "nx": spec.nx,
+            "ny": spec.ny,
+            "lon_min": spec.lon_min,
+            "lon_max": spec.lon_max,
+            "lat_min": spec.lat_min,
+            "lat_max": spec.lat_max,
             "lat_order": "north_to_south",
+            "tile_deg": spec.tile_deg,
+            "halo_deg": spec.halo_deg,
+            "working_pixel_m": spec.working_pixel_m,
+        },
+        "config": {
+            "comparability": {
+                "min_window_pixels": config.comparability.min_window_pixels,
+                "min_hurst_lags": config.comparability.min_hurst_lags,
+                "min_lag_pixels": config.comparability.min_lag_pixels,
+                "exact_percentile_max_px": config.comparability.exact_percentile_max_px,
+                "approx_percentile_window_px": config.comparability.approx_percentile_window_px,
+            },
+            "feature_ids": [definition.id for definition in config.all_features],
+            "terrain_parameters": {
+                definition.id: dict(definition.params)
+                for definition in config.terrain_features
+            },
+            "groups": [
+                {"name": group.name, "weight": group.weight, "members": list(group.members)}
+                for group in config.groups
+            ],
         },
         "sources": {
             "terrain": "ETOPO 2022 v1 60 arc-second surface elevation, NOAA NCEI, doi:10.25921/fd45-gt74",
@@ -394,38 +452,55 @@ def write_report(
         "coverage": coverage,
         "spot_checks": site_rows,
         "file_sizes_mb": sizes,
-        "figures": [str(path.relative_to(report_path.parent.parent)) for path in figures],
+        "figures": [str(path.relative_to(PROJECT_ROOT).as_posix()) for path in figures],
         "limitations": [
             "WorldClim is air temperature (1970-2000 climatology), not surface skin temperature.",
             "WorldClim Antarctic values are interpolated from sparse stations; treat as weak evidence.",
-            "ETOPO is 1.85 km; the 0.05 degree grid is ~5.6 km at the equator but much smaller in longitude near the poles.",
+            (
+                f"ETOPO native sampling is {config.earth.native_pixel_m / 1000:.2f} km; search-grid "
+                f"cells are ~{spec.resolution_deg * 111.32:.1f} km at the equator and much narrower "
+                "in longitude near the poles."
+            ),
             "Coastal terrain uses the nearest land elevation for ocean cells, so shelf bathymetry does not inflate relief.",
             "Earth cannot reproduce reduced gravity, vacuum/thin atmosphere, or radiation.",
             "Moon and Mars temperatures are literature values and are not part of this Earth grid.",
         ],
     }
+    meta_path.parent.mkdir(parents=True, exist_ok=True)
     meta_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
     lines = [
         "# Earth feature grid — Phase 1 report",
         "",
-        f"Generated by `python -m backend.pipeline.build_earth_features` on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}.",
+        f"Generated by `python -m backend.pipeline.build_earth_features` on "
+        f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}.",
         "",
         "## Grid",
         "",
-        f"- Global **0.05° lon/lat** grid, {NX} × {NY} cells, north-to-south rows, cell centres.",
-        f"- Terrain: ETOPO 2022 60 arc-second (1.85 km) reprojected in 10° tiles to a local 2 km azimuthal-equidistant grid; features computed in km windows; ocean cells filled with the nearest land elevation before filtering; sampled back with area averaging.",
-        "- Climate: WorldClim 2.1 2.5 arc-minute (~4.6 km) area-averaged to 0.05°; this is a slight coarsening, not added detail.",
-        "- Land mask: WorldClim ocean nodata; a 0.05° cell is land when the majority of its source cells are valid. Every feature is NaN over ocean.",
+        f"- **{spec.resolution_deg:g}° lon/lat** grid, {spec.nx} × {spec.ny} cells, "
+        f"north-to-south rows, cell centres.",
+        f"- Bounds: lon {spec.lon_min:g} → {spec.lon_max:g}, "
+        f"lat {spec.lat_min:g} → {spec.lat_max:g}.",
+        f"- Tiling: {spec.tile_deg:g}° tiles with a {spec.halo_deg:g}° halo, reprojected to a "
+        f"local {spec.working_pixel_m / 1000:.2f} km azimuthal-equidistant grid; features "
+        "computed in km windows by the shared registry; ocean cells filled with the nearest "
+        "land elevation before filtering; sampled back with area averaging.",
+        "- Climate: WorldClim 2.1 2.5 arc-minute (~4.6 km) area-averaged to the search grid; "
+        "this is a slight coarsening, not added detail.",
+        f"- Land mask: WorldClim ocean nodata; a cell is land when its valid fraction is at "
+        f"least {config.earth.land_mask_threshold:g}. Every feature is NaN over ocean.",
         "",
         "## Features",
         "",
-        "| Variable | Long name | Units | Land min | Land median | Land max | Valid land cells |",
-        "|---|---|---|---|---|---|---|",
+        "All twelve MVP features are computed by one registry "
+        "(`backend/features/registry.py`) from parameters in `config/features.yaml`.",
+        "",
+        "| Variable | Group | Registry function | Units | Land min | Land median | Land max | Valid land cells |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for row in feature_rows:
         lines.append(
-            f"| `{row['name']}` | {row['long_name']} | {row['units']} | "
+            f"| `{row['name']}` | {row['group']} | `{row['function']}` | {row['units']} | "
             f"{row['min']:.4g} | {row['median']:.4g} | {row['max']:.4g} | "
             f"{row['valid_land_cells']:,} ({100 * row['valid_of_land']:.1f}%) |"
         )
@@ -433,45 +508,114 @@ def write_report(
     lines.append("| Zone | Cells | Land cells | Land share of cells | Area-weighted land share |")
     lines.append("|---|---|---|---|---|")
     for zone, row in coverage.items():
+        cell_share = (
+            f"{100 * row['land_cell_fraction']:.1f}%"
+            if row["cells"]
+            else "n/a (outside grid)"
+        )
+        area_share = (
+            f"{100 * row['land_area_fraction']:.1f}%"
+            if row["cells"]
+            else "n/a (outside grid)"
+        )
         lines.append(
             f"| {zone} | {row['cells']:,} | {row['land_cells']:,} | "
-            f"{100 * row['land_cell_fraction']:.1f}% | {100 * row['land_area_fraction']:.1f}% |"
+            f"{cell_share} | {area_share} |"
+        )
+    lines.append("")
+    if global_run:
+        lines.append(
+            "The area-weighted global land share should be close to Earth's ~29% land area; "
+            "the cell-count share is higher because polar cells are over-represented in a "
+            "lon/lat grid."
+        )
+    else:
+        lines.append(
+            "This is a regional proof run of the same pipeline; the shares describe the "
+            "configured bounding box only, not the whole planet."
+        )
+    lines.extend(["", "## Polar coverage notes", ""])
+    if reaches_antarctic:
+        lines.extend(
+            [
+                "- **Antarctica** is present in the land mask (WorldClim has data over the ice "
+                "sheet), so polar-desert sites are searchable. WorldClim Antarctic values come "
+                "from sparse stations.",
+            ]
+        )
+    else:
+        lines.append(
+            f"- The configured grid does not reach {config.report.polar_circle_deg:g}°S, so "
+            "Antarctic coverage is not exercised by this run."
+        )
+    if reaches_arctic:
+        lines.append(
+            "- **Arctic** land is present, but ocean/ice-shelf cells are correctly excluded by "
+            "the WorldClim nodata mask; this is a real coverage boundary, not missing data."
+        )
+    else:
+        lines.append(
+            f"- The configured grid does not reach {config.report.polar_circle_deg:g}°N, so "
+            "Arctic coverage is not exercised by this run."
+        )
+    lines.append(
+        "- At high latitude a search-grid cell is only a fraction of a kilometre wide in "
+        "longitude; terrain features come from the local working grid, so adjacent polar cells "
+        "repeat the same terrain sample. This is documented rather than hidden."
+    )
+    lines.extend(
+        [
+            "",
+            "## Effective configuration",
+            "",
+            "These values come from `config/*.yaml`; nothing below is a code literal.",
+            "",
+            "| Feature | Group | Registry function | Parameters | Resolution on this body |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for definition in config.all_features:
+        verdict = registry.availability(
+            definition,
+            spec.working_pixel_m,
+            config.comparability,
+            config.earth.native_pixel_m,
+        )
+        params = ", ".join(f"{key}={value}" for key, value in definition.params.items())
+        status = verdict.resolution
+        lines.append(
+            f"| `{definition.id}` | {definition.group} | `{definition.function}` | "
+            f"{params or '—'} | {status} |"
         )
     lines.extend(
         [
             "",
-            "The area-weighted global land share should be close to Earth's ~29% land area; the "
-            "cell-count share is higher because polar cells are over-represented in a lon/lat grid.",
-            "",
-            "## Polar coverage notes",
-            "",
-            "- **Antarctica** is present in the land mask (WorldClim has data over the ice sheet), so "
-            "Dry Valleys-type sites are searchable. WorldClim Antarctic values come from sparse stations.",
-            "- **Arctic** land is present, but ocean/ice-shelf cells are correctly excluded by the "
-            "WorldClim nodata mask; this is a real coverage boundary, not missing data.",
-            "- At 0.05°, a cell is only ~0.5 km wide in longitude at 85° latitude; terrain features come "
-            "from the 2 km working grid, so adjacent polar cells repeat the same terrain sample. This "
-            "is documented rather than hidden.",
-            "",
             "## Spot checks",
             "",
-            "| Site | Lat | Lon | Mean air T (°C) | Coldest min (°C) | Annual precip (mm) | Relief 20 km (m) | Slope 20 km (°) | Land |",
-            "|---|---|---|---|---|---|---|---|---|",
         ]
     )
+    sample_ids = [d.id for d in config.all_features]
+    header = "| Site | Lat | Lon | " + " | ".join(f"`{name}`" for name in sample_ids) + " |"
+    lines.append(header)
+    lines.append("|" + "---|" * (3 + len(sample_ids)))
     for row in site_rows:
-        lines.append(
-            f"| {row['site']} | {row['lat']:.1f} | {row['lon']:.1f} | {row['temp_mean_c']:.1f} | "
-            f"{row['temp_min_coldest_c']:.1f} | {row['precip_annual_mm']:.1f} | "
-            f"{row['relief_20km_m']:.0f} | {row['slope_20km_deg']:.1f} | {row['land_mask']} |"
-        )
+        if not row["inside_grid"]:
+            cells = " | ".join("outside" for _ in sample_ids)
+            lines.append(
+                f"| {row['site']} | {row['lat']:.1f} | {row['lon']:.1f} | {cells} |"
+            )
+            continue
+        cells = " | ".join(f"{row['values'][name]:.4g}" for name in sample_ids)
+        lines.append(f"| {row['site']} | {row['lat']:.1f} | {row['lon']:.1f} | {cells} |")
+    lines.append("")
+    lines.append("Sites are defined in `config/validation_sites.yaml`, not in code.")
     lines.extend(["", "## Files and figures", ""])
     for name, size in sizes.items():
         note = " *(intermediate)*" if name != dataset_path.name else ""
-        lines.append(f"- `data/processed/{name}` — {size:.1f} MB{note}")
-    lines.append(f"- `data/processed/{meta_path.name}` — machine-readable metadata")
+        lines.append(f"- `{name}` — {size:.1f} MB{note}")
+    lines.append(f"- `{meta_path.name}` — machine-readable metadata")
     for path in figures:
-        lines.append(f"- `{path.relative_to(report_path.parent.parent).as_posix()}`")
+        lines.append(f"- `{path.relative_to(PROJECT_ROOT).as_posix()}`")
     lines.extend(
         [
             "",
@@ -479,69 +623,80 @@ def write_report(
             "",
             "- WorldClim is **air temperature**, not surface skin temperature, and its Antarctic values are weakly constrained.",
             "- ETOPO includes bathymetry; the WorldClim land mask removes ocean cells, and ocean cells are filled with the nearest land elevation before filtering so coastal relief is not inflated by the shelf.",
-            "- The 0.05° grid is not equal-area. At high latitudes, longitude cells are much narrower than at the equator; area weighting is reported above.",
+            "- The lon/lat grid is not equal-area. At high latitudes, longitude cells are much narrower than at the equator; area weighting is reported above.",
             "- Earth cannot reproduce reduced gravity, vacuum or the thin Martian atmosphere, or the radiation environment.",
             "- Moon and Mars temperatures are literature values, added in Phase 2; no synthetic temperature raster is used.",
             "",
         ]
     )
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines), encoding="utf-8")
     dataset.close()
     return metadata
 
 
 def build(
-    terrain_path: Path,
-    climate_path: Path,
-    output: Path,
+    terrain_path: Path | None = None,
+    climate_path: Path | None = None,
+    output: Path | None = None,
+    config: AppConfig | None = None,
     keep_intermediates: bool = False,
     refresh: bool = False,
 ) -> None:
     """Run the merge, figures and report (or just figures/report with ``refresh``)."""
+    config = config or load_config()
     started = time.perf_counter()
-    meta_path = PROCESSED_DIR / "earth_features_meta.json"
-    report_path = DOCS_DIR / "earth_grid_report.md"
+    terrain_path = terrain_path or config.output("earth_terrain")
+    climate_path = climate_path or config.output("earth_climate")
+    output = output or config.output("earth_features")
     if refresh:
         if not output.exists():
             raise FileNotFoundError(f"{output} not found; cannot refresh figures")
-        figures = write_figures(output, FIGURES_DIR)
-        write_report(output, figures, [], report_path, meta_path)
+        figures = write_figures(output, config)
+        write_report(output, figures, [], config, refresh_only=True)
         print(f"Refreshed {len(figures)} figures for {output}")
-        print(f"Wrote {report_path}")
+        print(f"Wrote {config.output('earth_report')}")
         return
 
-    merge_features(terrain_path, climate_path, output)
-    figures = write_figures(output, FIGURES_DIR)
-    intermediates = [terrain_path, climate_path] if not keep_intermediates else []
-    write_report(output, figures, intermediates, report_path, meta_path)
+    merge_features(terrain_path, climate_path, output, config)
+    figures = write_figures(output, config)
+    intermediates = [] if keep_intermediates else [terrain_path, climate_path]
+    write_report(output, figures, intermediates, config)
     if not keep_intermediates:
         for path in (terrain_path, climate_path):
             if path.exists():
                 path.unlink()
     print(f"Wrote {output}")
-    print(f"Wrote {report_path}")
-    print(f"Wrote {len(figures)} figures to {FIGURES_DIR}")
+    print(f"Wrote {config.output('earth_report')}")
+    print(f"Wrote {len(figures)} figures to {config.outputs.figures_dir}")
     print(f"Total {time.perf_counter() - started:.1f} s")
 
 
 def main() -> None:
     """Command-line entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--terrain", type=Path, default=PROCESSED_DIR / "earth_terrain.nc")
-    parser.add_argument("--climate", type=Path, default=PROCESSED_DIR / "earth_climate.nc")
-    parser.add_argument("--output", type=Path, default=PROCESSED_DIR / "earth_features.nc")
+    parser.add_argument("--terrain", type=Path, default=None)
+    parser.add_argument("--climate", type=Path, default=None)
+    parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--keep-intermediates", action="store_true")
     parser.add_argument(
         "--refresh",
         action="store_true",
-        help="regenerate figures and report from an existing earth_features.nc",
+        help="regenerate figures and report from an existing features dataset",
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="config override YAML deep-merged over config/*.yaml",
     )
     args = parser.parse_args()
     build(
         args.terrain,
         args.climate,
         args.output,
-        args.keep_intermediates,
+        config=load_config(override=args.config),
+        keep_intermediates=args.keep_intermediates,
         refresh=args.refresh,
     )
 

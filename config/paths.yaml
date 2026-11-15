@@ -1,0 +1,51 @@
+# Source files (relative to the per-body Datasets folders) and output names.
+# backend/paths.py maps the data root; this file maps every file name.
+
+sources:
+  earth:
+    terrain: ETOPO_2022_v1_60s_N90W180_surface.tif
+    climate:
+      bio_1: wc2.1_2.5m_bio_1.tif
+      bio_2: wc2.1_2.5m_bio_2.tif
+      bio_5: wc2.1_2.5m_bio_5.tif
+      bio_6: wc2.1_2.5m_bio_6.tif
+      bio_7: wc2.1_2.5m_bio_7.tif
+      bio_12: wc2.1_2.5m_bio_12.tif
+      bio_14: wc2.1_2.5m_bio_14.tif
+  moon:
+    dem: LDEM_80S_80MPP_ADJ.tiff
+    hurst: LDRM_80S_1000MPP_ADJ_H.tiff
+    spectral_slope: LDRM_80S_1000MPP_ADJ_SPSLP.tiff
+    roughness_800m: LDRM_80S_1000MPP_ADJ_ROUGH_800M.tiff
+    roughness_1600m: LDRM_80S_1000MPP_ADJ_ROUGH_1600M.tiff
+    slope_800m: LDRM_80S_1000MPP_ADJ_SLP_800M.tiff
+    slope_1600m: LDRM_80S_1000MPP_ADJ_SLP_1600M.tiff
+    psr: LPSR_80S_20MPP_ADJ_1km2.csv
+    thermal: moon_thermal_literature.csv
+    context_dem: ldem_16.tif
+  mars:
+    dem: megt90n000eb.img
+    thermal: mars_thermal_literature.csv
+
+outputs:
+  processed_dir: data/processed
+  docs_dir: docs
+  figures_subdir: figures
+  proofs_subdir: proofs
+  earth_terrain: earth_terrain.nc
+  earth_climate: earth_climate.nc
+  earth_features: earth_features.nc
+  earth_meta: earth_features_meta.json
+  earth_report: earth_grid_report.md
+  target_profiles: target_profiles.json
+  phase2_report: phase2_report.md
+  psr_report: psr_verification.md
+  hurst_sensitivity: hurst_sensitivity.md
+  scores_moon: scores_moon.nc
+  scores_mars: scores_mars.nc
+  top_sites: top_sites.json
+  phase3_report: phase3_report.md
+  hardcode_audit: hardcode_audit.md
+  earth_figure_prefix: earth_
+  overview_figure: earth_features_overview.png
+  data_inventory: data_inventory.md

@@ -1,175 +1,457 @@
-"""Phase 3 similarity engine: Earth-percentile weighted distance to a target.
+"""Phase 3 similarity engine: rank similarity *and* absolute gap, per feature.
 
-Method (docs/FEATURES.md, "Normalization and scoring"):
-  1. Every feature is converted to its percentile in the area-weighted Earth land
-     distribution (mid-rank for ties). Targets are placed on the same scale.
-  2. Per-feature distance d = |pct_cell - pct_target| / 100  (0 = identical).
-  3. Overall distance D = sum(w*d)/sum(w) over features that have a target value;
-     score = 100*(1 - D). Sub-score of a feature = 100*(1 - d).
+Both halves are mandatory (Phase 2 contract):
 
-Features without a target value (e.g. temperatures) are dropped and reported,
-never guessed. Dryness is one-sided: the target sits at Earth percentile 0.
+* **absolute** — ``exp(-0.5 * (gap / scale)^2)`` with ``gap = Earth value -
+  target median`` and ``scale`` floored by config, so the score is in real units;
+* **rank** — ``1 - |p_earth - q|`` where ``p_earth`` is the Earth cell's
+  area-weighted percentile and ``q`` is the Earth percentile of the target
+  median. Rank similarity is scale-free, so it can look excellent while the
+  real-unit gap is enormous; the engine flags exactly that case and never hides
+  the gap.
+
+Qualitative thermal features never use a numeric Earth/target comparison: they
+are scored by distance between configured bands (band 0 = coldest), with the
+target band derived from exact cited polar rows in the target profile.
 """
 
 from __future__ import annotations
 
+import math
+from dataclasses import dataclass, field
+from typing import Any, Iterable
+
 import numpy as np
 from netCDF4 import Dataset
 
-from backend.paths import PROCESSED_DIR
-
-TEMPS = ["temp_mean_c", "temp_diurnal_range_c", "temp_max_warmest_c", "temp_min_coldest_c", "temp_annual_range_c"]
-GRID_FEATURES = [
-    "relief_20km_m", "slope_20km_deg", "roughness_5km_m", "roughness_10km_m", "roughness_20km_m",
-    "hurst_2_32km", "precip_annual_mm", "precip_driest_month_mm", *TEMPS,
-]
-# "ice_proxy" is the coldest-month minimum air temperature (Earth proxy for persistent cold).
-ICE = "ice_proxy"
-ALL_FEATURES = [*GRID_FEATURES, ICE]
-GRID_OF = {ICE: "temp_min_coldest_c"}
-
-# Relative weights per preset. The ice proxy is reported as its own sub-score and
-# is only mixed into the overall score by the cold-trap preset.
-PRESETS: dict[str, dict[str, float]] = {
-    "balanced": {"relief_20km_m": 1, "slope_20km_deg": 1, "roughness_5km_m": 1 / 3, "roughness_10km_m": 1 / 3,
-                 "roughness_20km_m": 1 / 3, "hurst_2_32km": 0.5, "precip_annual_mm": 0.5,
-                 "precip_driest_month_mm": 0.5},
-    "rover_mobility": {"slope_20km_deg": 3, "relief_20km_m": 1, "roughness_5km_m": 2 / 3,
-                       "roughness_10km_m": 2 / 3, "roughness_20km_m": 2 / 3, "hurst_2_32km": 0.5},
-    "cold_trap_ice": {ICE: 3, "relief_20km_m": 0.5, "slope_20km_deg": 0.5, "precip_annual_mm": 0.5,
-                      "precip_driest_month_mm": 0.5},
-    # Needs diurnal/annual range and minimum, which the Diviner polar table does not provide:
-    # stays unavailable until those target values exist.
-    "thermal_cycling": {"temp_diurnal_range_c": 2, "temp_annual_range_c": 1, "temp_min_coldest_c": 1},
-    # Annual mean and annual maximum temperature. Moon values are Diviner SURFACE temperatures,
-    # Earth values are WorldClim AIR temperatures; the Moon sits beyond Earth's cold end, so this
-    # preset ranks Earth cells by coldness only.
-    "thermal_surface": {"temp_mean_c": 1, "temp_max_warmest_c": 1},
-}
-# Target status -> weight multiplier (resolution-limited values must not drive the ranking).
-STATUS_FACTOR = {"measured": 1.0, "reduced_lags": 0.5, "resolution_limited": 0.0}
+from backend.config import AppConfig, FeatureDefinition
 
 
-# ------------------------------------------------------------ percentiles
+@dataclass(frozen=True)
+class ScaledFeature:
+    """One target feature with the scale/bands the engine needs."""
 
-class Ecdf:
-    """Area-weighted empirical distribution of one Earth feature."""
-
-    def __init__(self, values: np.ndarray, weights: np.ndarray):
-        order = np.argsort(values)
-        self.values = values[order]
-        cw = np.concatenate([[0.0], np.cumsum(weights[order], dtype="float64")])
-        self.cum = cw / cw[-1]
-
-    def percentile(self, x: np.ndarray | float) -> np.ndarray:
-        """Mid-rank percentile (0-100) of x on the Earth scale."""
-        x = np.asarray(x)
-        lo = np.searchsorted(self.values, x, "left")
-        hi = np.searchsorted(self.values, x, "right")
-        return ((self.cum[lo] + self.cum[hi]) / 2 * 100).astype("float32")
-
-
-def load_earth(path=None) -> tuple[dict[str, np.ndarray], dict[str, Ecdf], np.ndarray, np.ndarray]:
-    """Return per-feature Earth percentile grids (float16, NaN off land), ECDFs, lat, lon."""
-    with Dataset(path or PROCESSED_DIR / "earth_features.nc") as ds:
-        lat, lon = np.asarray(ds["lat"][:]), np.asarray(ds["lon"][:])
-        w = np.broadcast_to(np.cos(np.radians(lat))[:, None], (lat.size, lon.size))
-        grids, ecdfs = {}, {}
-        for name in GRID_FEATURES:
-            a = np.ma.filled(ds[name][:], np.nan).astype("float32")
-            ok = np.isfinite(a)
-            ecdfs[name] = Ecdf(a[ok], w[ok])
-            pct = np.full(a.shape, np.nan, dtype="float16")
-            pct[ok] = ecdfs[name].percentile(a[ok])
-            grids[name] = pct
-    grids[ICE] = grids["temp_min_coldest_c"]
-    ecdfs[ICE] = ecdfs["temp_min_coldest_c"]
-    return grids, ecdfs, lat, lon
+    id: str
+    group: str
+    units: str
+    qualitative: bool
+    median: float = float("nan")
+    sigma: float = float("nan")
+    floor: float = float("nan")
+    scale: float = float("nan")
+    floor_rule: str = ""
+    bands_c: tuple[float, ...] = ()
+    n_bands: int = 0
+    target_band: int = -1
+    anchor_lo: float = float("nan")
+    anchor_hi: float = float("nan")
+    anchor_label: str = ""
+    anchor_rows: tuple[str, ...] = ()
+    label: str = ""
 
 
-# ------------------------------------------------------------ targets
-
-def target_percentiles(profile: dict, ecdfs: dict[str, Ecdf]) -> tuple[dict[str, float], dict[str, str], dict[str, float]]:
-    """Target percentile per feature, dropped-feature reasons, and per-feature status factors."""
-    pct, dropped, factor = {}, {}, {}
-    for name, f in profile["features"].items():
-        if f["value"] is None:
-            dropped[name] = f["status"]
-        elif f["status"] == "one_sided_constraint":
-            pct[name], factor[name] = 0.0, 1.0  # drier than any Earth desert
-        else:
-            pct[name] = float(ecdfs[name].percentile(f["value"]))
-            factor[name] = STATUS_FACTOR.get(f["status"], 1.0)
-    ice = profile.get("ice_cold_trap_proxy", {})
-    if ice.get("status") == "measured":
-        # Lunar PSRs stay below 110 K (-163 C) all year, colder than any Earth land cell
-        # (grid minimum about -72 C), so the target sits beyond Earth's cold end.
-        pct[ICE], factor[ICE] = 0.0, 1.0
-    else:
-        dropped[ICE] = ice.get("status", "missing")
-    return pct, dropped, factor
-
-
-def score_map(grids: dict[str, np.ndarray], target_pct: dict[str, float], weights: dict[str, float],
-              factor: dict[str, float] | None = None) -> tuple[np.ndarray, dict[str, np.ndarray], list[str]]:
-    """Overall score (0-100, NaN off land), per-feature sub-scores, and the features used."""
-    factor = factor or {}
-    used = {k: w * factor.get(k, 1.0) for k, w in weights.items() if k in target_pct and w * factor.get(k, 1.0) > 0}
-    shape = next(iter(grids.values())).shape
-    dist, total = np.zeros(shape, dtype="float32"), 0.0
-    subs = {}
-    for k in ALL_FEATURES:
-        if k not in target_pct:
+def scaled_features(
+    config: AppConfig, profile: dict[str, Any]
+) -> dict[str, ScaledFeature]:
+    """Resolve every usable target feature into an absolute/rank scale."""
+    scoring = config.scoring
+    out: dict[str, ScaledFeature] = {}
+    for definition in config.all_features:
+        entry = (profile.get("features") or {}).get(definition.id)
+        if not entry:
             continue
-        d = np.abs(grids[k].astype("float32") - target_pct[k]) / 100
-        subs[k] = (100 * (1 - d)).astype("float32")
-        if k in used:
-            dist += used[k] * d
-            total += used[k]
-    if total == 0:
-        return np.full(shape, np.nan, dtype="float32"), subs, []
-    return (100 * (1 - dist / total)).astype("float32"), subs, sorted(used)
+        resolution = entry.get("resolution")
+        if resolution == "qualitative":
+            out[definition.id] = ScaledFeature(
+                id=definition.id,
+                group=definition.group,
+                units=definition.units,
+                qualitative=True,
+                bands_c=tuple(float(v) for v in entry["bands_c"]),
+                n_bands=int(entry["n_bands"]),
+                target_band=int(entry["target_band"]),
+                anchor_lo=float(entry["anchor_range_c"][0]),
+                anchor_hi=float(entry["anchor_range_c"][1]),
+                anchor_label=str(entry.get("anchor_label", "")),
+                anchor_rows=tuple(entry.get("anchor_rows", ())),
+                label="qualitative",
+            )
+            continue
+        if resolution not in {"resolved", "marginal"}:
+            continue
+        median = entry.get("median")
+        p16 = entry.get("p16")
+        p84 = entry.get("p84")
+        if median is None or not math.isfinite(float(median)):
+            continue
+        median = float(median)
+        if p16 is not None and p84 is not None:
+            sigma = (float(p84) - float(p16)) / 2.0
+        else:
+            sigma = float("nan")
+        absolute_floor = float(scoring.spread_floor_units.get(definition.id, 0.0))
+        fraction_floor = abs(median) * scoring.spread_floor_fraction
+        floor = max(absolute_floor, fraction_floor)
+        if not math.isfinite(sigma):
+            sigma = floor
+        scale = max(sigma, floor)
+        out[definition.id] = ScaledFeature(
+            id=definition.id,
+            group=definition.group,
+            units=definition.units,
+            qualitative=False,
+            median=median,
+            sigma=sigma,
+            floor=floor,
+            scale=scale,
+            floor_rule=(
+                f"max(|median| * {scoring.spread_floor_fraction:g} = "
+                f"{fraction_floor:.4g}, measurement floor {absolute_floor:.4g})"
+            ),
+        )
+    return out
 
 
-# ------------------------------------------------------------ sites
+class EarthStore:
+    """Read-only access to the Phase 1 Earth feature NetCDF."""
 
-FAMOUS = {  # name: (lat, lon, exclusion radius km): the sites "everyone already knows"
-    "Atacama": (-24.0, -69.5, 400), "McMurdo Dry Valleys": (-77.5, 162.0, 300),
-    "Devon Island / Haughton": (75.4, -89.5, 300), "Death Valley": (36.5, -116.9, 300),
-    "Iceland": (64.8, -18.5, 400), "Hawaii": (19.7, -155.5, 300), "Mojave": (35.0, -116.0, 300),
-    "Svalbard": (78.5, 16.0, 300), "Sahara (Libya/Egypt)": (24.0, 20.0, 600),
-}
+    def __init__(self, config: AppConfig) -> None:
+        self.path = config.output("earth_features")
+        self.dataset = Dataset(str(self.path), "r")
+        self.lat = np.asarray(self.dataset.variables["lat"][:], dtype=np.float64)
+        self.lon = np.asarray(self.dataset.variables["lon"][:], dtype=np.float64)
+        self.land = np.asarray(self.dataset.variables["land_mask"][:]) > 0
+        weight = np.cos(np.radians(self.lat))[:, None] * self.land
+        self.cell_weight = np.asarray(weight, dtype=np.float32)
+        self.weight_sum = float(self.cell_weight.sum(dtype=np.float64))
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return (self.lat.size, self.lon.size)
+
+    def read(self, feature_id: str) -> np.ndarray:
+        if feature_id not in self.dataset.variables:
+            raise KeyError(f"{feature_id} is not in {self.path}")
+        return np.asarray(self.dataset.variables[feature_id][:], dtype=np.float32)
+
+    def window(
+        self, feature_id: str, lat_deg: float, lon_deg: float, radius_deg: float
+    ) -> np.ndarray:
+        """Small area slice around a point (lat/lon are cell centres)."""
+        rows = self._indices(self.lat, lat_deg, radius_deg)
+        cols = self._indices(self.lon, lon_deg, radius_deg)
+        return np.asarray(
+            self.dataset.variables[feature_id][rows, cols], dtype=np.float32
+        )
+
+    @staticmethod
+    def _indices(axis: np.ndarray, centre: float, radius: float) -> slice:
+        step = float(abs(axis[1] - axis[0]))
+        half = max(1, int(round(radius / step)))
+        index = int(np.argmin(np.abs(axis - centre)))
+        start = max(0, index - half)
+        stop = min(axis.size, index + half + 1)
+        return slice(start, stop)
+
+    def close(self) -> None:
+        self.dataset.close()
 
 
-def km_between(lat1, lon1, lat2, lon2):
-    p1, p2 = np.radians(lat1), np.radians(lat2)
-    a = np.sin((p2 - p1) / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(np.radians(lon2 - lon1) / 2) ** 2
-    return 6371.0 * 2 * np.arcsin(np.sqrt(a))
+def weighted_cdf_table(
+    values: np.ndarray, weights: np.ndarray, quantiles: int
+) -> tuple[np.ndarray, np.ndarray]:
+    """Area-weighted empirical CDF as ``(probabilities, value quantiles)``.
+
+    ``values`` and ``weights`` are 1-D and already selected to valid cells.
+    Duplicate values are fine: the quantile table is monotone and the lookup is
+    linear interpolation, so the error is at most one quantile step.
+    """
+    order = np.argsort(values, kind="stable")
+    sorted_values = values[order]
+    cumulative = np.cumsum(weights[order].astype(np.float64))
+    cumulative /= cumulative[-1]
+    probabilities = np.linspace(0.0, 1.0, int(quantiles), dtype=np.float64)
+    quantile_values = np.interp(probabilities, cumulative, sorted_values)
+    return probabilities, quantile_values.astype(np.float32)
 
 
-def top_sites(score: np.ndarray, lat: np.ndarray, lon: np.ndarray, n: int = 10, min_sep_km: float = 300,
-              exclude_famous: bool = False) -> list[dict]:
-    """Greedy non-maximum suppression on 0.5 degree block maxima."""
-    h, w = score.shape
-    k = 10
-    blocks = np.nanmax(score[: h // k * k, : w // k * k].reshape(h // k, k, w // k, k), axis=(1, 3))
-    arg = np.nan_to_num(blocks, nan=-1)
-    blat = lat[: h // k * k].reshape(h // k, k).mean(axis=1)
-    blon = lon[: w // k * k].reshape(w // k, k).mean(axis=1)
-    LA, LO = np.meshgrid(blat, blon, indexing="ij")
-    if exclude_famous:
-        for la, lo, r in FAMOUS.values():
-            arg[km_between(LA, LO, la, lo) <= r] = -1
-    picks = []
-    while len(picks) < n:
-        i = np.unravel_index(np.argmax(arg), arg.shape)
-        if arg[i] < 0:
-            break
-        # refine to the best 0.05 degree cell inside the block
-        sub = score[i[0] * k:(i[0] + 1) * k, i[1] * k:(i[1] + 1) * k]
-        j = np.unravel_index(np.nanargmax(sub), sub.shape)
-        r, c = i[0] * k + j[0], i[1] * k + j[1]
-        picks.append({"row": int(r), "col": int(c), "lat": float(lat[r]), "lon": float(lon[c]),
-                      "score": float(score[r, c])})
-        arg[km_between(LA, LO, lat[r], lon[c]) <= min_sep_km] = -1
-    return picks
+def percentile_of(values: np.ndarray, table: tuple[np.ndarray, np.ndarray]) -> np.ndarray:
+    """Earth percentile of each value (area-weighted, from the stored table)."""
+    probabilities, quantile_values = table
+    return np.interp(values, quantile_values, probabilities).astype(np.float32)
+
+
+def band_similarity(values: np.ndarray, feature: ScaledFeature) -> np.ndarray:
+    """Band distance similarity; exact band agreement = 1."""
+    bands = np.asarray(feature.bands_c, dtype=np.float64)
+    band = np.searchsorted(bands, values, side="right")
+    distance = np.abs(band - feature.target_band)
+    scale = max(feature.n_bands - 1, 1)
+    return (1.0 - distance / scale).astype(np.float32)
+
+
+def qualitative_gap(values: np.ndarray, feature: ScaledFeature) -> np.ndarray:
+    """Signed distance to the cited anchor range (0 inside the range)."""
+    gap = np.zeros_like(values, dtype=np.float32)
+    below = values < feature.anchor_lo
+    above = values > feature.anchor_hi
+    gap[below] = values[below] - feature.anchor_lo
+    gap[above] = values[above] - feature.anchor_hi
+    return gap
+
+
+def absolute_similarity(
+    values: np.ndarray, feature: ScaledFeature, kernel: str
+) -> np.ndarray:
+    """Gaussian (default) likeness in real units, using the floored scale."""
+    if feature.qualitative:
+        return band_similarity(values, feature)
+    gap = (values - feature.median) / feature.scale
+    if kernel == "gaussian":
+        return np.exp(-0.5 * gap * gap).astype(np.float32)
+    if kernel == "exponential":
+        return np.exp(-np.abs(gap)).astype(np.float32)
+    raise ValueError(f"unknown absolute_similarity kernel {kernel!r}")
+
+
+def hidden_gap_mask(
+    config: AppConfig,
+    rank_similarity: np.ndarray,
+    absolute_like: np.ndarray,
+) -> np.ndarray:
+    """Cells where a good rank match hides a large real-unit gap.
+
+    The flag is evidence for the reader only; it never changes a score.
+    """
+    return (rank_similarity >= config.scoring.hidden_gap_rank_similarity) & (
+        absolute_like <= config.scoring.hidden_gap_absolute_similarity
+    )
+
+
+@dataclass
+class FeatureDiagnostics:
+    """Per-feature, per-target evidence for the report and the JSON."""
+
+    feature_id: str
+    group: str
+    units: str
+    qualitative: bool
+    target_median: float
+    scale: float
+    sigma: float
+    floor: float
+    floor_rule: str
+    earth_percentile_of_median: float = float("nan")
+    mean_absolute_similarity: float = float("nan")
+    mean_rank_similarity: float = float("nan")
+    hidden_gap_area_fraction: float = 0.0
+    band_area_fractions: list[float] = field(default_factory=list)
+    target_band: int = -1
+    anchor_range_c: tuple[float, float] = (float("nan"), float("nan"))
+    anchor_label: str = ""
+
+    def as_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "group": self.group,
+            "units": self.units,
+            "qualitative": self.qualitative,
+            "target_median": _finite(self.target_median),
+            "scale": _finite(self.scale),
+            "sigma": _finite(self.sigma),
+            "floor": _finite(self.floor),
+            "floor_rule": self.floor_rule,
+            "mean_absolute_similarity": _finite(self.mean_absolute_similarity),
+            "mean_rank_similarity": _finite(self.mean_rank_similarity),
+            "hidden_gap_area_fraction": self.hidden_gap_area_fraction,
+        }
+        if self.qualitative:
+            payload.update(
+                {
+                    "target_band": self.target_band,
+                    "band_area_fractions": self.band_area_fractions,
+                    "anchor_range_c": list(self.anchor_range_c),
+                    "anchor_label": self.anchor_label,
+                    "earth_percentile_of_median": None,
+                }
+            )
+        else:
+            payload["earth_percentile_of_median"] = _finite(
+                self.earth_percentile_of_median
+            )
+        return payload
+
+
+def _finite(value: float) -> float | None:
+    return float(value) if isinstance(value, (int, float)) and math.isfinite(value) else None
+
+
+@dataclass
+class GroupAccumulator:
+    total: np.ndarray
+    count: np.ndarray
+
+    @classmethod
+    def create(cls, shape: tuple[int, int]) -> "GroupAccumulator":
+        return cls(
+            total=np.zeros(shape, dtype=np.float32),
+            count=np.zeros(shape, dtype=np.uint8),
+        )
+
+    def add(self, similarity: np.ndarray, valid: np.ndarray) -> None:
+        self.total[valid] += similarity[valid]
+        self.count[valid] += 1
+
+    def grid(self) -> np.ndarray:
+        out = np.full(self.total.shape, np.nan, dtype=np.float32)
+        has = self.count > 0
+        out[has] = self.total[has] / self.count[has]
+        return out
+
+
+def compute_group_scores(
+    config: AppConfig,
+    profiles: dict[str, dict[str, Any]],
+    store: EarthStore,
+    targets: Iterable[str] = ("moon", "mars"),
+) -> tuple[
+    dict[str, dict[str, np.ndarray]],
+    dict[str, dict[str, FeatureDiagnostics]],
+    dict[str, dict[str, tuple[np.ndarray, np.ndarray]]],
+]:
+    """Area-weighted group scores plus per-feature diagnostics and CDF tables."""
+    targets = tuple(targets)
+    scales = {target: scaled_features(config, profiles[target]) for target in targets}
+    groups: dict[str, dict[str, GroupAccumulator]] = {t: {} for t in targets}
+    diagnostics: dict[str, dict[str, FeatureDiagnostics]] = {t: {} for t in targets}
+    tables: dict[str, dict[str, tuple[np.ndarray, np.ndarray]]] = {
+        t: {} for t in targets
+    }
+    scoring = config.scoring
+    land = store.land
+
+    for definition in config.all_features:
+        used = [t for t in targets if definition.id in scales[t]]
+        if not used:
+            continue
+        values = store.read(definition.id)
+        valid = land & np.isfinite(values)
+        if not valid.any():
+            continue
+        probabilities, quantile_values = weighted_cdf_table(
+            values[valid], store.cell_weight[valid], scoring.cdf_quantiles
+        )
+        table = (probabilities, quantile_values)
+        for target in used:
+            feature = scales[target][definition.id]
+            if feature.qualitative:
+                similarity = band_similarity(values, feature)
+                diag = FeatureDiagnostics(
+                    feature_id=definition.id,
+                    group=feature.group,
+                    units=feature.units,
+                    qualitative=True,
+                    target_median=float("nan"),
+                    scale=float("nan"),
+                    sigma=float("nan"),
+                    floor=float("nan"),
+                    floor_rule="banded qualitative anchor",
+                    target_band=feature.target_band,
+                    anchor_range_c=(feature.anchor_lo, feature.anchor_hi),
+                    anchor_label=feature.anchor_label,
+                )
+                band = np.searchsorted(
+                    np.asarray(feature.bands_c), values, side="right"
+                )
+                weights = store.cell_weight[valid]
+                diag.band_area_fractions = [
+                    float((weights[band[valid] == index]).sum() / weights.sum())
+                    for index in range(feature.n_bands)
+                ]
+                diag.mean_absolute_similarity = float(
+                    (similarity[valid] * weights).sum() / weights.sum()
+                )
+                diag.mean_rank_similarity = diag.mean_absolute_similarity
+            else:
+                similarity = absolute_similarity(
+                    values, feature, scoring.absolute_kernel
+                )
+                percentiles = percentile_of(values, table)
+                q = float(np.interp(feature.median, quantile_values, probabilities))
+                rank_similarity = 1.0 - np.abs(percentiles - q)
+                hidden = hidden_gap_mask(config, rank_similarity, similarity)
+                weights = store.cell_weight[valid]
+                diag = FeatureDiagnostics(
+                    feature_id=definition.id,
+                    group=feature.group,
+                    units=feature.units,
+                    qualitative=False,
+                    target_median=feature.median,
+                    scale=feature.scale,
+                    sigma=feature.sigma,
+                    floor=feature.floor,
+                    floor_rule=feature.floor_rule,
+                    earth_percentile_of_median=q,
+                    mean_absolute_similarity=float(
+                        (similarity[valid] * weights).sum() / weights.sum()
+                    ),
+                    mean_rank_similarity=float(
+                        (rank_similarity[valid] * weights).sum() / weights.sum()
+                    ),
+                    hidden_gap_area_fraction=float(
+                        (hidden[valid] * weights).sum() / weights.sum()
+                    ),
+                )
+            diagnostics[target][definition.id] = diag
+            tables[target][definition.id] = table
+            accumulator = groups[target].setdefault(
+                feature.group, GroupAccumulator.create(store.shape)
+            )
+            accumulator.add(similarity, valid)
+
+    scored = {
+        target: {group: acc.grid() for group, acc in groups[target].items()}
+        for target in targets
+    }
+    return scored, diagnostics, tables
+
+
+def preset_score(
+    config: AppConfig,
+    target: str,
+    groups: dict[str, np.ndarray],
+    weights: dict[str, float],
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Weighted mean over available groups, with config-driven renormalisation."""
+    usable = {
+        name: weight
+        for name, weight in weights.items()
+        if weight > 0 and name in groups
+    }
+    if not usable:
+        raise ValueError(f"preset has no usable group for target {target}")
+    denominator = float(sum(usable.values()))
+    numerator = np.zeros(next(iter(groups.values())).shape, dtype=np.float32)
+    valid = np.ones(numerator.shape, dtype=bool)
+    for name, weight in usable.items():
+        numerator += (weight / denominator) * groups[name]
+        valid &= np.isfinite(groups[name])
+    score = np.full(numerator.shape, np.nan, dtype=np.float32)
+    score[valid] = numerator[valid]
+    dropped = sorted(set(weights) - set(usable))
+    return score, {
+        "weights_used": usable,
+        "weights_dropped": {name: weights[name] for name in dropped},
+        "weight_sum": denominator,
+    }
+
+
+def score_coverage(
+    config: AppConfig,
+    score: np.ndarray,
+    store: EarthStore,
+) -> float:
+    """Area fraction of Earth land that has a finite score."""
+    weights = store.cell_weight[store.land]
+    return float(
+        (np.isfinite(score[store.land]) * weights).sum() / store.weight_sum
+    )

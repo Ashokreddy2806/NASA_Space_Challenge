@@ -3,28 +3,22 @@
 # Override with:  make test PYTHON=/path/to/python
 PYTHON ?= $(firstword $(wildcard .venv/bin/python ../.venv/bin/python ../.venv/Scripts/python.exe) python)
 
-.PHONY: phase0 phase1 phase2 phase3 all serve inventory climate terrain features targets score test
+.PHONY: phase0 phase1 phase2 phase3 all serve inventory climate terrain features targets scores test
 
 phase0: test inventory
 
 phase1: climate terrain features test
 
-phase2: targets
+phase2: targets test
 
-phase3: score
+phase3: scores test
 
-# Rebuild every result from the raw data in ../Datasets (about 6 minutes), then test.
-all: climate terrain features targets score test
+# Rebuild every result from the raw data in ../Datasets (about 15 minutes), then test.
+all: climate terrain features targets scores test
 
-# API + map at http://localhost:8000/
+# API + map app at http://localhost:8000/
 serve:
 	$(PYTHON) -m uvicorn backend.api.main:app --port 8000
-
-targets:
-	$(PYTHON) -m backend.pipeline.target_profiles
-
-score:
-	$(PYTHON) -m backend.engine.run_scoring
 
 inventory:
 	$(PYTHON) -m backend.pipeline.inspect_datasets
@@ -37,6 +31,12 @@ terrain:
 
 features:
 	$(PYTHON) -m backend.pipeline.build_earth_features
+
+targets:
+	$(PYTHON) -m backend.targets.build_target_profiles
+
+scores:
+	$(PYTHON) -m backend.engine.build_scores
 
 test:
 	$(PYTHON) -m pytest -q

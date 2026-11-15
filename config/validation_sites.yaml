@@ -1,0 +1,97 @@
+# Validation / spot-check sites. Coordinates and expectations live here, not in
+# pipeline or test code.
+
+sites:
+  - name: Atacama
+    lat: -23.5
+    lon: -68.5
+    notes: hyper-arid desert
+    expect:
+      temp_mean_c: {max: 20.0}
+      precip_annual_mm: {max: 50.0}
+  - name: Dry Valleys
+    lat: -77.5
+    lon: 162.0
+    notes: cold desert, Antarctica
+    expect:
+      temp_mean_c: {max: -15.0}
+      precip_annual_mm: {max: 100.0}
+  - name: Devon Island
+    lat: 75.4
+    lon: -89.5
+    notes: polar desert, Mars analog
+    expect:
+      temp_mean_c: {max: 0.0}
+  - name: Death Valley
+    lat: 36.5
+    lon: -116.9
+    notes: hot desert
+    expect:
+      temp_mean_c: {min: 20.0}
+      precip_annual_mm: {max: 100.0}
+  - name: Iceland
+    lat: 64.9
+    lon: -19.0
+    notes: cold and wet
+    expect:
+      precip_annual_mm: {min: 500.0}
+  - name: Sahara
+    lat: 23.0
+    lon: 10.0
+    notes: hot desert
+    expect:
+      temp_mean_c: {min: 20.0}
+      precip_annual_mm: {max: 50.0}
+  - name: Amazon
+    lat: -3.0
+    lon: -60.0
+    notes: hot and wet (negative control)
+    expect:
+      temp_mean_c: {min: 24.0}
+      precip_annual_mm: {min: 1500.0}
+
+# Phase 3. "Famous" sites are excluded from the second top-N list so the tool
+# can surface lesser-known candidates. A candidate is treated as famous when it
+# falls within this radius of a listed site.
+famous_radius_km: 100.0
+famous:
+  - {name: Atacama, lat: -23.5, lon: -68.5}
+  - {name: Dry Valleys, lat: -77.5, lon: 162.0}
+  - {name: Devon Island, lat: 75.4, lon: -89.5}
+  - {name: Death Valley, lat: 36.5, lon: -116.9}
+  - {name: Iceland, lat: 64.9, lon: -19.0}
+  - {name: Sahara, lat: 23.0, lon: 10.0}
+  - {name: Amazon, lat: -3.0, lon: -60.0}
+
+# Known analogs proposed for Phase 3 validation. `reviewed: false` means these
+# coordinates and sources are a proposal awaiting the team's review; they are
+# reported as-is and are never used to tune weights or band edges.
+analogs:
+  - name: Licancabur
+    lat: -22.833
+    lon: -67.883
+    targets: [moon, mars]
+    notes: high-altitude Andean lake and volcano; cold, dry, high-UV Mars analog
+    source: "Cabrol et al. 2009, Planetary and Space Science 57 — Licancabur as an extreme environment and Mars analog"
+    reviewed: false
+  - name: Rio Tinto
+    lat: 37.69
+    lon: -6.55
+    targets: [mars]
+    notes: acidic, iron-rich river basin; Meridiani Planum mineralogy analog
+    source: "Fernandez-Remolar et al. 2005, Earth and Planetary Science Letters 240 — Rio Tinto basin and Meridiani Planum"
+    reviewed: false
+  - name: Mistastin Lake
+    lat: 55.88
+    lon: -63.30
+    targets: [moon]
+    notes: impact structure used for lunar field training; shocked rocks and melt breccias
+    source: "Grieve 1975, Geological Survey of Canada — Mistastin Lake impact structure, a lunar analog"
+    reviewed: false
+  - name: Mauna Kea summit
+    lat: 19.8207
+    lon: -155.4681
+    targets: [moon, mars]
+    notes: barren high-altitude basaltic terrain used in Apollo geology training
+    source: "NASA Apollo geology training records — Mauna Kea, Hawaii"
+    reviewed: false

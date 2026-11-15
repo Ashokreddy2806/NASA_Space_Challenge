@@ -27,10 +27,12 @@ from typing import Any, Iterable
 
 import numpy as np
 import rasterio
+import yaml
 from pyproj import CRS
 from rasterio.enums import Resampling
 
-from backend.paths import DATA_ROOT, DOCS_DIR, RAW
+from backend.config import load_config
+from backend.paths import DATA_ROOT, DOCS_DIR, PROJECT_ROOT, RAW
 
 NUMBER_RE = re.compile(r"[-+]?\d+(?:\.\d+)?")
 
@@ -57,53 +59,33 @@ class RasterReport:
     error: str | None = None
 
 
-MOON_LAYERS = [
-    Layer("M1", "LDEM_80S_80MPP_ADJ.tiff", "relief, derived slope", "m", "80 m/pixel LOLA south polar DEM"),
-    Layer("M2", "LDRM_80S_1000MPP_ADJ_ROUGH_800M.tiff", "roughness (800 m baseline)", "m", "1 km/pixel"),
-    Layer("M3", "LDRM_80S_1000MPP_ADJ_ROUGH_1600M.tiff", "roughness (1600 m baseline)", "m", "1 km/pixel"),
-    Layer("M4", "LDRM_80S_1000MPP_ADJ_SLP_800M.tiff", "slope (800 m baseline)", "degree", "1 km/pixel"),
-    Layer("M5", "LDRM_80S_1000MPP_ADJ_SLP_1600M.tiff", "slope (1600 m baseline)", "degree", "1 km/pixel"),
-    Layer("M6", "LDRM_80S_1000MPP_ADJ_H.tiff", "Hurst exponent", "unitless", "1 km/pixel"),
-    Layer("M7", "LDRM_80S_1000MPP_ADJ_SPSLP.tiff", "spectral slope", "sigma/km", "1 km/pixel"),
-    Layer("M9", "ldem_16.tif", "global context elevation (not for polar slope)", "km", "5760x2880 global, optional"),
-]
+def _load_inventory() -> dict[str, Any]:
+    """Read ``config/inventory.yaml``: the only place file names live."""
+    path = PROJECT_ROOT / "config" / "inventory.yaml"
+    with path.open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle) or {}
 
-MARS_LAYERS = [
-    Layer(
-        "R1",
-        "mars_elev.npy",
-        "relief, slope, roughness",
-        "m",
-        "expected int16 2880x5760 MOLA 16 ppd; NOT PRESENT on disk",
-        status="missing",
-    ),
-]
 
-WORLDCLIM_LAYERS = [
-    Layer("E1-bio1", "wc2.1_2.5m_bio_1.tif", "annual mean temperature", "degC"),
-    Layer("E1-bio2", "wc2.1_2.5m_bio_2.tif", "mean diurnal range", "degC"),
-    Layer("E1-bio3", "wc2.1_2.5m_bio_3.tif", "isothermality", "%"),
-    Layer("E1-bio4", "wc2.1_2.5m_bio_4.tif", "temperature seasonality", "degC"),
-    Layer("E1-bio5", "wc2.1_2.5m_bio_5.tif", "max temperature of warmest month", "degC"),
-    Layer("E1-bio6", "wc2.1_2.5m_bio_6.tif", "min temperature of coldest month", "degC"),
-    Layer("E1-bio7", "wc2.1_2.5m_bio_7.tif", "annual temperature range", "degC"),
-    Layer("E1-bio8", "wc2.1_2.5m_bio_8.tif", "mean temperature of wettest quarter", "degC"),
-    Layer("E1-bio9", "wc2.1_2.5m_bio_9.tif", "mean temperature of driest quarter", "degC"),
-    Layer("E1-bio10", "wc2.1_2.5m_bio_10.tif", "mean temperature of warmest quarter", "degC"),
-    Layer("E1-bio11", "wc2.1_2.5m_bio_11.tif", "mean temperature of coldest quarter", "degC"),
-    Layer("E1-bio12", "wc2.1_2.5m_bio_12.tif", "annual precipitation", "mm"),
-    Layer("E1-bio13", "wc2.1_2.5m_bio_13.tif", "precipitation of wettest month", "mm"),
-    Layer("E1-bio14", "wc2.1_2.5m_bio_14.tif", "precipitation of driest month", "mm"),
-    Layer("E1-bio15", "wc2.1_2.5m_bio_15.tif", "precipitation seasonality", "%"),
-    Layer("E1-bio16", "wc2.1_2.5m_bio_16.tif", "precipitation of wettest quarter", "mm"),
-    Layer("E1-bio17", "wc2.1_2.5m_bio_17.tif", "precipitation of driest quarter", "mm"),
-    Layer("E1-bio18", "wc2.1_2.5m_bio_18.tif", "precipitation of warmest quarter", "mm"),
-    Layer("E1-bio19", "wc2.1_2.5m_bio_19.tif", "precipitation of coldest quarter", "mm"),
-]
+def _layers(entries: Iterable[dict[str, Any]]) -> list[Layer]:
+    return [
+        Layer(
+            layer_id=str(entry["id"]),
+            filename=str(entry["filename"]),
+            feature=str(entry.get("feature", "")),
+            documented_units=str(entry.get("units", "")),
+            notes=str(entry.get("notes", "")),
+            status=str(entry.get("status", "downloaded")),
+        )
+        for entry in entries
+    ]
 
-EARTH_LAYERS = [
-    Layer("E2", "ETOPO_2022_v1_60s_N90W180_surface.tif", "relief, slope, roughness, Hurst-like", "m", "60 arc-second global"),
-]
+
+INVENTORY = _load_inventory()
+MOON_LAYERS = _layers(INVENTORY["moon"]["layers"])
+MARS_LAYERS = _layers(INVENTORY["mars"]["layers"])
+WORLDCLIM_LAYERS = _layers(INVENTORY["earth"]["climate_layers"])
+EARTH_LAYERS = _layers(INVENTORY["earth"]["layers"])
+PSR_LAYER = INVENTORY["moon"]["psr"]
 
 
 def _find_case_insensitive(directory: Path, filename: str) -> Path | None:
@@ -381,47 +363,39 @@ def _latitude_zones(ds: rasterio.DatasetReader, height: int) -> dict[str, np.nda
 
 
 def _manifest_reconciliation() -> tuple[list[str], list[str]]:
-    """List files missing from the manifest download and extra files found."""
+    """List configured-but-missing files and files on disk that are not expected."""
     missing: list[str] = []
     extra: list[str] = []
 
-    expected_moon = {layer.filename.lower() for layer in MOON_LAYERS}
-    expected_moon.update({
-        "ldrm_80s_1000mpp_adj_rough_800m.tiff",
-        "ldrm_80s_1000mpp_adj_rough_1600m.tiff",
-        "ldrm_80s_1000mpp_adj_slp_800m.tiff",
-        "ldrm_80s_1000mpp_adj_slp_1600m.tiff",
-        "ldrm_80s_1000mpp_adj_h.tiff",
-        "ldrm_80s_1000mpp_adj_spslp.tiff",
-        "lpsr_80s_20mpp_adj_1km2.csv",
-        "moon_thermal_literature.csv",
-    })
-    for path in RAW["moon"].iterdir():
-        if path.is_file() and path.name.lower() not in expected_moon:
-            extra.append(f"moon/{path.name}")
+    def expected(body: str) -> set[str]:
+        entries = set()
+        for key in ("layers", "climate_layers", "auxiliary"):
+            for entry in INVENTORY[body].get(key, []) or []:
+                entries.add(str(entry["filename"]).lower())
+        psr = INVENTORY[body].get("psr")
+        if psr:
+            entries.add(str(psr["filename"]).lower())
+        for name in INVENTORY[body].get("hand_made", []) or []:
+            entries.add(str(name).lower())
+        return entries
 
-    for known in ("moon_thermal_literature.csv",):
-        if not (RAW["moon"] / known).exists():
-            missing.append(f"moon/{known} (HAND-MADE, must be authored from literature)")
+    for body in ("moon", "mars"):
+        known = expected(body)
+        for name in INVENTORY[body].get("hand_made", []) or []:
+            if not (RAW[body] / str(name)).exists():
+                missing.append(
+                    f"{body}/{name} (HAND-MADE, must be authored from cited literature)"
+                )
+        for path in RAW[body].iterdir():
+            if path.is_file() and path.name.lower() not in known:
+                extra.append(f"{body}/{path.name}")
 
-    expected_mars = {
-        "mars_elev.npy",
-        "mars_thermal_literature.csv",
-    }
-    mars_known_raw = {"megt90n000eb.img", "mega90n000cb.img", "nmap2003.tif"}
-    for known in sorted(expected_mars):
-        if not (RAW["mars"] / known).exists():
-            missing.append(f"mars/{known}" + (" (HAND-MADE)" if "literature" in known else " (raw MOLA .img is present instead)"))
-    for path in RAW["mars"].iterdir():
-        if path.is_file() and path.name.lower() not in expected_mars and path.name.lower() not in mars_known_raw:
-            extra.append(f"mars/{path.name}")
-
-    earth_expected_prefixes = ("wc2.1_", "etopo_")
+    earth_prefixes = ("wc2.1_", "etopo_")
     for path in RAW["earth"].iterdir():
-        if path.is_file() and not path.name.lower().startswith(earth_expected_prefixes):
+        if path.is_file() and not path.name.lower().startswith(earth_prefixes):
             extra.append(f"earth/{path.name}")
 
-    # A few Moon global products sit one level above the per-body folders.
+    # A few files sit one level above the per-body folders.
     known_root = {"datasets.md"}
     for path in DATA_ROOT.iterdir():
         if path.is_file() and path.name.lower() not in known_root:
@@ -467,8 +441,8 @@ def build_report(max_dim: int = 2048) -> str:
         "",
     ])
 
-    psr_path = _find_case_insensitive(RAW["moon"], "LPSR_80S_20MPP_ADJ_1km2.csv")
-    lines.extend(["### M8 — permanently shadowed regions (PSR) polygon table", ""])
+    psr_path = _find_case_insensitive(RAW["moon"], PSR_LAYER["filename"])
+    lines.extend([f"### {PSR_LAYER['id']} — permanently shadowed regions (PSR) polygon table", ""])
     if psr_path is None:
         lines.append("**File not found.**")
     else:
@@ -517,33 +491,24 @@ def build_report(max_dim: int = 2048) -> str:
     lines.append("")
 
     lines.extend(["## 2. Mars (`Datasets/Mars/`)", ""])
-    mars_elev = RAW["mars"] / "mars_elev.npy"
-    if not mars_elev.exists():
-        lines.extend([
-            "**Manifest mismatch:** `mars_elev.npy` is not on disk.",
-            "",
-            "The equivalent source is present as the raw PDS product "
-            "`megt90n000eb.img` (MOLA MEGDR topography, 16 ppd). It is a header-less",
-            "big-endian int16 raster: file size 33,177,600 bytes = 2880 × 5760 × 2.",
-            "Phase 2 can read it directly with `numpy.memmap`; no re-download is needed.",
-            "",
-        ])
-        raw_report = _inspect_raw_mola(RAW["mars"] / "megt90n000eb.img")
+    for layer in MARS_LAYERS:
+        mars_path = _find_case_insensitive(RAW["mars"], layer.filename)
+        if mars_path is None:
+            lines.extend([f"**{layer.layer_id}** `{layer.filename}` — **not found**.", ""])
+            continue
+        raw_report = _inspect_raw_mola(mars_path)
         lines.extend(_raw_mola_table(raw_report))
         lines.append("")
 
-    mars_extras = [
-        ("megt90n000eb.img", "MOLA MEGDR topography, raw int16 big-endian, 2880×5760 (16 ppd)"),
-        ("mega90n000cb.img", "MOLA shaded-relief image, auxiliary; no PDS label on disk, not used"),
-        ("nmap2003.tif", "Mars Viking color mosaic, auxiliary basemap (not in manifest)"),
-    ]
     lines.extend(["### Additional Mars files found", ""])
-    for filename, description in mars_extras:
-        path = RAW["mars"] / filename
+    for entry in INVENTORY["mars"].get("auxiliary", []) or []:
+        path = RAW["mars"] / str(entry["filename"])
         if path.exists():
-            lines.append(f"- `{filename}` — {path.stat().st_size / 1e6:.1f} MB — {description}")
+            lines.append(
+                f"- `{entry['filename']}` — {path.stat().st_size / 1e6:.1f} MB — {entry['description']}"
+            )
         else:
-            lines.append(f"- `{filename}` — not found")
+            lines.append(f"- `{entry['filename']}` — not found")
     lines.extend([
         "",
         "- Optional TES thermal-inertia TIF — **not present** (manifest marks it OPTIONAL). "
@@ -577,21 +542,29 @@ def build_report(max_dim: int = 2048) -> str:
     lines.extend(_layer_table(wc_reports))
     lines.append("")
 
-    bio1_path = _find_case_insensitive(RAW["earth"], "wc2.1_2.5m_bio_1.tif")
+    config = load_config()
+    bio1_name = config.sources["earth"]["climate"][config.earth.land_mask_source]
+    bio1_path = _find_case_insensitive(RAW["earth"], bio1_name)
     if bio1_path:
         with rasterio.open(bio1_path) as ds:
             res_deg = abs(ds.transform.a)
             resolution = res_deg * 60.0
+            target = load_config().grid.resolution_deg
             lines.append(
                 f"**Detected resolution: {resolution:.2f} arc-minutes ({res_deg:.4f}°)** — "
                 f"the 2.5 arc-minute product (≈{res_deg * 111.32:.1f} km at the equator). "
-                "This is close to the 0.05° target grid, so it will be lightly aggregated, not invented."
+                f"This is close to the {target:g}° target grid, so it will be lightly "
+                "aggregated, not invented."
             )
     else:
         lines.append("**WorldClim bio_1 not found in the expected location.**")
     lines.append("")
 
-    zip_path = _find_case_insensitive(RAW["earth"], "wc2.1_10m_bio.zip")
+    zip_name = next(
+        (name for name in INVENTORY["earth"].get("auxiliary", []) if name.endswith("_bio.zip") and "10m" in name),
+        None,
+    )
+    zip_path = _find_case_insensitive(RAW["earth"], zip_name) if zip_name else None
     if zip_path:
         with zipfile.ZipFile(zip_path) as archive:
             members = archive.namelist()
@@ -655,7 +628,7 @@ def build_report(max_dim: int = 2048) -> str:
         "### Naming inconsistencies",
         "",
         "- The Moon GeoTIFFs are stored with lowercase `.tiff`, while the manifest lists `.TIF`. Same files.",
-        "- The Mars raster is the original PDS `.img`, not the manifest's converted `mars_elev.npy`.",
+        "- The Mars raster is the original PDS `.img` (MOLA MEGDR), read directly; no converted `.npy` is used.",
         "- Both the 2.5 arc-minute individual bio layers and their zip archives are present; the",
         "  individual layers are the ones actually inspected and will be used.",
         "",
@@ -676,7 +649,9 @@ def build_report(max_dim: int = 2048) -> str:
 
 def _inspect_raw_mola(path: Path) -> dict[str, Any]:
     """Sample the header-less MOLA int16 raster without loading it fully."""
-    expected_shape = (2880, 5760)
+    # MEGDR global product: 16 pixels per degree, planetocentric -90..90.
+    pixels_per_degree = INVENTORY["mars"].get("pixels_per_degree", 16)
+    expected_shape = (180 * pixels_per_degree, 360 * pixels_per_degree)
     result: dict[str, Any] = {"path": path, "shape": expected_shape, "dtype": ">i2", "nodata": -32768}
     if not path.exists():
         result["error"] = "file not found"
@@ -690,15 +665,16 @@ def _inspect_raw_mola(path: Path) -> dict[str, Any]:
     result["sample"] = "every 8th row/column"
 
     def elevation(lat: float, lon_east: float) -> int:
-        row = int(round((90.0 - lat) * 16.0 - 0.5))
-        col = int(round(lon_east * 16.0 - 0.5))
+        row = int(round((90.0 - lat) * pixels_per_degree - 0.5))
+        col = int(round(lon_east * pixels_per_degree - 0.5))
         return int(data[row, col])
 
-    # Orientation check: these published sites must land at the right sign/altitude.
+    # Orientation check: configured reference points must land at the right sign/altitude.
     result["checks"] = {
-        "Jezero (18.4N, 77.5E)": elevation(18.4, 77.5),
-        "Olympus Mons (18.65N, 226.2E)": elevation(18.65, 226.2),
-        "Hellas (42.4S, 70.5E)": elevation(-42.4, 70.5),
+        f"{check['name']} ({check['lat']:g}N, {check['lon_east']:g}E)": elevation(
+            float(check["lat"]), float(check["lon_east"])
+        )
+        for check in INVENTORY["mars"].get("orientation_checks", []) or []
     }
     return result
 
@@ -730,7 +706,12 @@ def _raw_mola_table(report: dict[str, Any]) -> list[str]:
 def main() -> None:
     """Command-line entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=Path, default=DOCS_DIR / "data_inventory.md", help="output markdown file")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=load_config().output("data_inventory"),
+        help="output markdown file",
+    )
     parser.add_argument("--max-dim", type=int, default=2048, help="maximum sampled raster dimension")
     args = parser.parse_args()
 

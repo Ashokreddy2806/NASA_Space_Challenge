@@ -1,0 +1,26 @@
+# Proof run 2: run the whole Phase 1 pipeline over a different bounding box,
+# using configuration only. No code changes.
+#
+#   .venv/Scripts/python -m backend.pipeline.earth_climate --config config/proofs/sahara.yaml
+#   .venv/Scripts/python -m backend.pipeline.earth_terrain --config config/proofs/sahara.yaml
+#   .venv/Scripts/python -m backend.pipeline.build_earth_features --config config/proofs/sahara.yaml
+#
+# The Saharan box still gets a real halo: tile bounds are padded past the box
+# (up to the lon/lat coordinate limits), so edge features are not degraded.
+
+config.yaml:
+  grid:
+    lon_min: -20.0
+    lon_max: 40.0
+    lat_min: 10.0
+    lat_max: 40.0
+
+paths.yaml:
+  outputs:
+    earth_terrain: proofs/proof_sahara_terrain.nc
+    earth_climate: proofs/proof_sahara_climate.nc
+    earth_features: proofs/proof_sahara_features.nc
+    earth_meta: proofs/proof_sahara_meta.json
+    earth_report: proof_sahara_report.md
+    earth_figure_prefix: proof_sahara_
+    overview_figure: proof_sahara_overview.png

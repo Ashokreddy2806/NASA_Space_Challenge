@@ -1,0 +1,125 @@
+# Target definitions. Coordinates are values, never code literals.
+
+moon:
+  body: moon
+  label: Lunar south polar region (poleward of 85 S)
+  region:
+    lat_min: -90.0
+    lat_max: -85.0
+  # Features are computed on the native 80 m LOLA DEM; blocks carry enough halo
+  # for the largest configured window.
+  working_pixel_m: 80.0
+  native_pixel_m: 80.0
+  block_core_px: 1024
+  # Block halo is computed from the feature windows automatically; this is a
+  # safety margin on top of the largest required halo.
+  halo_margin_km: 4.0
+  thermal_csv: thermal
+  # Which scoring groups hold literature-only values for this body.
+  thermal_groups: [temperature]
+  # Phase 3 qualitative mapping, approved 2026-11-15 (option A: banded anchors).
+  # Only exact cited rows are used, and only polar-appropriate ones: the 400 K
+  # subsolar maximum and ~100 K night value are equatorial and stay context.
+  # `bands_c` are ascending edges; band 0 is always the cold end and
+  # band `len(bands_c)` the warm end. The target band is computed from the cited
+  # anchors and must be the same for every listed anchor row, or the build fails.
+  thermal_mapping:
+    mode: banded
+    label: qualitative
+    temperature_weight: 0.25
+    features:
+      temp_min_coldest_c:
+        bands_c: [-40.0, -25.0, -10.0, 0.0]
+        anchor_rows:
+          - moon_cabeus_psr_avg_annual_temp
+          - moon_coldest_midday_bolometric_temp_cold_craters
+          - moon_psr_large_craters_daily_max_temp_min
+          - moon_psr_large_craters_daily_max_temp_max
+          - moon_cold_trap_threshold_annual_max_temp
+        anchor_label: >-
+          PSR and cold-trap surface temperatures at 85-90 S (Cabeus 37 K, coldest
+          midday 29 K, large-crater daily maximum 40-90 K, cold-trap threshold
+          110 K)
+        require_single_band: true
+      temp_max_warmest_c:
+        bands_c: [0.0, 10.0, 20.0, 30.0, 40.0]
+        anchor_rows:
+          - moon_89S_horizontal_peak_illum_temp_max
+        anchor_label: >-
+          horizontal surface at 89 S during peak illumination (180 K)
+        require_single_band: true
+    unavailable_features:
+      temp_mean_c: >-
+        no cited polar annual-mean surface temperature; the equatorial rows are
+        context only, so no mean is invented
+      temp_diurnal_range_c: >-
+        no cited polar day-night pair; the equatorial 400 K subsolar maximum and
+        100 K night value do not describe the 85-90 S target and are context only
+      temp_annual_range_c: >-
+        no cited polar annual temperature range; the 89 S peak-illumination value
+        is a single illumination state, not an annual range
+    context_only:
+      moon_subsolar_max_surface_temp_approx: equatorial, not scored
+      moon_night_surface_temp_typical: equatorial, not scored
+  # Recompute from the 80 m DEM; these pre-computed LOLA rasters are cross-checks.
+  # `roughness_800m_baseline` is computed only to match the LOLA 0.8 km baseline;
+  # it is not a profile feature.
+  cross_check_products:
+    hurst_2_32km: hurst
+    slope_1600m_baseline: slope_1600m
+    roughness_800m_baseline: roughness_800m
+  cross_check_baseline_km: 0.8
+  cross_check_slope_baseline_km: 1.6
+  cross_check_cells: 608
+  # Features that are not part of this body's profile, with the reason. Keys may
+  # be a scoring group or a single feature id; a feature id wins.
+  not_applicable:
+    temperature: >-
+      lunar surface temperature and thermal inertia come only from the cited
+      thermal table, never from a raster or a guess.
+    dryness: >-
+      the Moon has no atmosphere and no precipitation; dryness is represented by
+      the PSR ice proxy instead
+  unavailable_features: []
+  ice_proxy:
+    kind: psr_area_fraction
+    source: psr
+    min_polygon_area_km2: 1.0
+
+mars:
+  body: mars
+  label: Jezero crater
+  site:
+    lat_deg: 18.3628
+    lon_deg_east: 77.5945
+    elevation_m: -2656.0
+    radius_km: 150.0
+  working_pixel_m: 3700.0
+  # MOLA MEGDR 16 pixels per degree.
+  native_pixel_m: 3700.0
+  sphere_radius_m: 3396190.0
+  halo_km: 50.0
+  sample_stride_px: 1
+  thermal_csv: thermal
+  thermal_groups: [temperature]
+  # The supplied Mars table holds thermal-inertia retrievals only and no surface
+  # temperatures at all: the temperature features are unavailable and excluded
+  # from the Mars score (weights renormalised).
+  unavailable_features:
+    - temp_diurnal_range_c
+    - temp_annual_range_c
+  not_applicable:
+    temperature: >-
+      Martian surface temperature and thermal inertia come only from the cited
+      thermal table, never from a raster or a guess.
+    temp_diurnal_range_c: >-
+      the supplied Mars table has no surface temperatures at all (thermal inertia
+      only), so this feature is unavailable and excluded from the Mars score
+    temp_annual_range_c: >-
+      the supplied Mars table has no surface temperatures at all (thermal inertia
+      only), so this feature is unavailable and excluded from the Mars score
+    dryness: >-
+      Mars has no rainfall record of this kind; the thin atmosphere is not a
+      precipitation analog and no dryness value is invented
+  ice_proxy: null
+  longitude_convention: 0-360 east
