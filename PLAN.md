@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 13:40 by rahul (PR to merge rahul/data-setup into main)
+**Last updated:** 2026-11-15 15:10 by rahul (Horizon frontend built; decision logged)
 
 ---
 
@@ -176,6 +176,8 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 13:33 — ashok — **Both site lists are guaranteed for every preset**: `top_sites.json` and the report carry `sites` and `sites_excluding_famous`, and the famous list now covers McMurdo Station, Ross Island, Mount Erebus and McMurdo Dry Valleys (proposed, reviewed: false, awaiting team confirmation).
 
 - 2026-11-15 13:40 — rahul — **Merge `rahul/data-setup` into `main` via PR with a merge commit (no squash)** — branch already contains origin/main so it fast-forwards; keeps Ashok's authored commits.
+- 2026-11-15 14:26 — rahul — **Replace WorldClim with NASA products from the challenge's Earthdata resource** (plan drafted, not implemented; products proposed, pending rahul's confirmation): temperature from MODIS LST CMG 0.05° (`MOD11C3`/`MYD11C3` v061, LP DAAC, https://doi.org/10.5067/MODIS/MOD11C3.061), precipitation from GPM IMERG Final monthly 0.1° (`GPM_3IMERGM` V07, GES DISC, https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07), land mask from MODIS land cover CMG 0.05° (`MCD12C1` v061, https://doi.org/10.5067/MODIS/MCD12C1.061) — WorldClim is not a NASA product and is air temperature, while the Moon/Mars targets are surface temperatures. Supersedes the WorldClim choice once built; needs an Earthdata login.
+- 2026-11-15 15:10 — rahul — **Frontend look: "Horizon"** — full-bleed globe (MapLibre 5.6 globe + deck-free overlay, Esri imagery, Terrarium DEM terrain, Plotly compare), minimal text; chosen from three mocked directions (paper atlas, dark console, full-bleed). Keeps MapLibre + Plotly from the earlier decision; heat layer is a PNG overlay, not deck.gl. Imagery/DEM tiles are fetched live (Esri World Imagery, AWS Terrarium, both keyless) — record them as datasets.
 
 ## 8. Open questions
 
@@ -185,6 +187,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - [ ] Lunar target region: poleward of 85°S disk used as the default in Phase 2; awaiting confirmation vs specific candidate base sites.
 - [ ] How to weight features, and should users be able to change weights in the UI? (Phase 3 defaults, Phase 5 controls.)
 - [ ] Who owns which workstream? (W1 done by ashok; others unassigned.)
+- [ ] WorldClim replacement: keep ETOPO 2022 (NOAA, not NASA) for terrain or switch too? Which years for the MODIS/IMERG climatology? Terra, Aqua or both for LST? Moon temperature bands (`config/targets.yaml`) were approved against air temperature and need re-approval against surface temperature.
 - [ ] Lunar PSR CSV has no CRS metadata and its square tile reaches ~76°S at the corners (not a strict 80°S cut). Phase 2 assumed the PSR table shares the DEM's Moon 2015 polar stereographic grid (extents match); confirm.
 
 ## 9. Results so far

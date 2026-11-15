@@ -6,7 +6,20 @@ Who did what, and when. Each team member has **their own section**. Only write i
 
 1. Go to **your** section below.
 2. Update the **Now working on** line.
-3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->` marker.
+3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->
+
+#### 2026-11-15 15:10 — Horizon frontend (globe, elevation, detail panel)
+- **Did:** Picked the "Horizon" design (3 options mocked in a design canvas). Rebuilt `frontend/` as a full-bleed MapLibre 5.6 globe: Esri imagery + AWS Terrarium hillshade/3D terrain, soft amber similarity glow, pins with pulsing ring and match-% pill, Moon/Mars toggle, preset dropdown, "Hide famous" toggle, detail panel (group bars, elevation + relief, one-line "not replicable on Earth", Plotly Compare modal). Minimal text. Checked in browser pane against the live API, no console errors.
+- **Files:** `frontend/index.html`, `frontend/style.css`, `frontend/panel.css`, `frontend/js/globe.js`, `frontend/js/panel.js`; `frontend/app.js` deleted (staged, not committed)
+- **Next:** restore ice/substrate caveat chip in the panel; fix `/presets` listing `thermal_cycling` as available while `/top-sites` returns 422; add place names; test mobile (<900px) and pin click on globe; cross-check Antarctic elevation (-52 m).
+- **Blockers:** none (globe needs internet for imagery/DEM tiles)
+
+#### 2026-11-15 14:26 — main repaired; plan to replace WorldClim with NASA data
+- **Did:** `main` did not start (`backend/api/data.py` missing after the revert `6b2cae8`); re-applied the merge locally (`10adde3`, not pushed), 122 tests pass, app runs. Reviewed data against the challenge resources: WorldClim is not NASA and is air temperature. Drafted the replacement plan (MOD11C3/MYD11C3 LST, GPM_3IMERGM precipitation, MCD12C1 land mask); sizes checked in CMR (74 MB/month, 18 MB/month, 1.2 GB).
+- **Files:** `PLAN.md` (decision + open question), `PROGRESS_LOG.md`
+- **Next:** on go-ahead: download script, new climate pipeline, rebuild features/targets/scores, re-approve Moon temperature bands.
+- **Blockers:** no Earthdata login on this machine (`~/.netrc` missing); HDF4 reader (`pyhdf`) not installed; ETOPO is NOAA, team to decide whether it stays.
+ marker.
 4. Use this format:
 
 ```markdown
@@ -23,7 +36,7 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Using unused NASA data: Diviner lunar temperatures done; next MODIS LST for Earth, Mars thermal inertia; Phase 2/3 reconcile with main still open
+**Now working on:** Horizon frontend polish (caveat chip, mobile); plan to replace WorldClim with NASA Earthdata products (MODIS LST, GPM IMERG, MODIS land cover); awaiting go-ahead and an Earthdata login
 
 <!-- entries -->
 

@@ -3,60 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Earth Analog Finder</title>
+<title>Analog Earth</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="panel.css">
 </head>
 <body>
-<div id="map"></div>
+<div id="stars" aria-hidden="true"></div>
+<div id="map" aria-label="Interactive globe"></div>
 
-<aside id="left" class="panel">
-  <header>
-    <div class="logo">◐</div>
-    <div><h1>Earth Analog Finder</h1><p>Where on Earth looks most like a Moon or Mars base site?</p></div>
-  </header>
-
-  <section>
-    <h2>Target</h2>
-    <div id="targets" class="seg"></div>
-    <p id="target-info" class="muted"></p>
-  </section>
-
-  <section>
-    <h2>Priority preset</h2>
-    <div id="presets" class="chips"></div>
-    <details id="weights-box">
-      <summary>Adjust group weights</summary>
-      <div id="weights"></div>
-    </details>
-  </section>
-
-  <section class="grow">
-    <div class="row"><h2>Top candidates</h2>
-      <label class="switch"><input type="checkbox" id="famous"><span>hide famous sites</span></label></div>
-    <ol id="sites"></ol>
-    <p id="custom-note" class="muted" hidden>Custom group weights: the map and clicked sites use your weights; the list shows the selected preset.</p>
-  </section>
-</aside>
-
-<div id="legend" class="panel"><span>land median</span><i></i><span>best site</span></div>
-
-<aside id="right" class="panel">
-  <div id="empty"><b>Click anywhere on land</b> to see what matches and what doesn't.</div>
-  <div id="detail" hidden>
-    <div class="row top"><div><h2 id="d-title"></h2><div id="d-coord" class="muted"></div></div><div id="d-score" class="score"></div></div>
-    <div id="radar"></div>
-    <table id="d-table"></table>
-    <div class="callout warn"><h3>Where the analogy breaks down</h3><ul id="d-break"></ul></div>
-    <div class="callout"><h3>Earth cannot replicate</h3><ul id="d-cannot"></ul></div>
+<header id="intro">
+  <h1>Earth analogues of <span id="body-name">the Moon</span></h1>
+  <div class="pills" role="group" aria-label="Target body">
+    <button data-target="moon" class="on">Moon</button>
+    <button data-target="mars">Mars</button>
   </div>
-</aside>
+</header>
 
-<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/deck.gl@8.9.36/dist.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
-<script src="app.js"></script>
+<div id="controls">
+  <select id="preset" aria-label="Priority preset"></select>
+  <label class="toggle"><input type="checkbox" id="famous"><span class="box"></span><span>Hide famous</span></label>
+</div>
+
+<div id="panel"></div>
+
+<nav id="chips" aria-label="Ranked sites"></nav>
+<div id="status" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<script src="js/panel.js"></script>
+<script src="js/globe.js"></script>
 </body>
 </html>
