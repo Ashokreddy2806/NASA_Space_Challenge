@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 10:05 by rahul (Phase 3 complete: similarity engine, score maps, validation)
+**Last updated:** 2026-11-15 10:45 by rahul (Phase 3 fixes: Diviner Moon temperatures, scaled-distance scoring, rank-based validation)
 
 ---
 
@@ -98,7 +98,7 @@ Status values: `not started` · `in progress` · `blocked` · `done`
 |---|---|---|
 | 0–2 | Repo + env set up, datasets chosen, feature list agreed | [x] |
 | 2–8 | Earth grid built for core features; Moon + Mars target vectors computed | [x] |
-| 8–13 | Similarity engine produces a global score map for each target | [ ] |
+| 8–13 | Similarity engine produces a global score map for each target | [x] |
 | 13–19 | API + visualization working end-to-end; top sites identified | [ ] |
 | 19–22 | Site write-ups, polish visuals, "overlooked site" story | [ ] |
 | 22–24 | Demo video, slides, submit | [ ] |
@@ -134,6 +134,11 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-14 21:40 — ashok — Locked terrain estimators: relief = **p95−p5 in 20 km**, slope = **mean of per-2 km gradient magnitude in 20 km**, roughness = **std of a Gaussian high-pass residual** at 5/10/20 km (`σ = window/2`), Hurst = **half the log–log structure-function slope** for lags 2/4/8/16/32 km. Phase 2 must use exactly the same estimators; recorded in `docs/FEATURES.md`.
 - 2026-11-14 21:40 — ashok — Before filtering, **ocean cells are filled with the nearest land elevation** using the WorldClim land mask — ETOPO includes bathymetry, and without this a 20 km coastal window would report a fake 3–5 km relief cliff along every coast.
 - 2026-11-14 21:40 — ashok — Earth land mask and climate features come from **WorldClim ocean nodata** (majority-valid at 0.05°); all published features are NaN over ocean — ETOPO cannot supply a land mask because it includes the sea floor.
+- 2026-11-15 10:44 — rahul — Moon temperatures come from **LRO Diviner polar resource product (`dlre_prp_south.tab`, area-weighted over the <85°S disk)** instead of the literature CSV: mean −171.5 °C, annual max −42.0 °C, cold-trap area fraction (annual max < 110 K) 9.81 % (matches the PSR polygons, 9.81 %) — the CSV had no south-pole values. Diviner gives no minimum or day–night range, so those stay missing.
+- 2026-11-15 10:44 — rahul — Diviner temperatures are **surface** values and lie below Earth's coldest land cell (WorldClim **air** temperature) → reported as beyond Earth range and used only by the `thermal_cycling` preset (not `balanced`); the mean is clipped on every Earth cell, so that preset's ranking comes from the warmest-month maximum and its scores stay low (about 39/100).
+- 2026-11-15 10:44 — rahul — Scoring changed from Earth-percentile distance to **scaled physical distance** (log1p for relief/slope/roughness, log1p(x/ref) for precipitation, divided by Earth P95−P5) — percentile distance saturated (many cells at 94–98) and hid large physical gaps in the tails.
+- 2026-11-15 10:44 — rahul — Ice proxy is now like-for-like (also added to `balanced` at weight 0.5, superseding the 10:05 'ice excluded' preset note): Moon = Diviner cold-trap area fraction, Earth = fraction of a 0.25° window whose warmest month stays below 0 °C (compared on sqrt scale). It replaces "coldest-month air temperature at percentile 0".
+- 2026-11-15 10:44 — rahul — Validation checks are now **overall rank percentile ≥ 75** of known analogs (not per-feature sub-scores that pass by construction); failures are published.
 
 ## 8. Open questions
 
@@ -147,4 +152,9 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 
 ## 9. Results so far
 
-_Nothing yet. Add top candidate sites here as they appear (name, lat/lon, target, score, one-line why)._
+Balanced preset (see `docs/top_sites.json`, `docs/validation.md`). Rank = area-weighted percentile of the site's score on Earth land.
+
+- Moon: no Earth site matches the thermal side (thermal_cycling best score 39/100, Antarctica). Terrain + dryness + frozen-ground best: Andes/Atacama coast (-24.9, -70.4, 95), Andes (-15.9, -74.0, 93.5), Kunlun/Qinghai (36.5, 80.5, 93.3). Cold-trap preset: Arctic Canada/Greenland ice (82.6, -76.4, 92.8) and Antarctica.
+- Moon known analogs: Devon Island / Haughton fails the rank ≥ 75 check (rank 70).
+- Mars (Jezero): Atacama 89 (rank 99), Death Valley 82, Devon 77; Dry Valleys 59 (rank 47) and Iceland 68 (rank 69) fail the check. Top overlooked: Andes (-14.9, -75.0, 99.3), Egypt/Sudan desert (27.8, 33.1, 98.6).
+- Not covered: Mars temperature, minerals and dust (need Mars climate data and an Earthdata login for ASTER/EMIT); Moon temperature minimum and day–night range.

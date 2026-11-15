@@ -21,15 +21,15 @@ to match a "median" Earth value.
 | 2 | **Slope** | ETOPO gradient magnitude per 2 km cell, mean in a 20 km window | LOLA DEM gradient / `SLP_800M`, `SLP_1600M` | MOLA DEM gradient | degrees |
 | 3 | **Roughness (multi-scale)** | ETOPO high-pass residual standard deviation at 5, 10 and 20 km windows | LOLA `ROUGH_800M`, `ROUGH_1600M` and DEM residuals | MOLA DEM residuals, limited by 3.7 km pixels | m |
 | 4 | **Scale-robust roughness** | Hurst exponent from log–log elevation structure function over 2–32 km | LOLA `H` and `SPSLP` products | MOLA-derived Hurst where resolution allows; otherwise flagged unavailable | unitless / σ per km |
-| 5 | **Temperature statistics and swing** | WorldClim `bio_1` (mean), `bio_2` (diurnal range proxy), `bio_5` (warmest month max), `bio_6` (coldest month min), `bio_7` (annual range) | Literature CSV (`moon_thermal_literature.csv`) | Literature CSV (`mars_thermal_literature.csv`) | °C |
+| 5 | **Temperature statistics and swing** | WorldClim `bio_1` (mean), `bio_2` (diurnal range proxy), `bio_5` (warmest month max), `bio_6` (coldest month min), `bio_7` (annual range) | LRO Diviner polar resource product (annual mean and max; no min or range) | No source yet | °C |
 | 6 | **Dryness** | WorldClim `bio_12` (annual precipitation), `bio_14` (driest-month precipitation) | Airless: treated as one-sided "drier than any Earth desert" constraint, not a measured target value | Hyper-arid: same one-sided treatment | mm |
 
 ### Ice / cold-trap proxy (MVP auxiliary dimension)
 
 | Body | Measurement | Why |
 |---|---|---|
-| Moon | Fraction of a cell covered by permanently shadowed regions (PSR polygon table `LPSR_80S_20MPP_ADJ_1km2.csv`) | Cold traps are the resource/ice story for a south-pole base |
-| Earth | `bio_6` cold extremes (coldest-month minimum air temperature) | Best available global proxy for persistent cold; **not** a radiation or vacuum proxy |
+| Moon | Diviner area fraction with annual maximum surface temperature < 110 K (cross-checked against the PSR polygon table `LPSR_80S_20MPP_ADJ_1km2.csv`: 9.81 % each) | Cold traps are the resource/ice story for a south-pole base |
+| Earth | Fraction of land cells in a 0.25° window whose warmest-month air temperature (`bio_5`) stays below 0 °C | Same idea as the Moon (the annual maximum never thaws); **not** a radiation or vacuum proxy |
 | Mars | Not in MVP | No comparable mapped cold-trap product in the downloaded data |
 
 The ice proxy is reported as a separate sub-score, not silently mixed into the six terrain/climate features.
@@ -133,22 +133,20 @@ Implementation rules:
 - **Dryness is one-sided.** No lunar/Martian precipitation value is fabricated;
   the scorer treats "drier than Earth's driest desert" as a constraint.
 
-## Normalization and scoring (Phase 3 preview)
+## Normalization and scoring (Phase 3, implemented)
 
-1. For each feature, build the **Earth reference distribution** from valid Earth
-   land cells (log-transform skewed features such as relief, roughness and
-   precipitation first). Earth cell percentile = rank in that distribution.
-2. Place the **target's value** on the same Earth distribution (target percentile
-   = Earth CDF at the target value). Sub-score for feature *f*:
-   `1 − |p_earth,f − p_target,f|` (0–1). If the target lies outside the Earth
-   range (percentile 0 or 1, e.g. lunar day/night temperature extremes or total
-   dryness), flag it "beyond Earth range": the best Earth match is the extreme
-   cell, and the report says Earth cannot reach the target value.
-3. Overall score: weighted mean of available sub-scores; weights adjustable in
-   the UI, with presets for rover mobility, cold-trap/ice and thermal cycling.
-4. Report the weight vector, the per-feature sub-scores, and any feature that is
-   unavailable for a body. A high score with an unavailable ice proxy must not
-   look like a high-confidence ice analog.
+1. Each skewed feature is transformed: `log1p` for relief, slope and roughness; `log1p(x / ref)` for precipitation
+   (`ref` 30 mm annual, 3 mm driest month, near Earth's driest 5 %); Hurst and temperatures stay linear.
+2. Per-feature distance `d = min(1, |t(cell) − t(target)| / (P95 − P5 of t over area-weighted Earth land))`;
+   sub-score `100·(1 − d)`. Targets beyond the Earth range are clipped to `d = 1` for the cells that cannot reach them.
+3. Ice / cold-trap proxy: Earth = fraction of land cells in a 0.25° window whose warmest-month air temperature
+   stays below 0 °C; Moon = Diviner area fraction with annual max < 110 K (9.8 %, equal to the PSR polygon cover).
+   Distance `|√f_cell − √f_target|`.
+4. Overall score: weighted mean of `d` over features with a target value, `100·(1 − D)`. Presets: balanced,
+   rover_mobility, cold_trap_ice, thermal_cycling. Features without a target value are dropped and listed.
+5. Moon temperatures are Diviner annual surface mean and max (area-weighted, < 85°S) compared with Earth air
+   temperature: not like-for-like, below Earth's coldest land cell, so the mean is clipped to the maximum distance on every cell and the thermal_cycling ranking is driven by the warmest-month maximum alone. `thermal_cycling` only; top scores are low (about 39/100) because Earth cannot reach these temperatures.
+   Minimum and day–night range have no source. Mars temperatures have no source.
 
 ## Window and resolution policy
 

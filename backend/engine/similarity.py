@@ -1,20 +1,22 @@
-"""Phase 3 similarity engine: Earth-percentile weighted distance to a target.
+"""Phase 3 similarity engine: scaled physical distance to a target.
 
 Method (docs/FEATURES.md, "Normalization and scoring"):
-  1. Every feature is converted to its percentile in the area-weighted Earth land
-     distribution (mid-rank for ties). Targets are placed on the same scale.
-  2. Per-feature distance d = |pct_cell - pct_target| / 100  (0 = identical).
-  3. Overall distance D = sum(w*d)/sum(w) over features that have a target value;
-     score = 100*(1 - D). Sub-score of a feature = 100*(1 - d).
+  1. Relief, slope and roughness are log1p-transformed, precipitation is log1p(x / ~Earth P5); Hurst and
+     temperatures are used as they are. Each feature's scale is the area-weighted
+     Earth land P95 - P5 of the transformed values.
+  2. Per-feature distance d = min(1, |t_cell - t_target| / scale); sub-score = 100*(1 - d).
+  3. ice_proxy = fraction of land cells within 0.25 deg whose warmest month stays below 0 C
+     (Earth) or the Diviner area fraction below 110 K (Moon); d = |sqrt(f_cell) - sqrt(f_target)|.
+  4. Overall distance D = sum(w*d)/sum(w) over features that have a target value; score = 100*(1 - D).
 
-Features without a target value (e.g. temperatures) are dropped and reported,
-never guessed. Dryness is one-sided: the target sits at Earth percentile 0.
+Features without a target value (e.g. Mars temperatures) are dropped and reported, never guessed.
 """
 
 from __future__ import annotations
 
 import numpy as np
 from netCDF4 import Dataset
+from scipy.ndimage import uniform_filter
 
 from backend.paths import PROCESSED_DIR
 
@@ -23,29 +25,30 @@ GRID_FEATURES = [
     "relief_20km_m", "slope_20km_deg", "roughness_5km_m", "roughness_10km_m", "roughness_20km_m",
     "hurst_2_32km", "precip_annual_mm", "precip_driest_month_mm", *TEMPS,
 ]
-# "ice_proxy" is the coldest-month minimum air temperature (Earth proxy for persistent cold).
+LOG_FEATURES = {"relief_20km_m", "slope_20km_deg", "roughness_5km_m", "roughness_10km_m", "roughness_20km_m"}
+# Precipitation is log1p(x / ref) with ref near Earth's driest 5%, so a 15 mm desert stays close to a 0 mm target.
+PRECIP_REF_MM = {"precip_annual_mm": 30.0, "precip_driest_month_mm": 3.0}
 ICE = "ice_proxy"
 ALL_FEATURES = [*GRID_FEATURES, ICE]
-GRID_OF = {ICE: "temp_min_coldest_c"}
 
 # Relative weights per preset. The ice proxy is reported as its own sub-score and
-# is only mixed into the overall score by the cold-trap preset.
+# is mixed into the overall score by the balanced and cold-trap presets.
 PRESETS: dict[str, dict[str, float]] = {
     "balanced": {"relief_20km_m": 1, "slope_20km_deg": 1, "roughness_5km_m": 1 / 3, "roughness_10km_m": 1 / 3,
                  "roughness_20km_m": 1 / 3, "hurst_2_32km": 0.5, "precip_annual_mm": 0.5,
-                 "precip_driest_month_mm": 0.5},
+                 "precip_driest_month_mm": 0.5, ICE: 0.5},
     "rover_mobility": {"slope_20km_deg": 3, "relief_20km_m": 1, "roughness_5km_m": 2 / 3,
                        "roughness_10km_m": 2 / 3, "roughness_20km_m": 2 / 3, "hurst_2_32km": 0.5},
     "cold_trap_ice": {ICE: 3, "relief_20km_m": 0.5, "slope_20km_deg": 0.5, "precip_annual_mm": 0.5,
                       "precip_driest_month_mm": 0.5},
-    "thermal_cycling": {"temp_diurnal_range_c": 2, "temp_annual_range_c": 1, "temp_max_warmest_c": 1,
-                        "temp_min_coldest_c": 1},
+    "thermal_cycling": {"temp_mean_c": 1, "temp_max_warmest_c": 1},
 }
-# Target status -> weight multiplier (resolution-limited values must not drive the ranking).
-STATUS_FACTOR = {"measured": 1.0, "reduced_lags": 0.5, "resolution_limited": 0.0}
+# Target status -> weight multiplier. measured_surface (Diviner skin temperature) is not air
+# temperature, so it counts half.
+STATUS_FACTOR = {"measured": 1.0, "measured_surface": 0.5, "reduced_lags": 0.5, "resolution_limited": 0.0}
 
 
-# ------------------------------------------------------------ percentiles
+# ------------------------------------------------------------ distributions
 
 class Ecdf:
     """Area-weighted empirical distribution of one Earth feature."""
@@ -63,60 +66,82 @@ class Ecdf:
         hi = np.searchsorted(self.values, x, "right")
         return ((self.cum[lo] + self.cum[hi]) / 2 * 100).astype("float32")
 
+    def value_at(self, p: float) -> float:
+        return float(self.values[np.searchsorted(self.cum, p / 100) - 1])
 
-def load_earth(path=None) -> tuple[dict[str, np.ndarray], dict[str, Ecdf], np.ndarray, np.ndarray]:
-    """Return per-feature Earth percentile grids (float16, NaN off land), ECDFs, lat, lon."""
+
+def transform(name: str, x):
+    if name in PRECIP_REF_MM:
+        return np.log1p(x / PRECIP_REF_MM[name])
+    return np.log1p(x) if name in LOG_FEATURES else x
+
+
+def cold_trap_fraction(tmax_warmest: np.ndarray) -> np.ndarray:
+    valid = np.isfinite(tmax_warmest)
+    frozen = valid & (tmax_warmest < 0)
+    num = uniform_filter(frozen.astype("float32"), size=5)
+    den = uniform_filter(valid.astype("float32"), size=5)
+    # Ocean windows can hold no valid cell, so the ratio is only taken where the cell is land.
+    return np.divide(num, den, out=np.full(valid.shape, np.nan, "float32"), where=valid)
+
+
+def load_earth(path=None) -> tuple[dict[str, np.ndarray], dict[str, Ecdf], dict[str, float], np.ndarray, np.ndarray]:
+    """Return per-feature transformed grids (float16, NaN off land), ECDFs, scales, lat, lon."""
     with Dataset(path or PROCESSED_DIR / "earth_features.nc") as ds:
         lat, lon = np.asarray(ds["lat"][:]), np.asarray(ds["lon"][:])
         w = np.broadcast_to(np.cos(np.radians(lat))[:, None], (lat.size, lon.size))
-        grids, ecdfs = {}, {}
+        grids, ecdfs, scales = {}, {}, {}
         for name in GRID_FEATURES:
-            a = np.ma.filled(ds[name][:], np.nan).astype("float32")
-            ok = np.isfinite(a)
-            ecdfs[name] = Ecdf(a[ok], w[ok])
-            pct = np.full(a.shape, np.nan, dtype="float16")
-            pct[ok] = ecdfs[name].percentile(a[ok])
-            grids[name] = pct
-    grids[ICE] = grids["temp_min_coldest_c"]
-    ecdfs[ICE] = ecdfs["temp_min_coldest_c"]
-    return grids, ecdfs, lat, lon
+            t = transform(name, np.ma.filled(ds[name][:], np.nan).astype("float32"))
+            ok = np.isfinite(t)
+            ecdfs[name] = Ecdf(t[ok], w[ok])
+            scales[name] = ecdfs[name].value_at(95) - ecdfs[name].value_at(5)
+            grids[name] = t.astype("float16")
+    ice = cold_trap_fraction(grids["temp_max_warmest_c"])
+    ok = np.isfinite(ice)
+    ecdfs[ICE] = Ecdf(ice[ok], w[ok])
+    grids[ICE] = ice.astype("float16")
+    return grids, ecdfs, scales, lat, lon
 
 
 # ------------------------------------------------------------ targets
 
-def target_percentiles(profile: dict, ecdfs: dict[str, Ecdf]) -> tuple[dict[str, float], dict[str, str], dict[str, float]]:
-    """Target percentile per feature, dropped-feature reasons, and per-feature status factors."""
-    pct, dropped, factor = {}, {}, {}
+def target_values(profile: dict) -> tuple[dict[str, float], dict[str, str], dict[str, float]]:
+    """Transformed target value per feature, dropped-feature reasons, and per-feature status factors."""
+    vals, dropped, factor = {}, {}, {}
     for name, f in profile["features"].items():
         if f["value"] is None:
             dropped[name] = f["status"]
-        elif f["status"] == "one_sided_constraint":
-            pct[name], factor[name] = 0.0, 1.0  # drier than any Earth desert
         else:
-            pct[name] = float(ecdfs[name].percentile(f["value"]))
+            vals[name] = float(transform(name, f["value"]))
             factor[name] = STATUS_FACTOR.get(f["status"], 1.0)
     ice = profile.get("ice_cold_trap_proxy", {})
     if ice.get("status") == "measured":
-        # Lunar PSRs stay below 110 K (-163 C) all year, colder than any Earth land cell
-        # (grid minimum about -72 C), so the target sits beyond Earth's cold end.
-        pct[ICE], factor[ICE] = 0.0, 1.0
+        vals[ICE], factor[ICE] = ice["cold_trap_area_fraction"], 1.0
     else:
         dropped[ICE] = ice.get("status", "missing")
-    return pct, dropped, factor
+    return vals, dropped, factor
 
 
-def score_map(grids: dict[str, np.ndarray], target_pct: dict[str, float], weights: dict[str, float],
-              factor: dict[str, float] | None = None) -> tuple[np.ndarray, dict[str, np.ndarray], list[str]]:
+def feature_distance(name: str, cell: np.ndarray, target: float, scales: dict[str, float]) -> np.ndarray:
+    if name == ICE:
+        return np.abs(np.sqrt(cell.astype("float32")) - np.sqrt(target))
+    return np.minimum(1, np.abs(cell.astype("float32") - target) / scales[name])
+
+
+def score_map(grids: dict[str, np.ndarray], target: dict[str, float], weights: dict[str, float],
+              scales: dict[str, float], factor: dict[str, float] | None = None,
+              ) -> tuple[np.ndarray, dict[str, np.ndarray], list[str]]:
     """Overall score (0-100, NaN off land), per-feature sub-scores, and the features used."""
     factor = factor or {}
-    used = {k: w * factor.get(k, 1.0) for k, w in weights.items() if k in target_pct and w * factor.get(k, 1.0) > 0}
+    used = {k: w * factor.get(k, 1.0) for k, w in weights.items() if k in target and w * factor.get(k, 1.0) > 0}
     shape = next(iter(grids.values())).shape
     dist, total = np.zeros(shape, dtype="float32"), 0.0
     subs = {}
     for k in ALL_FEATURES:
-        if k not in target_pct:
+        if k not in target:
             continue
-        d = np.abs(grids[k].astype("float32") - target_pct[k]) / 100
+        d = feature_distance(k, grids[k], target[k], scales)
         subs[k] = (100 * (1 - d)).astype("float32")
         if k in used:
             dist += used[k] * d

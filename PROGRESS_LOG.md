@@ -23,9 +23,16 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** Phase 3 complete — waiting for approval of Phase 4
+**Now working on:** Phase 3 fixes done on `rahul/phase3-fixes` (uncommitted); next: Mars temperature/minerals, site write-ups
 
 <!-- entries -->
+
+#### 2026-11-15 10:45 — Phase 3 fixes after review (Diviner temperatures, scaled scoring)
+- **Did:** Moon temperatures now from Diviner PRP south (<85°S, area-weighted): mean −171.5 °C, max −42.0 °C, cold-trap fraction 9.81 %. Scoring switched to scaled physical distance with a like-for-like frozen-ground proxy; validation now checks overall rank ≥ 75 (Devon Island fails for the Moon; Dry Valleys and Iceland fail for Jezero). Rebuilt the Earth grid on Windows (matches the Mac numbers). 56 tests pass.
+- **Files:** `backend/pipeline/diviner.py`, `target_profiles.py`, `backend/engine/similarity.py`, `run_scoring.py`, `tests/test_phase{2,3}.py`, `docs/{FEATURES,target_profiles,top_sites,validation}`, `PLAN.md`
+- **Next:** Mars temperature and minerals/dust need data access; per-site write-ups; the Phase 4 API must be rebased on these engine changes (`load_earth` returns 5 values, `score_map` takes scales).
+- **Blockers:** Earthdata login for ASTER/EMIT; a Mars temperature source for Jezero.
+
 
 #### 2026-11-15 10:05 — Phase 3 similarity engine
 - **Did:** Percentile-distance engine with 4 presets, score maps for both targets, top-10 sites with and without famous sites, validation vs Atacama / Dry Valleys / Devon / Death Valley / Iceland (all 9 expected-feature checks pass). Top Moon sites: Andes–Atacama, Kunlun (36N 81E), East Antarctica; Mars: Andes, Egypt/Sudan desert. 46 tests pass.

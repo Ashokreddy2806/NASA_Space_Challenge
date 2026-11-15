@@ -1,33 +1,34 @@
 # Validation against known analog sites (Phase 3)
 
-Balanced preset. *Score* is the 0-100 similarity at the site's grid cell; *rank pct* is its area-weighted percentile among all Earth land cells. *Checks* test the features each site is famous for (sub-score >= 80 counts as a pass). Failures are reported, not hidden.
+Balanced preset. *Score* is the 0-100 similarity at the site's grid cell; *rank pct* is its area-weighted percentile among all Earth land cells. *Check* is PASS when the rank pct is at least 75. Failures are reported, not hidden.
 
 ## Lunar south pole
 
-Features dropped (no target value): temp_mean_c, temp_diurnal_range_c, temp_max_warmest_c, temp_min_coldest_c, temp_annual_range_c.
+Features dropped (no target value): temp_diurnal_range_c, temp_min_coldest_c, temp_annual_range_c.
 
-| Site | Score | Rank pct | Checks (sub-score) | Best matches | Worst matches |
+| Site | Score | Rank pct | Check | Best matches | Worst matches |
 |---|---|---|---|---|---|
-| Atacama | 80.8 | 94.2 | precip_annual_mm 96.1 OK, precip_driest_month_mm 89.0 OK | hurst_2_32km, precip_annual_mm, precip_driest_month_mm | ice_proxy, relief_20km_m, slope_20km_deg |
-| Dry Valleys | 87.6 | 98.7 | precip_annual_mm 88.5 OK, ice_proxy 87.9 OK | roughness_20km_m, slope_20km_deg, relief_20km_m | hurst_2_32km, precip_driest_month_mm, ice_proxy |
-| Devon Island / Haughton | 67.0 | 71.6 | ice_proxy 91.2 OK | ice_proxy, roughness_5km_m, roughness_10km_m | hurst_2_32km, relief_20km_m, precip_driest_month_mm |
-| Death Valley | 88.2 | 98.8 | precip_annual_mm 91.3 OK, relief_20km_m 91.6 OK | hurst_2_32km, slope_20km_deg, relief_20km_m | ice_proxy, precip_driest_month_mm, roughness_10km_m |
-| Iceland | 72.8 | 81.8 | relief_20km_m 92.7 OK, roughness_20km_m 87.7 OK | hurst_2_32km, relief_20km_m, roughness_20km_m | precip_driest_month_mm, precip_annual_mm, ice_proxy |
+| Atacama | 63.1 | 87.2 | PASS | precip_driest_month_mm, hurst_2_32km, precip_annual_mm | slope_20km_deg, relief_20km_m, roughness_20km_m |
+| Dry Valleys | 77.6 | 98.5 | PASS | precip_driest_month_mm, roughness_20km_m, slope_20km_deg | ice_proxy, hurst_2_32km, precip_annual_mm |
+| Devon Island / Haughton | 48.9 | 69.8 | FAIL | precip_driest_month_mm, roughness_5km_m, roughness_10km_m | slope_20km_deg, hurst_2_32km, relief_20km_m |
+| Death Valley | 75.2 | 97.6 | PASS | hurst_2_32km, precip_driest_month_mm, roughness_20km_m | slope_20km_deg, roughness_10km_m, roughness_5km_m |
+| Iceland | 57.4 | 80.6 | PASS | hurst_2_32km, relief_20km_m, roughness_20km_m | precip_annual_mm, precip_driest_month_mm, slope_20km_deg |
 
 ## Jezero Crater (Mars)
 
 Features dropped (no target value): temp_mean_c, temp_diurnal_range_c, temp_max_warmest_c, temp_min_coldest_c, temp_annual_range_c, ice_proxy.
 
-| Site | Score | Rank pct | Checks (sub-score) | Best matches | Worst matches |
+| Site | Score | Rank pct | Check | Best matches | Worst matches |
 |---|---|---|---|---|---|
-| Atacama | 91.4 | 99.0 | precip_annual_mm 96.1 OK, precip_driest_month_mm 89.0 OK | roughness_10km_m, roughness_20km_m, precip_annual_mm | relief_20km_m, precip_driest_month_mm, roughness_5km_m |
-| Dry Valleys | 78.8 | 82.6 | precip_annual_mm 88.5 OK | precip_annual_mm, relief_20km_m, slope_20km_deg | hurst_2_32km, roughness_5km_m, roughness_10km_m |
-| Devon Island / Haughton | 81.2 | 87.6 | n/a | roughness_20km_m, roughness_10km_m, roughness_5km_m | hurst_2_32km, precip_driest_month_mm, precip_annual_mm |
-| Death Valley | 88.3 | 97.3 | precip_annual_mm 91.3 OK, relief_20km_m 91.6 OK | roughness_5km_m, roughness_10km_m, hurst_2_32km | precip_driest_month_mm, slope_20km_deg, roughness_20km_m |
-| Iceland | 73.4 | 70.2 | relief_20km_m 90.5 OK, roughness_20km_m 89.8 OK | roughness_5km_m, roughness_10km_m, slope_20km_deg | precip_driest_month_mm, precip_annual_mm, roughness_20km_m |
+| Atacama | 89.1 | 99.2 | PASS | precip_driest_month_mm, roughness_10km_m, roughness_20km_m | relief_20km_m, precip_annual_mm, slope_20km_deg |
+| Dry Valleys | 59.3 | 46.6 | FAIL | precip_driest_month_mm, relief_20km_m, precip_annual_mm | slope_20km_deg, roughness_10km_m, hurst_2_32km |
+| Devon Island / Haughton | 76.6 | 87.2 | PASS | roughness_20km_m, roughness_10km_m, slope_20km_deg | hurst_2_32km, precip_annual_mm, relief_20km_m |
+| Death Valley | 82.1 | 95.2 | PASS | roughness_10km_m, precip_driest_month_mm, hurst_2_32km | slope_20km_deg, precip_annual_mm, roughness_20km_m |
+| Iceland | 67.7 | 68.5 | FAIL | roughness_10km_m, hurst_2_32km, relief_20km_m | precip_annual_mm, precip_driest_month_mm, slope_20km_deg |
 
 ## Reading this
 
-- Percentile distance treats a gap of N percentile points as equal everywhere on the scale. Near the extremes of a skewed feature (relief, slope, roughness) that compresses large physical differences.
-- Temperatures are not scored: no site-specific literature values exist yet.
+- Scores use scaled physical distance: each skewed feature is log1p-transformed and divided by its Earth P95-P5 span, so equal physical gaps count equally across the scale.
+- Moon temperatures are Diviner surface values compared with Earth air temperature. This is not like-for-like and lies beyond the Earth range. They enter only the thermal_cycling preset.
+- Mars has no temperature source, so its thermal_cycling score is unavailable.
 - Earth cannot reproduce reduced gravity, vacuum or thin atmosphere, or the radiation environment.
