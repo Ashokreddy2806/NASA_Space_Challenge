@@ -1,0 +1,62 @@
+# Phase 0 data inventory: every file the project expects, with its purpose.
+# `backend/pipeline/inspect_datasets.py` reads this instead of hard-coding names.
+
+moon:
+  layers:
+    - {id: M1, filename: LDEM_80S_80MPP_ADJ.tiff, feature: "relief, derived slope", units: m, notes: "80 m/pixel LOLA south polar DEM"}
+    - {id: M2, filename: LDRM_80S_1000MPP_ADJ_ROUGH_800M.tiff, feature: "roughness (800 m baseline)", units: m, notes: "1 km/pixel"}
+    - {id: M3, filename: LDRM_80S_1000MPP_ADJ_ROUGH_1600M.tiff, feature: "roughness (1600 m baseline)", units: m, notes: "1 km/pixel"}
+    - {id: M4, filename: LDRM_80S_1000MPP_ADJ_SLP_800M.tiff, feature: "slope (800 m baseline)", units: degrees, notes: "1 km/pixel"}
+    - {id: M5, filename: LDRM_80S_1000MPP_ADJ_SLP_1600M.tiff, feature: "slope (1600 m baseline)", units: degrees, notes: "1 km/pixel"}
+    - {id: M6, filename: LDRM_80S_1000MPP_ADJ_H.tiff, feature: "Hurst exponent", units: unitless, notes: "1 km/pixel, cross-check only"}
+    - {id: M7, filename: LDRM_80S_1000MPP_ADJ_SPSLP.tiff, feature: "spectral slope", units: sigma/km, notes: "1 km/pixel, cross-check only"}
+    - {id: M9, filename: ldem_16.tif, feature: "global context elevation (not for polar slope)", units: km, notes: "5760x2880 global, optional"}
+  psr:
+    id: M8
+    filename: LPSR_80S_20MPP_ADJ_1km2.csv
+    feature: permanently shadowed regions
+  hand_made:
+    - moon_thermal_literature.csv
+
+mars:
+  pixels_per_degree: 16
+  layers:
+    - {id: R1, filename: megt90n000eb.img, feature: "relief, slope, roughness", units: m, notes: "MOLA MEGDR, header-less big-endian int16, 2880x5760 (16 ppd); read directly, no .npy conversion"}
+  orientation_checks:
+    - {name: Jezero, lat: 18.3628, lon_east: 77.5945}
+    - {name: Olympus Mons, lat: 18.65, lon_east: 226.2}
+    - {name: Hellas, lat: -42.4, lon_east: 70.5}
+  auxiliary:
+    - {filename: mega90n000cb.img, description: "MOLA shaded-relief image, auxiliary; not a numeric layer"}
+    - {filename: nmap2003.tif, description: "Mars Viking colour mosaic, auxiliary basemap"}
+  hand_made:
+    - mars_thermal_literature.csv
+
+earth:
+  auxiliary:
+    - wc2.1_10m_bio.zip
+    - wc2.1_10m_elev.zip
+    - wc2.1_2.5m_bio.zip
+    - wc2.1_2.5m_elev.zip
+  layers:
+    - {id: E2, filename: ETOPO_2022_v1_60s_N90W180_surface.tif, feature: "relief, slope, roughness, Hurst", units: m, notes: "60 arc-second global"}
+  climate_layers:
+    - {id: E1-bio1, filename: wc2.1_2.5m_bio_1.tif, feature: annual mean temperature, units: degC}
+    - {id: E1-bio2, filename: wc2.1_2.5m_bio_2.tif, feature: mean diurnal range, units: degC}
+    - {id: E1-bio3, filename: wc2.1_2.5m_bio_3.tif, feature: isothermality, units: "%"}
+    - {id: E1-bio4, filename: wc2.1_2.5m_bio_4.tif, feature: temperature seasonality, units: degC}
+    - {id: E1-bio5, filename: wc2.1_2.5m_bio_5.tif, feature: max temperature of warmest month, units: degC}
+    - {id: E1-bio6, filename: wc2.1_2.5m_bio_6.tif, feature: min temperature of coldest month, units: degC}
+    - {id: E1-bio7, filename: wc2.1_2.5m_bio_7.tif, feature: annual temperature range, units: degC}
+    - {id: E1-bio8, filename: wc2.1_2.5m_bio_8.tif, feature: mean temperature of wettest quarter, units: degC}
+    - {id: E1-bio9, filename: wc2.1_2.5m_bio_9.tif, feature: mean temperature of driest quarter, units: degC}
+    - {id: E1-bio10, filename: wc2.1_2.5m_bio_10.tif, feature: mean temperature of warmest quarter, units: degC}
+    - {id: E1-bio11, filename: wc2.1_2.5m_bio_11.tif, feature: mean temperature of coldest quarter, units: degC}
+    - {id: E1-bio12, filename: wc2.1_2.5m_bio_12.tif, feature: annual precipitation, units: mm}
+    - {id: E1-bio13, filename: wc2.1_2.5m_bio_13.tif, feature: precipitation of wettest month, units: mm}
+    - {id: E1-bio14, filename: wc2.1_2.5m_bio_14.tif, feature: precipitation of driest month, units: mm}
+    - {id: E1-bio15, filename: wc2.1_2.5m_bio_15.tif, feature: precipitation seasonality, units: "%"}
+    - {id: E1-bio16, filename: wc2.1_2.5m_bio_16.tif, feature: precipitation of wettest quarter, units: mm}
+    - {id: E1-bio17, filename: wc2.1_2.5m_bio_17.tif, feature: precipitation of driest quarter, units: mm}
+    - {id: E1-bio18, filename: wc2.1_2.5m_bio_18.tif, feature: precipitation of warmest quarter, units: mm}
+    - {id: E1-bio19, filename: wc2.1_2.5m_bio_19.tif, feature: precipitation of coldest quarter, units: mm}

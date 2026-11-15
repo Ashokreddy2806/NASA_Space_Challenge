@@ -131,16 +131,93 @@ Implementation rules:
 - **Dryness is one-sided.** No lunar/Martian precipitation value is fabricated;
   the scorer treats "drier than Earth's driest desert" as a constraint.
 
-## Normalization and scoring (Phase 3 preview)
+## Phase 2 implementation record (Moon and Mars)
+
+Phase 2 does **not** define a second estimator. `backend/features/registry.py` is
+the only implementation; `config/targets.yaml` says which body, which region and
+which native pixel size. The same physical windows and lags are used everywhere,
+and a feature is only computed where the native source resolves its window.
+
+**Comparability rule** (`config.yaml → comparability`). A window is `resolved`
+when it spans at least 2.5 native pixels, `marginal` between 2.5 and 4.0, and
+`unavailable` below 2.5. Hurst additionally needs at least 3 usable lags, each
+spanning 2.5 pixels. An unavailable feature gets a reason and no number; it is
+excluded from the target score and the remaining group weights are renormalised.
+
+| Body | Source | Native pixel | Region | Cells | Result |
+|---|---|---|---|---|---|
+| Moon | `LDEM_80S_80MPP_ADJ.tiff` | 80 m | poleward of 85°S, 151.713 km disc | 11,298,124 (706,141 sampled, stride 4) | all six terrain features resolved |
+| Mars | `megt90n000eb.img` (raw MOLA, 16 ppd) | ≈3.70 km | Jezero 18.3628°N 77.5945°E, 150 km disc | 5,169 | 5 km roughness and Hurst unavailable; 10 km roughness marginal |
+
+The Moon is processed block-wise (1024 px cores, 36 km halo) so every window near
+a block edge sees real neighbouring terrain. Mars is reprojected from the raw
+0–360°E MOLA grid to a local azimuthal-equidistant grid on a Mars sphere. The
+configured Jezero elevation (−2656 m) is checked against the nearest MOLA cell
+(−2663 m, Δ −7 m), which confirms the grid orientation.
+
+**Moon medians** (p16–p84): relief 1789 m (925–3003), slope 9.29° (6.26–12.29),
+roughness 5/10/20 km = 77/170/374 m, Hurst 0.683 (0.566–0.812). PSR area fraction
+inside the disc is 0.0983 (7,110 km² of 72,308 km², 366 of 1,531 polygons).
+
+**Mars medians**: relief 472 m (242–897), slope 1.47° (0.83–2.65), roughness
+10 km 40 m (marginal), roughness 20 km 85 m. Mars has **no** surface-temperature
+range in the supplied literature, so the two range features are unavailable by
+configuration and excluded; the remaining weights are renormalised.
+
+**Cross-check against the published LOLA products.** The profile values come
+from the 80 m DEM. The pre-computed layers are used only to test that
+recomputation on a like-for-like 1 km grid:
+
+| Our computation | LOLA layer | Pearson r | Our median | LOLA median |
+|---|---|---|---|---|
+| slope at 1.6 km | `SLP_1600M` | 0.983 | 8.20° | 7.24° |
+| roughness at 0.8 km | `ROUGH_800M` | 0.882 | 6.32 m | 3.96 m |
+| Hurst 2–32 km | `H` | −0.15 | 0.683 | 0.971 |
+
+Slope and roughness agree well. The LOLA `H` layer is nearly saturated (median
+0.971, p05 0.72, p95 1.02), so it cannot confirm a structure-function exponent
+that spans a real range; it is reported as a weak cross-check, not as agreement.
+
+**PSR verification** (`docs/psr_verification.md`). The CSV has no CRS field, so
+the polygons are read as metres in the LDEM south-polar-stereographic CRS taken
+from the DEM. All 1,531 polygons fall inside the DEM extent, 366 lie in the
+85°S disc, and the rasterised PSRs sit 1,213 m below the background median
+elevation (77% of PSR pixels below it). Their median slope is **10.30° vs 9.18°**
+for the background, i.e. PSRs are slightly *steeper*, so the strict "low slopes"
+verdict is **false** — reported as found rather than assumed. The ~76°S
+tile-corner radius (429.9 km) is far outside the 151.7 km target cap, so the
+corner clip cannot truncate the region of interest.
+
+**Earth Hurst robustness.** Recomputing on 504 random ETOPO patches, dropping the
+2 km lag (ETOPO native ≈1.85 km) shifts the median H by +0.040 and leaves the two
+estimates correlated at r=0.990 (`docs/hurst_sensitivity.md`). The nested fit is
+robust enough to compare across bodies, with that small positive bias recorded.
+
+**Thermal values.** `moon_thermal_literature.csv` and
+`mars_thermal_literature.csv` were still **missing** when Phase 2 ran. The
+reader is implemented and converts cited kelvin values exactly, but the features
+are reported unavailable with the exact missing path. No temperature is
+estimated.
+
+## Normalization and scoring (Phase 3 contract)
 
 1. Convert each feature to a percentile rank **within its own body's valid
-   cells** (Earth land; Moon polar tile; Mars target region).
-2. Sub-score for feature *f*: `1 − |p_earth,f − p_target,f|` (0–1).
+   cells** (Earth land; Moon polar tile; Mars target region). Rank similarity is
+   `1 − |p_earth,f − p_target,f|`.
+2. **Also** report the absolute gap in real units, `Earth value − target median`,
+   and how many target p16–p84 spreads that gap is worth. This is mandatory: a
+   rank can look close while the real difference is enormous (the Moon's
+   day–night swing is hundreds of kelvin; an Earth desert that ranks near it is
+   still nowhere near it in absolute terms). Every site card must show the
+   absolute gap, with a plain-language note where rank similarity hides a large
+   real-unit difference.
 3. Overall score: weighted mean of available sub-scores; weights adjustable in
    the UI, with presets for rover mobility, cold-trap/ice and thermal cycling.
-4. Report the weight vector, the per-feature sub-scores, and any feature that is
-   unavailable for a body. A high score with an unavailable ice proxy must not
-   look like a high-confidence ice analog.
+   Unavailable features carry no score and the remaining weights are
+   renormalised (the Phase 2 reports give the renormalised weights per body).
+4. Report the weight vector, the per-feature sub-scores, the absolute gaps, and
+   any feature that is unavailable for a body. A high score with an unavailable
+   ice proxy must not look like a high-confidence ice analog.
 
 ## Window and resolution policy
 

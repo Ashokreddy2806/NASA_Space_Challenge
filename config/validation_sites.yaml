@@ -1,0 +1,51 @@
+# Validation / spot-check sites. Coordinates and expectations live here, not in
+# pipeline or test code.
+
+sites:
+  - name: Atacama
+    lat: -23.5
+    lon: -68.5
+    notes: hyper-arid desert
+    expect:
+      temp_mean_c: {max: 20.0}
+      precip_annual_mm: {max: 50.0}
+  - name: Dry Valleys
+    lat: -77.5
+    lon: 162.0
+    notes: cold desert, Antarctica
+    expect:
+      temp_mean_c: {max: -15.0}
+      precip_annual_mm: {max: 100.0}
+  - name: Devon Island
+    lat: 75.4
+    lon: -89.5
+    notes: polar desert, Mars analog
+    expect:
+      temp_mean_c: {max: 0.0}
+  - name: Death Valley
+    lat: 36.5
+    lon: -116.9
+    notes: hot desert
+    expect:
+      temp_mean_c: {min: 20.0}
+      precip_annual_mm: {max: 100.0}
+  - name: Iceland
+    lat: 64.9
+    lon: -19.0
+    notes: cold and wet
+    expect:
+      precip_annual_mm: {min: 500.0}
+  - name: Sahara
+    lat: 23.0
+    lon: 10.0
+    notes: hot desert
+    expect:
+      temp_mean_c: {min: 20.0}
+      precip_annual_mm: {max: 50.0}
+  - name: Amazon
+    lat: -3.0
+    lon: -60.0
+    notes: hot and wet (negative control)
+    expect:
+      temp_mean_c: {min: 24.0}
+      precip_annual_mm: {min: 1500.0}

@@ -1,0 +1,74 @@
+# Global grid, tiling and comparability settings.
+# Nothing in backend/ should repeat these values; edit here or override with a
+# proof config (see config/proofs/).
+
+grid:
+  resolution_deg: 0.05
+  lon_min: -180.0
+  lon_max: 180.0
+  lat_min: -90.0
+  lat_max: 90.0
+  tile_deg: 10.0
+  halo_deg: 1.0
+  working_pixel_m: 2000.0
+  chunk_rows: 360
+  chunk_cols: 720
+
+earth:
+  # The Earth land mask is the WorldClim ocean nodata mask (majority-valid rule).
+  land_mask_source: bio_1
+  land_mask_threshold: 0.5
+  # ETOPO 2022 60 arc-second native ground sampling. Comparability is judged
+  # against this, not against the finer working grid the features run on.
+  native_pixel_m: 1852.0
+
+comparability:
+  # A feature is computed only where its window spans at least this many NATIVE
+  # source pixels. 5 km of ETOPO (1.85 km/px) passes at 2.7 px; 5 km of MOLA
+  # (3.7 km/px) fails at 1.35 px. This is what Mars' 16 ppd MOLA trips over.
+  min_window_pixels: 2.5
+  # Between the floor and this value the feature is still computed but flagged
+  # as marginal in every profile, so a thin window is never silently trusted.
+  marginal_window_pixels: 4.0
+  # Hurst needs at least this many resolved lags out of the configured list.
+  min_hurst_lags: 4
+  # A lag must span at least this many native pixels to count as resolved.
+  min_lag_pixels: 2.0
+  # Percentile filters are exact at or below this window size (pixels). Above
+  # it the DEM is subsampled to `approx_percentile_window_px` before filtering
+  # and the result is resampled back; this keeps the 80 m lunar DEM tractable.
+  exact_percentile_max_px: 64
+  approx_percentile_window_px: 64
+
+distribution:
+  # Target profiles sample every Nth pixel to keep memory bounded. n_cells still
+  # reports the full region count.
+  sample_stride_px: 4
+  # Robust spread reported for every target feature: p16-p84 is +/-1 sigma for a
+  # normal distribution. Change here, not in code.
+  percentiles: [16.0, 84.0]
+
+hurst_sensitivity:
+  # Earth Hurst robustness check: drop the 2 km lag (ETOPO native is ~1.85 km).
+  sample_count: 600
+  random_seed: 42
+  patch_km: 96.0
+  drop_lag_km: 2.0
+  robust_max_median_difference: 0.05
+  robust_min_correlation: 0.99
+
+figures:
+  stride_cells: 4
+  dpi_single: 160
+  dpi_overview: 150
+  percentile_stretch: [2.0, 98.0]
+  overview_columns: 4
+
+storage:
+  # NetCDF4/HDF5 chunk compression level (0-9). Chunk shapes come from grid.*.
+  compression_level: 4
+
+report:
+  polar_circle_deg: 66.5
+  plot_xticks: [-120, -60, 0, 60, 120]
+  plot_yticks: [-60, -30, 0, 30, 60]

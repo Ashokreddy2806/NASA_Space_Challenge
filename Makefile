@@ -2,11 +2,13 @@
 # On Windows the virtual environment is at ../.venv/Scripts/python.exe.
 PYTHON ?= ../.venv/Scripts/python.exe
 
-.PHONY: phase0 phase1 inventory climate terrain features test
+.PHONY: phase0 phase1 phase2 inventory climate terrain features targets test
 
 phase0: test inventory
 
 phase1: climate terrain features test
+
+phase2: targets test
 
 inventory:
 	$(PYTHON) -m backend.pipeline.inspect_datasets
@@ -19,6 +21,9 @@ terrain:
 
 features:
 	$(PYTHON) -m backend.pipeline.build_earth_features
+
+targets:
+	$(PYTHON) -m backend.targets.build_target_profiles
 
 test:
 	$(PYTHON) -m pytest -q

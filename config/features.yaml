@@ -1,0 +1,175 @@
+# One registry for every feature. `function` names a callable in
+# backend/features/registry.py; `params` are passed through unchanged.
+# Earth, Moon and Mars all call these same functions.
+
+terrain:
+  - id: relief_20km_m
+    group: relief
+    function: relief
+    params:
+      window_km: 20.0
+      low_percentile: 5.0
+      high_percentile: 95.0
+    units: m
+    long_name: Local relief in a 20 km window
+    label: Local relief (m)
+    definition: p95 - p5 of the DEM within 20 km
+    cmap: terrain
+  - id: slope_20km_deg
+    group: slope
+    function: slope
+    params:
+      window_km: 20.0
+    units: degrees
+    long_name: Mean slope in a 20 km window
+    label: Mean slope (degrees)
+    definition: mean of atan(|grad z|) over 20 km, gradient per source pixel
+    cmap: magma
+  - id: roughness_5km_m
+    group: roughness
+    function: roughness
+    params:
+      window_km: 5.0
+      sigma_fraction: 0.5
+    units: m
+    long_name: High-pass roughness at 5 km
+    label: Roughness at 5 km (m)
+    definition: std of the Gaussian high-pass residual in a 5 km window
+    cmap: cividis
+  - id: roughness_10km_m
+    group: roughness
+    function: roughness
+    params:
+      window_km: 10.0
+      sigma_fraction: 0.5
+    units: m
+    long_name: High-pass roughness at 10 km
+    label: Roughness at 10 km (m)
+    definition: std of the Gaussian high-pass residual in a 10 km window
+    cmap: cividis
+  - id: roughness_20km_m
+    group: roughness
+    function: roughness
+    params:
+      window_km: 20.0
+      sigma_fraction: 0.5
+    units: m
+    long_name: High-pass roughness at 20 km
+    label: Roughness at 20 km (m)
+    definition: std of the Gaussian high-pass residual in a 20 km window
+    cmap: cividis
+  - id: hurst_2_32km
+    group: scale_robust_roughness
+    function: hurst
+    params:
+      lags_km: [2.0, 4.0, 8.0, 16.0, 32.0]
+      window_km: 32.0
+    units: unitless
+    long_name: Scale-robust roughness (Hurst exponent)
+    label: Hurst exponent (2-32 km)
+    definition: 0.5 * slope of log structure function vs log lag for the configured lags
+    cmap: viridis
+
+climate:
+  - id: temp_mean_c
+    group: temperature
+    function: worldclim_average
+    params:
+      file_key: bio_1
+    units: degC
+    long_name: Annual mean air temperature
+    label: Mean annual air temperature (°C)
+    definition: WorldClim bio_1, 1970-2000 climatology
+    cmap: RdYlBu_r
+  - id: temp_diurnal_range_c
+    group: temperature
+    function: worldclim_average
+    params:
+      file_key: bio_2
+    units: degC
+    long_name: Mean diurnal air-temperature range
+    label: Mean diurnal range (°C)
+    definition: WorldClim bio_2 (mean monthly max-min), day/night swing proxy
+    cmap: plasma
+  - id: temp_max_warmest_c
+    group: temperature
+    function: worldclim_average
+    params:
+      file_key: bio_5
+    units: degC
+    long_name: Maximum air temperature of the warmest month
+    label: Warmest-month maximum (°C)
+    definition: WorldClim bio_5
+    cmap: inferno
+  - id: temp_min_coldest_c
+    group: temperature
+    function: worldclim_average
+    params:
+      file_key: bio_6
+    units: degC
+    long_name: Minimum air temperature of the coldest month
+    label: Coldest-month minimum (°C)
+    definition: WorldClim bio_6; also the Earth cold-extreme/ice proxy
+    cmap: RdYlBu
+    role: Earth ice/cold-trap proxy (cold extremes); not radiation or vacuum
+  - id: temp_annual_range_c
+    group: temperature
+    function: worldclim_average
+    params:
+      file_key: bio_7
+    units: degC
+    long_name: Annual air-temperature range
+    label: Annual temperature range (°C)
+    definition: WorldClim bio_7 (bio_5 - bio_6)
+    cmap: plasma
+  - id: precip_annual_mm
+    group: dryness
+    function: worldclim_average
+    params:
+      file_key: bio_12
+    units: mm
+    long_name: Annual precipitation
+    label: Annual precipitation (mm)
+    definition: WorldClim bio_12
+    cmap: YlGnBu
+  - id: precip_driest_month_mm
+    group: dryness
+    function: worldclim_average
+    params:
+      file_key: bio_14
+    units: mm
+    long_name: Precipitation of the driest month
+    label: Driest-month precipitation (mm)
+    definition: WorldClim bio_14
+    cmap: YlGnBu
+
+# Phase 3 defaults. Within a group, member sub-scores are averaged first; the
+# group weight then applies. Unavailable groups are excluded and the remaining
+# weights are renormalised (reported in the target profiles).
+groups:
+  relief:
+    weight: 1.0
+    members: [relief_20km_m]
+  slope:
+    weight: 1.0
+    members: [slope_20km_deg]
+  roughness:
+    weight: 1.0
+    members: [roughness_5km_m, roughness_10km_m, roughness_20km_m]
+  scale_robust_roughness:
+    weight: 1.0
+    members: [hurst_2_32km]
+  temperature:
+    weight: 1.0
+    members:
+      - temp_mean_c
+      - temp_diurnal_range_c
+      - temp_max_warmest_c
+      - temp_min_coldest_c
+      - temp_annual_range_c
+  dryness:
+    weight: 1.0
+    members: [precip_annual_mm, precip_driest_month_mm]
+  ice_proxy:
+    weight: 1.0
+    members: []

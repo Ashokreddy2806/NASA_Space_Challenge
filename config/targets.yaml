@@ -1,0 +1,80 @@
+# Target definitions. Coordinates are values, never code literals.
+
+moon:
+  body: moon
+  label: Lunar south polar region (poleward of 85 S)
+  region:
+    lat_min: -90.0
+    lat_max: -85.0
+  # Features are computed on the native 80 m LOLA DEM; blocks carry enough halo
+  # for the largest configured window.
+  working_pixel_m: 80.0
+  native_pixel_m: 80.0
+  block_core_px: 1024
+  # Block halo is computed from the feature windows automatically; this is a
+  # safety margin on top of the largest required halo.
+  halo_margin_km: 4.0
+  thermal_csv: thermal
+  # Which scoring groups hold literature-only values for this body.
+  thermal_groups: [temperature]
+  # Recompute from the 80 m DEM; these pre-computed LOLA rasters are cross-checks.
+  # `roughness_800m_baseline` is computed only to match the LOLA 0.8 km baseline;
+  # it is not a profile feature.
+  cross_check_products:
+    hurst_2_32km: hurst
+    slope_1600m_baseline: slope_1600m
+    roughness_800m_baseline: roughness_800m
+  cross_check_baseline_km: 0.8
+  cross_check_slope_baseline_km: 1.6
+  cross_check_cells: 608
+  # Features that are not part of this body's profile, with the reason. Keys may
+  # be a scoring group or a single feature id; a feature id wins.
+  not_applicable:
+    temperature: >-
+      lunar surface temperature and thermal inertia come only from the cited
+      thermal table, never from a raster or a guess
+    dryness: >-
+      the Moon has no atmosphere and no precipitation; dryness is represented by
+      the PSR ice proxy instead
+  unavailable_features: []
+  ice_proxy:
+    kind: psr_area_fraction
+    source: psr
+    min_polygon_area_km2: 1.0
+
+mars:
+  body: mars
+  label: Jezero crater
+  site:
+    lat_deg: 18.3628
+    lon_deg_east: 77.5945
+    elevation_m: -2656.0
+    radius_km: 150.0
+  working_pixel_m: 3700.0
+  # MOLA MEGDR 16 pixels per degree.
+  native_pixel_m: 3700.0
+  sphere_radius_m: 3396190.0
+  halo_km: 50.0
+  sample_stride_px: 1
+  thermal_csv: thermal
+  thermal_groups: [temperature]
+  # The supplied literature explicitly has no surface-temperature range for
+  # Mars: these are unavailable and excluded from its score (weights renormalised).
+  unavailable_features:
+    - temp_diurnal_range_c
+    - temp_annual_range_c
+  not_applicable:
+    temperature: >-
+      Martian surface temperature and thermal inertia come only from the cited
+      thermal table, never from a raster or a guess
+    temp_diurnal_range_c: >-
+      the supplied literature has no surface-temperature range for Mars, so this
+      feature is unavailable and excluded from the Mars score
+    temp_annual_range_c: >-
+      the supplied literature has no surface-temperature range for Mars, so this
+      feature is unavailable and excluded from the Mars score
+    dryness: >-
+      Mars has no rainfall record of this kind; the thin atmosphere is not a
+      precipitation analog and no dryness value is invented
+  ice_proxy: null
+  longitude_convention: 0-360 east

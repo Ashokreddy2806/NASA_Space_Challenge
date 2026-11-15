@@ -1,4 +1,7 @@
-"""Phase 0 smoke tests: data presence, raster metadata, inventory output."""
+"""Phase 0 smoke tests: data presence, raster metadata, inventory output.
+
+Every file name comes from ``config/paths.yaml``.
+"""
 
 from __future__ import annotations
 
@@ -9,10 +12,8 @@ import numpy as np
 import pytest
 import rasterio
 
-from backend.paths import DATA_ROOT, DOCS_DIR, RAW
-from backend.pipeline.inspect_datasets import inspect_raster, Layer
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+from backend.paths import DATA_ROOT, RAW
+from backend.pipeline.inspect_datasets import Layer, inspect_raster
 
 
 def test_data_root_exists() -> None:
@@ -22,72 +23,91 @@ def test_data_root_exists() -> None:
 
 
 @pytest.mark.parametrize(
-    "path",
+    "body,keys",
     [
-        RAW["moon"] / "LDEM_80S_80MPP_ADJ.tiff",
-        RAW["moon"] / "LDRM_80S_1000MPP_ADJ_ROUGH_800M.tiff",
-        RAW["moon"] / "LDRM_80S_1000MPP_ADJ_H.tiff",
-        RAW["earth"] / "ETOPO_2022_v1_60s_N90W180_surface.tif",
-        RAW["earth"] / "wc2.1_2.5m_bio_1.tif",
+        ("moon", ("dem", "hurst", "roughness_800m", "slope_800m")),
+        ("earth", ("terrain",)),
     ],
 )
-def test_primary_rasters_open(path: Path) -> None:
-    assert path.exists(), f"missing source file: {path}"
-    with rasterio.open(path) as ds:
-        assert ds.width > 0 and ds.height > 0
-        assert ds.crs is not None
+def test_primary_rasters_open(config, body: str, keys: tuple[str, ...]) -> None:
+    for key in keys:
+        path = config.raw_source(body, key)
+        assert path.exists(), f"missing source file: {path}"
+        with rasterio.open(path) as dataset:
+            assert dataset.width > 0 and dataset.height > 0
+            assert dataset.crs is not None
 
 
-def test_moon_polar_dem_is_80m_stereographic() -> None:
-    with rasterio.open(RAW["moon"] / "LDEM_80S_80MPP_ADJ.tiff") as ds:
-        assert ds.crs is not None and ds.crs.is_projected
-        assert abs(abs(ds.transform.a) - 80.0) < 1e-6
-        assert abs(abs(ds.transform.e) - 80.0) < 1e-6
+def test_earth_climate_rasters_open(config) -> None:
+    for file_key in config.sources["earth"]["climate"]:
+        path = RAW["earth"] / config.sources["earth"]["climate"][file_key]
+        assert path.exists(), f"missing climate layer: {path}"
+        with rasterio.open(path) as dataset:
+            assert dataset.crs is not None
 
 
-def test_worldclim_is_2_5_arcminutes() -> None:
-    with rasterio.open(RAW["earth"] / "wc2.1_2.5m_bio_1.tif") as ds:
-        assert ds.crs is not None and ds.crs.is_geographic
-        assert ds.transform.a * 60 == pytest.approx(2.5, abs=1e-6)
+def test_moon_polar_dem_matches_configured_resolution(config) -> None:
+    native = config.targets["moon"]["native_pixel_m"]
+    with rasterio.open(config.raw_source("moon", "dem")) as dataset:
+        assert dataset.crs is not None and dataset.crs.is_projected
+        assert abs(abs(dataset.transform.a) - native) < 1e-6
+        assert abs(abs(dataset.transform.e) - native) < 1e-6
 
 
-def test_worldclim_land_mask_is_nodata() -> None:
-    with rasterio.open(RAW["earth"] / "wc2.1_2.5m_bio_1.tif") as ds:
-        sample = ds.read(1, out_shape=(216, 432), masked=True)
+def test_worldclim_is_2_5_arcminutes(config) -> None:
+    path = RAW["earth"] / config.sources["earth"]["climate"][config.earth.land_mask_source]
+    with rasterio.open(path) as dataset:
+        assert dataset.crs is not None and dataset.crs.is_geographic
+        assert dataset.transform.a * 60 == pytest.approx(2.5, abs=1e-6)
+
+
+def test_worldclim_land_mask_is_nodata(config) -> None:
+    path = RAW["earth"] / config.sources["earth"]["climate"][config.earth.land_mask_source]
+    with rasterio.open(path) as dataset:
+        sample = dataset.read(1, out_shape=(216, 432), masked=True)
     assert np.ma.getmaskarray(sample).mean() > 0.5, "ocean should be nodata in WorldClim"
 
 
-def test_mola_raw_grid_is_2880x5760_int16() -> None:
-    path = RAW["mars"] / "megt90n000eb.img"
+def test_mola_grid_matches_configured_resolution(config) -> None:
+    path = config.raw_source("mars", "dem")
     assert path.exists()
-    assert path.stat().st_size == 2880 * 5760 * 2
-    data = np.memmap(path, dtype=">i2", mode="r", shape=(2880, 5760))
+    # MEGDR 16 pixels per degree: 5760 x 2880 big-endian int16 metres.
+    height, width = 180 * 16, 360 * 16
+    assert path.stat().st_size == height * width * 2
+    data = np.memmap(path, dtype=">i2", mode="r", shape=(height, width))
     assert float(data[0, 0]) >= -32768
+    native_km = 2.0 * np.pi * 3396.2 / width
+    assert native_km == pytest.approx(config.targets["mars"]["native_pixel_m"] / 1000.0, rel=0.02)
 
 
-def test_psr_table_columns_and_rows() -> None:
-    path = RAW["moon"] / "LPSR_80S_20MPP_ADJ_1km2.csv"
+def test_psr_table_columns_and_rows(config) -> None:
+    path = config.raw_source("moon", "psr")
     assert path.exists()
     csv.field_size_limit(10**9)
     with path.open("r", encoding="utf-8", errors="replace", newline="") as handle:
         reader = csv.DictReader(handle)
-        assert reader.fieldnames == ["gid", "WKT", "area_km2", "name"]
+        fieldnames = reader.fieldnames
         first = next(reader)
-    assert float(first["area_km2"]) >= 1.0
+    assert fieldnames == ["gid", "WKT", "area_km2", "name"]
+    minimum = config.targets["moon"]["ice_proxy"]["min_polygon_area_km2"]
+    assert float(first["area_km2"]) >= minimum
     assert first["WKT"].startswith(("POLYGON", "MULTIPOLYGON"))
 
 
-def test_inventory_report_is_complete() -> None:
-    report = DOCS_DIR / "data_inventory.md"
+def test_inventory_report_is_complete(config) -> None:
+    report = config.outputs.docs_dir / "data_inventory.md"
     assert report.exists(), "run python -m backend.pipeline.inspect_datasets"
     text = report.read_text(encoding="utf-8")
-    for expected in ("M1", "M8", "megt90n000eb.img", "2.50 arc-minutes", "1,531", "ETOPO"):
+    mars_dem = config.raw_source("mars", "dem").name
+    for expected in ("M1", "M8", mars_dem, "2.50 arc-minutes", "1,531", "ETOPO"):
         assert expected in text, f"inventory report is missing {expected!r}"
 
 
-def test_inspect_raster_returns_metadata_without_full_read() -> None:
-    layer = Layer("E1-bio1", "wc2.1_2.5m_bio_1.tif", "annual mean temperature", "degC")
-    report = inspect_raster(RAW["earth"] / "wc2.1_2.5m_bio_1.tif", layer, max_dim=512)
+def test_inspect_raster_returns_metadata_without_full_read(config) -> None:
+    file_key = config.earth.land_mask_source
+    filename = config.sources["earth"]["climate"][file_key]
+    layer = Layer("E1", filename, "annual mean temperature", "degC")
+    report = inspect_raster(RAW["earth"] / filename, layer, max_dim=512)
     assert report.error is None
     assert report.info["width"] == 8640
     assert report.info["sampled"] is True

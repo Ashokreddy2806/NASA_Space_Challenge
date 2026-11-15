@@ -2,9 +2,13 @@
 
 Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site**, explain the match feature by feature, and show where the analogy breaks down.
 
-> **Status: Phase 1 complete.** The Earth 0.05° feature grid is built: 13
-> terrain/climate variables plus a WorldClim land mask, with figures and a
-> coverage report. Phase 2 (Moon/Mars target profiles) is next.
+> **Status: Phase 2 complete.** The Earth 0.05° feature grid is built, and the
+> Moon (poleward of 85°S) and Mars (Jezero, 150 km disc) target profiles are
+> computed with the same feature registry over the same physical windows. All
+> parameters — grid, windows, lags, percentiles, targets, validation sites and
+> file names — live in `config/*.yaml`. The two cited thermal tables were still
+> missing at build time, so Moon/Mars temperature is reported unavailable rather
+> than guessed.
 
 ## What this is
 
@@ -22,7 +26,19 @@ python -m backend.pipeline.inspect_datasets   # writes docs/data_inventory.md
 python -m backend.pipeline.earth_climate      # WorldClim -> 0.05° climate + land mask (~1 min)
 python -m backend.pipeline.earth_terrain      # ETOPO -> 0.05° terrain features (~8 min)
 python -m backend.pipeline.build_earth_features  # merge, mask, figures, report (~2 min)
-python -m pytest -q                           # Phase 0 + Phase 1 smoke tests
+python -m backend.targets.build_target_profiles  # Moon + Mars profiles, PSR and Hurst checks (~5 min)
+python -m pytest -q                           # Phase 0 + Phase 1 + Phase 2 tests
+```
+
+Proof that configuration drives everything (no code edits):
+
+```bash
+python -m backend.pipeline.earth_climate     --config config/proofs/window_30km.yaml
+python -m backend.pipeline.earth_terrain     --config config/proofs/window_30km.yaml
+python -m backend.pipeline.build_earth_features --config config/proofs/window_30km.yaml
+python -m backend.pipeline.earth_climate     --config config/proofs/sahara.yaml
+python -m backend.pipeline.earth_terrain     --config config/proofs/sahara.yaml
+python -m backend.pipeline.build_earth_features --config config/proofs/sahara.yaml
 ```
 
 The raw datasets are expected in `../Datasets/` (`Moon/`, `Mars/`, `Earth/`) and are **not** committed. Set `NASA_DATA_ROOT` to override the location.
@@ -38,15 +54,28 @@ The raw datasets are expected in `../Datasets/` (`Moon/`, `Mars/`, `Earth/`) and
 
 Intermediate files (`earth_terrain.nc`, `earth_climate.nc`) are deleted after a successful merge; run with `--keep-intermediates` to retain them.
 
+### Phase 2 outputs
+
+| Path | Contents |
+|---|---|
+| `data/processed/target_profiles.json` | Moon and Mars feature distributions (median, p16–p84, min/max, n_cells), resolution verdicts and reasons, PSR ice proxy, cross-check results, group availability and renormalised weights |
+| `docs/phase2_report.md` | targets, comparability, per-feature distributions, scoring groups, carried-forward scoring contract |
+| `docs/psr_verification.md` | data-driven PSR checks: CRS interpretation, DEM extent, topographic position, slope finding |
+| `docs/hurst_sensitivity.md` | Earth Hurst with and without the 2 km lag |
+
 ## Repository layout
 
 ```
 NASA_Space_Challenge/
   backend/
+    config.py       typed loader for config/*.yaml (grid, features, targets, paths)
+    features/       the single feature registry used by Earth, Moon and Mars
+    targets/        Moon/Mars profiles, PSR verification, thermal reader, Hurst check
     pipeline/       one ingestion/regrid script per source dataset
     engine/         percentile normalization, weighted scoring, ranking
     api/            FastAPI application
     paths.py        single source of truth for data locations
+  config/           every tunable value: grid, windows, lags, targets, sites, files
   data/             raw/ and processed/ (git-ignored, created by scripts)
   docs/             inventory, feature definitions, figures, submission text
   frontend/         interactive map (Phase 5)
@@ -84,5 +113,9 @@ Full file-level details, local names, sizes and verification results: [`docs/dat
 - [PROGRESS_LOG.md](PROGRESS_LOG.md) — who did what
 - [docs/DATASETS.md](docs/DATASETS.md) — dataset manifest
 - [docs/data_inventory.md](docs/data_inventory.md) — Phase 0 verification
-- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions and Phase 1 implementation record
+- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions, Phase 1 and Phase 2 implementation records
+- [docs/hardcode_audit.md](docs/hardcode_audit.md) — no-hard-coding audit and the two configuration proofs
+- [docs/phase2_report.md](docs/phase2_report.md) — Moon and Mars target profiles
+- [docs/psr_verification.md](docs/psr_verification.md) — data-driven PSR checks
+- [docs/hurst_sensitivity.md](docs/hurst_sensitivity.md) — Earth Hurst robustness
 - [docs/earth_grid_report.md](docs/earth_grid_report.md) — Phase 1 grid coverage and limits
