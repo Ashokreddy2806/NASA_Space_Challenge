@@ -23,9 +23,15 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## rahul
 
-**Now working on:** project docs and resources setup
+**Now working on:** Phase 2 complete — waiting for approval of Phase 3
 
 <!-- entries -->
+
+#### 2026-11-15 09:40 — Phase 1 merged, Phase 2 target profiles
+- **Did:** Merged Ashok's Phase 1 from main, rebuilt the Earth grid locally (matches his report). Measured the lunar south pole (<85°S) and Jezero with the Earth estimators on a 2 km grid; placed each on Earth's area-weighted percentile scale (Moon relief 99th pct, slope 99th; Jezero relief 83rd). Moon PSR cover 9.8% of the disk. 39 tests pass.
+- **Files:** `backend/pipeline/target_profiles.py`, `tests/test_phase2.py`, `docs/target_profiles.json`, `docs/figures/target_{moon,mars}_vs_earth.png`, `PLAN.md`
+- **Next:** Phase 3 similarity engine (awaiting approval).
+- **Blockers:** site-specific temperatures (south pole, Jezero) still missing; targets' temperature features are null.
 
 #### 2026-11-14 21:53 — Thermal CSVs from NASA sources, normalization fix, Phase 0 alignment
 - **Did:** Wrote `Datasets/Moon/moon_thermal_literature.csv` and `Datasets/Mars/mars_thermal_literature.csv` from NASA NSSDC fact sheets and Sefton-Nash 2019 (only values actually read; equator / Viking 1 / global, not south pole or Jezero). Changed `docs/FEATURES.md` normalization to the Earth reference distribution (Decision logged). Phase 0 alignment: pyproj in requirements, cross-platform Makefile, macOS README, `Datasets/` in .gitignore.

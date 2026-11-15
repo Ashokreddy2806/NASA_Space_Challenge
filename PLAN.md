@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-14 22:07 by ashok (Phase 1 complete: Earth 0.05° feature grid built)
+**Last updated:** 2026-11-15 09:40 by rahul (Phase 2 complete: Moon and Mars target profiles)
 
 ---
 
@@ -82,8 +82,8 @@ docs/              write-up, figures, submission material
 |---|---|---|---|
 | W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | ashok | done |
 | W2 | Earth data pipeline: download + regrid to common global grid | ashok | done |
-| W3 | Moon target profile (lunar south pole features) | — | not started |
-| W4 | Mars target profile (choose site + features) | — | not started |
+| W3 | Moon target profile (lunar south pole features) | rahul | done (terrain + PSR; temperatures missing) |
+| W4 | Mars target profile (choose site + features) | rahul | done (Jezero default; temperatures missing) |
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
 | W6 | Backend API (FastAPI) serving scores and site details | — | not started |
 | W7 | Frontend visualization (map, site cards, comparison charts) | — | not started |
@@ -97,7 +97,7 @@ Status values: `not started` · `in progress` · `blocked` · `done`
 | Hours | Milestone | Done? |
 |---|---|---|
 | 0–2 | Repo + env set up, datasets chosen, feature list agreed | [x] |
-| 2–8 | Earth grid built for core features; Moon + Mars target vectors computed | [ ] |
+| 2–8 | Earth grid built for core features; Moon + Mars target vectors computed | [x] |
 | 8–13 | Similarity engine produces a global score map for each target | [ ] |
 | 13–19 | API + visualization working end-to-end; top sites identified | [ ] |
 | 19–22 | Site write-ups, polish visuals, "overlooked site" story | [ ] |
@@ -122,6 +122,10 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-14 17:05 — ashok — MVP feature list confirmed: **relief, slope, multi-scale roughness, scale-robust roughness (Hurst), temperature stats/day–night swing, dryness**, plus a **separate ice/cold-trap proxy** — recorded in `docs/FEATURES.md`; no extra features until the MVP works.
 - 2026-11-14 17:05 — ashok — Use the raw MOLA `megt90n000eb.img` directly; do **not** create `mars_elev.npy` — the file is verified int16 16 ppd, north-up, 0–360°E.
 - 2026-11-14 17:05 — ashok — Hand-made `moon_thermal_literature.csv` and `mars_thermal_literature.csv` will be supplied by the team before Phase 2 — no temperature values will be guessed.
+- 2026-11-15 09:40 — rahul — Phase 2 targets: Moon = **disk poleward of 85°S (r = 151.7 km)** in the polar stereographic grid; Mars = **Jezero (18.38N, 77.58E), 50 km radius** — defaults until the team confirms (open questions above).
+- 2026-11-15 09:40 — rahul — Target terrain features reuse `earth_terrain.compute_terrain_features` on a 2 km grid (Moon: LOLA 80 m block-averaged; Mars: MOLA bilinear to local equidistant), so estimators are identical to Earth. Mars 5 km roughness flagged resolution-limited; Mars Hurst uses lags 8/16/32 km only (flagged).
+- 2026-11-15 09:40 — rahul — Target temperatures are **null**: the cited CSVs only hold equatorial (Moon), global and Viking 1 (Mars) values, none site-specific, so none are used as targets (kept as `thermal_reference_values`). Need south-pole (Williams 2019 / Diviner) and Jezero (MEDA) values from the team.
+- 2026-11-15 09:40 — rahul — Output `data/processed/target_profiles.json`, also committed as `docs/target_profiles.json` (data/ is git-ignored) so teammates can use it.
 - 2026-11-14 21:40 — ashok — Store the Earth grid as chunked, compressed **NetCDF4** (`data/processed/earth_features.nc`) instead of Zarr — `numcodecs`' Jenkins DLL is blocked by Windows Application Control, but NetCDF4/HDF5 gives the same chunking and compression; `zarr` was removed from `requirements.txt`.
 - 2026-11-14 21:40 — ashok — Terrain features are computed per 10° tile on a **2 km local azimuthal-equidistant grid** (1° halo), then area-averaged onto the 0.05° grid — this keeps every window in kilometres and avoids stretching 0.05° cells near the poles.
 - 2026-11-14 21:40 — ashok — Locked terrain estimators: relief = **p95−p5 in 20 km**, slope = **mean of per-2 km gradient magnitude in 20 km**, roughness = **std of a Gaussian high-pass residual** at 5/10/20 km (`σ = window/2`), Hurst = **half the log–log structure-function slope** for lags 2/4/8/16/32 km. Phase 2 must use exactly the same estimators; recorded in `docs/FEATURES.md`.
@@ -132,11 +136,11 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 
 - [x] Frontend: **deck.gl + MapLibre GL JS with Plotly radar/bar charts** — confirmed 2026-11-14.
 - [x] Final feature list: **six MVP features + separate ice proxy** — confirmed 2026-11-14; see `docs/FEATURES.md`.
-- [ ] Which Mars site is the target (Jezero? another)? Ask again in Phase 2.
-- [ ] Confirm the lunar target region: poleward of 85°S vs specific candidate base sites. Ask in Phase 2.
+- [ ] Which Mars site is the target? Jezero used as the default in Phase 2; awaiting team confirmation.
+- [ ] Lunar target region: poleward of 85°S disk used as the default in Phase 2; awaiting confirmation vs specific candidate base sites.
 - [ ] How to weight features, and should users be able to change weights in the UI? (Phase 3 defaults, Phase 5 controls.)
 - [ ] Who owns which workstream? (W1 done by ashok; others unassigned.)
-- [ ] Lunar PSR CSV has no CRS metadata and its square tile reaches ~76°S at the corners (not a strict 80°S cut). Confirm the intended projection for the Phase 2 polygon overlay.
+- [ ] Lunar PSR CSV has no CRS metadata and its square tile reaches ~76°S at the corners (not a strict 80°S cut). Phase 2 assumed the PSR table shares the DEM's Moon 2015 polar stereographic grid (extents match); confirm.
 
 ## 9. Results so far
 
