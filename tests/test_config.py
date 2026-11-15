@@ -67,6 +67,92 @@ def test_validation_sites_come_from_yaml(config) -> None:
         assert set(site.expect) <= {definition.id for definition in config.all_features}
 
 
+def test_physical_constraints_come_from_yaml(config) -> None:
+    raw = _raw("config.yaml")["physical_constraints"]["dryness"]
+    constraint = next(c for c in config.physical_constraints if c.name == "dryness")
+    assert constraint.group == raw["group"]
+    assert constraint.label == raw["label"]
+    assert constraint.target_value == pytest.approx(raw["target_value"])
+    assert constraint.declared is True
+    assert constraint.weight_note
+    # The band is declared around the bound, never measured.
+    declared = {feature.id: feature for feature in constraint.features}
+    assert set(declared) == set(raw["features"])
+    for feature_id, spec in raw["features"].items():
+        assert declared[feature_id].p84 == pytest.approx(spec["p84"])
+        assert declared[feature_id].p16 == pytest.approx(raw["target_value"])
+        assert declared[feature_id].units == spec["units"]
+    # Every constraint feature must be a member of its configured group.
+    groups = {group.name: group for group in config.groups}
+    for feature in constraint.features:
+        assert feature.id in groups[constraint.group].members
+
+
+def test_caveats_come_from_yaml(config) -> None:
+    raw = _raw("config.yaml")["caveats"]
+    assert config.caveats.heuristic is bool(raw["heuristic"])
+    assert config.caveats.text == raw["text"]
+    assert [region.id for region in config.caveats.regions] == [
+        region["id"] for region in raw["regions"]
+    ]
+    for region, raw_region in zip(config.caveats.regions, raw["regions"]):
+        assert region.lat_min == pytest.approx(raw_region["bounds"]["lat_min"])
+        assert region.lat_max == pytest.approx(raw_region["bounds"]["lat_max"])
+        assert region.lon_min == pytest.approx(raw_region["bounds"]["lon_min"])
+        assert region.lon_max == pytest.approx(raw_region["bounds"]["lon_max"])
+        assert region.note
+
+
+def test_analog_provenance_flags_come_from_yaml(config) -> None:
+    raw = {site["name"]: site for site in _raw("validation_sites.yaml")["analogs"]}
+    for site in config.analogs:
+        source = raw[site.name]
+        assert site.reviewed == bool(source["reviewed"])
+        assert site.display_source == bool(source.get("display_source", True))
+        assert site.citation_verified == bool(
+            source.get("citation_verified", False)
+        )
+        # A source we have not checked is never labelled verified.
+        if site.display_source is False:
+            assert site.citation_verified is False
+
+
+def test_famous_sites_cover_the_antarctic_cluster(config) -> None:
+    names = {site.name for site in config.famous_sites}
+    assert {
+        "McMurdo Station",
+        "Ross Island",
+        "Mount Erebus",
+        "McMurdo Dry Valleys",
+    } <= names
+    for site in config.famous_sites:
+        assert -90.0 <= site.lat <= 90.0
+        assert -180.0 <= site.lon <= 180.0
+
+
+def test_constraint_referencing_an_unknown_group_is_rejected(tmp_path: Path) -> None:
+    override = tmp_path / "bad_constraint.yaml"
+    override.write_text(
+        "config.yaml:\n  physical_constraints:\n    dryness:\n      group: not_a_group\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="unknown group"):
+        load_config(override=override)
+
+
+def test_constraint_band_must_contain_the_target_value(tmp_path: Path) -> None:
+    override = tmp_path / "bad_band.yaml"
+    override.write_text(
+        "config.yaml:\n"
+        "  physical_constraints:\n"
+        "    dryness:\n"
+        "      target_value: 500.0\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="does not contain the target value"):
+        load_config(override=override)
+
+
 def test_window_override_changes_only_that_feature() -> None:
     base = load_config()
     proof = load_config(override="config/proofs/window_30km.yaml")

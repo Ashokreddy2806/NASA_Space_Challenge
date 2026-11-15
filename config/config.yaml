@@ -96,6 +96,49 @@ thermal_sensitivity:
   top_n: 25
   rank_sample_count: 200000
   random_seed: 7
+  # A site counts as the same candidate across settings when it lies within this
+  # fraction of the preset separation of a baseline site. Stability is the
+  # fraction of settings in which it survives.
+  stability_match_fraction: 0.5
+
+physical_constraints:
+  # Airless bodies have no rainfall and no vegetation. This is a physical bound,
+  # not a measured target distribution, so the "target" is a declared tolerance
+  # band around the bound: p16 = target value, p84 = tolerance. The same engine
+  # (rank similarity + absolute similarity with a floored scale) scores it.
+  dryness:
+    group: dryness
+    label: physical constraint (no precipitation)
+    target_value: 0.0
+    features:
+      precip_annual_mm:
+        p84: 50.0
+        units: mm
+      precip_driest_month_mm:
+        p84: 4.0
+        units: mm
+    weight_note: >-
+      The dryness group carries 0.25 in the balanced and cold-trap presets — the
+      same low weight as the qualitative thermal anchors. A constraint should be
+      able to demote a wet or vegetated site, but it must not outvote the terrain
+      metrics that are measured at matched physical windows. It is 0 in the
+      terrain-only rover preset.
+
+caveats:
+  # Heuristic geographic boxes, NOT ice masks. Any reported site inside one
+  # carries the caveat that our feature set cannot tell ice cover from bare
+  # ground. Boxes are deliberately coarse and are labelled heuristic in output.
+  heuristic: true
+  regions:
+    - id: greenland_ice_sheet
+      label: Greenland ice sheet region
+      bounds: {lat_min: 59.0, lat_max: 84.0, lon_min: -75.0, lon_max: -10.0}
+      note: the box includes ice-free coast and nunataks, so it is a flag, not a mask
+    - id: antarctic_ice_sheet
+      label: Antarctic ice sheet region
+      bounds: {lat_min: -90.0, lat_max: -60.0, lon_min: -180.0, lon_max: 180.0}
+      note: the box includes the ice-free Dry Valleys and Ross Island, so it is a flag, not a mask
+  text: our data cannot distinguish ice cover from bare ground
 
 hurst_sensitivity:
   # Earth Hurst robustness check: drop the 2 km lag (ETOPO native is ~1.85 km).

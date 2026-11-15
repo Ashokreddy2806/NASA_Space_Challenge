@@ -48,6 +48,8 @@ class ScaledFeature:
     anchor_label: str = ""
     anchor_rows: tuple[str, ...] = ()
     label: str = ""
+    physical_constraint: bool = False
+    declared_distribution: bool = False
 
 
 def scaled_features(
@@ -77,7 +79,7 @@ def scaled_features(
                 label="qualitative",
             )
             continue
-        if resolution not in {"resolved", "marginal"}:
+        if resolution not in {"resolved", "marginal", "constraint"}:
             continue
         median = entry.get("median")
         p16 = entry.get("p16")
@@ -108,6 +110,8 @@ def scaled_features(
                 f"max(|median| * {scoring.spread_floor_fraction:g} = "
                 f"{fraction_floor:.4g}, measurement floor {absolute_floor:.4g})"
             ),
+            physical_constraint=resolution == "constraint",
+            declared_distribution=entry.get("distribution") == "declared_tolerance",
         )
     return out
 
@@ -249,6 +253,8 @@ class FeatureDiagnostics:
     target_band: int = -1
     anchor_range_c: tuple[float, float] = (float("nan"), float("nan"))
     anchor_label: str = ""
+    physical_constraint: bool = False
+    declared_distribution: bool = False
 
     def as_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -263,6 +269,8 @@ class FeatureDiagnostics:
             "mean_absolute_similarity": _finite(self.mean_absolute_similarity),
             "mean_rank_similarity": _finite(self.mean_rank_similarity),
             "hidden_gap_area_fraction": self.hidden_gap_area_fraction,
+            "physical_constraint": self.physical_constraint,
+            "declared_distribution": self.declared_distribution,
         }
         if self.qualitative:
             payload.update(
@@ -391,6 +399,8 @@ def compute_group_scores(
                     floor=feature.floor,
                     floor_rule=feature.floor_rule,
                     earth_percentile_of_median=q,
+                    physical_constraint=feature.physical_constraint,
+                    declared_distribution=feature.declared_distribution,
                     mean_absolute_similarity=float(
                         (similarity[valid] * weights).sum() / weights.sum()
                     ),

@@ -170,6 +170,33 @@ def site_aggregate(
     }
 
 
+def caveats_for(
+    config: AppConfig, lat_deg: float, lon_deg: float
+) -> list[dict[str, Any]]:
+    """Heuristic caveats for a site, from the configured geographic boxes.
+
+    These are flags, not masks: each box is coarse and labelled heuristic, and
+    the caveat only tells the reader that this feature set cannot separate ice
+    cover from bare ground there.
+    """
+    caveats: list[dict[str, Any]] = []
+    for region in config.caveats.regions:
+        if (
+            region.lat_min <= lat_deg <= region.lat_max
+            and region.lon_min <= lon_deg <= region.lon_max
+        ):
+            caveats.append(
+                {
+                    "id": region.id,
+                    "label": region.label,
+                    "text": config.caveats.text,
+                    "heuristic": config.caveats.heuristic,
+                    "region_note": region.note,
+                }
+            )
+    return caveats
+
+
 def is_famous(
     config: AppConfig, lat_deg: float, lon_deg: float
 ) -> tuple[bool, str | None]:

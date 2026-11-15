@@ -9,20 +9,24 @@
 #     0 in every preset and the value is shown on the target card instead.
 #   * Temperature is the qualitative band mapping approved on 2026-11-15, at a
 #     low default weight. Rover mobility is defined as temperature weight 0.
+#   * `dryness` is a physical constraint on both targets (no precipitation, no
+#     vegetation) at weight 0.25 in the climate-aware presets. The weight is
+#     config-only; it is never tuned to improve an analog's score.
 
 presets:
   balanced:
     label: Balanced
     description: >-
-      All six MVP feature groups. The two polar-appropriate qualitative thermal
-      anchors carry low weight (0.25); PSR area fraction is context only.
+      All usable feature groups. The two polar-appropriate qualitative thermal
+      anchors and the no-precipitation constraint each carry low weight (0.25);
+      PSR area fraction is context only.
     weights:
       relief: 1.0
       slope: 1.0
       roughness: 1.0
       scale_robust_roughness: 1.0
       temperature: 0.25
-      dryness: 1.0
+      dryness: 0.25
       ice_proxy: 0.0
     top_n: 25
     min_separation_km: 50.0
@@ -31,7 +35,7 @@ presets:
     label: Rover mobility (terrain)
     description: >-
       Terrain traversability only: relief, slope, roughness and scale-robust
-      roughness. Temperature weight is 0 by definition; climate groups are off.
+      roughness. Temperature and dryness weights are 0 by definition.
     weights:
       relief: 1.0
       slope: 1.5
@@ -46,7 +50,7 @@ presets:
   cold_trap_ice:
     label: Cold-trap / ice
     description: >-
-      Terrain is background; the cold anchor and the broad day/night evidence
+      Terrain is background; the cold anchor and the no-precipitation constraint
       carry the weight. PSR area fraction stays context because Earth has no
       equivalent map; nothing here claims a radiation or vacuum analog.
     weights:
@@ -55,7 +59,7 @@ presets:
       roughness: 0.5
       scale_robust_roughness: 0.5
       temperature: 0.5
-      dryness: 0.0
+      dryness: 0.25
       ice_proxy: 0.0
     top_n: 25
     min_separation_km: 50.0

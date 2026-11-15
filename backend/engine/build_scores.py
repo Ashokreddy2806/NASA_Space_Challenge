@@ -166,7 +166,7 @@ def feature_site_rows(
                 }
             )
             continue
-        if entry.get("resolution") not in {"resolved", "marginal"}:
+        if entry.get("resolution") not in {"resolved", "marginal", "constraint"}:
             continue
         values = store.window(feature_id, lat_deg, lon_deg, radius_km / 110.574)
         valid = np.isfinite(values)
@@ -210,6 +210,9 @@ def feature_site_rows(
                 "target_percentile": q,
                 "rank_similarity": rank_similarity,
                 "hidden_real_unit_gap": bool(hidden),
+                "physical_constraint": bool(entry.get("physical_constraint")),
+                "declared_distribution": entry.get("distribution")
+                == "declared_tolerance",
                 "note": (
                     "rank similarity looks good but the real-unit gap is large"
                     if hidden
@@ -231,16 +234,18 @@ def score_percentile_table(
     )
 
 
-def build_site_list(
+def aggregate_candidates(
     config: AppConfig,
     store: similarity.EarthStore,
-    profile: dict[str, Any],
-    tables: dict[str, tuple[np.ndarray, np.ndarray]],
     score: np.ndarray,
     groups: dict[str, np.ndarray],
     preset: Preset,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """NMS sites, then the same list filtered to exclude famous analogs."""
+) -> list[dict[str, Any]]:
+    """NMS candidates, aggregated and sorted by area-weighted site score.
+
+    The same procedure ranks every preset list and every sensitivity run, so a
+    site's stability is measured against the list the report actually shows.
+    """
     separation = preset.min_separation_km
     candidates = top_sites.select_sites(
         score, store.lat, store.lon, separation, max_sites=preset.top_n * 8
@@ -262,8 +267,31 @@ def build_site_list(
         )
         site["famous"] = famous
         site["famous_name"] = famous_name
+        site["caveats"] = top_sites.caveats_for(config, site["lat"], site["lon"])
+        # Filled in by the sensitivity run for the preset it applies to; left
+        # null (with a reason) everywhere else rather than invented.
+        site["stability"] = None
+        site["stable_rank"] = None
+        site["stability_note"] = (
+            "not computed for this preset; per-site stability comes from the "
+            "balanced sensitivity runs"
+        )
         enriched.append(site)
     enriched.sort(key=lambda entry: entry["site_score"], reverse=True)
+    return enriched
+
+
+def build_site_list(
+    config: AppConfig,
+    store: similarity.EarthStore,
+    profile: dict[str, Any],
+    tables: dict[str, tuple[np.ndarray, np.ndarray]],
+    score: np.ndarray,
+    groups: dict[str, np.ndarray],
+    preset: Preset,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """NMS sites, then the same list filtered to exclude famous analogs."""
+    enriched = aggregate_candidates(config, store, score, groups, preset)
     top = enriched[: preset.top_n]
     without_famous = [site for site in enriched if not site["famous"]][
         : preset.top_n
@@ -313,8 +341,13 @@ def validate_sites(
                 "score": value,
                 "land_percentile": percentile,
                 "notes": site.notes,
-                "source": site.source,
+                "source": site.source if site.display_source else None,
+                "display_source": site.display_source,
+                "citation_verified": site.citation_verified,
                 "reviewed": site.reviewed,
+                "caveats": top_sites.caveats_for(
+                    config, float(store.lat[row]), float(store.lon[col])
+                ),
                 "features": feature_site_rows(
                     config,
                     store,
@@ -366,6 +399,7 @@ def thermal_sensitivity(
     )
     sample = sample[np.isfinite(baseline_score.ravel()[sample])]
     variants: list[dict[str, Any]] = []
+    variant_sites: list[list[tuple[float, float]]] = []
     for shift in settings.band_edge_shifts_c:
         temperature_sum = np.zeros(store.shape, dtype=np.float32)
         count = np.zeros(store.shape, dtype=np.uint8)
@@ -396,14 +430,15 @@ def thermal_sensitivity(
             if weight > 0:
                 grid_map["temperature"] = temperature
             score, _ = similarity.preset_score(config, target, grid_map, weights)
-            sites = top_sites.select_sites(
-                score,
-                store.lat,
-                store.lon,
-                _preset(config, "balanced").min_separation_km,
-                settings.top_n,
+            # Rank the variant exactly like the reported list: NMS, then the
+            # area-weighted site score. Otherwise stability would compare
+            # aggregated baseline sites with raw peaks.
+            ranked = aggregate_candidates(
+                config, store, score, grid_map, _preset(config, "balanced")
             )
+            sites = ranked[: settings.top_n]
             names = {(round(s["lat"], 6), round(s["lon"], 6)) for s in sites}
+            variant_sites.append([(s["lat"], s["lon"]) for s in sites])
             overlap = len(names & baseline_names)
             values = score.ravel()[sample]
             if np.isfinite(values).sum() > 2:
@@ -427,6 +462,31 @@ def thermal_sensitivity(
     finite_rho = [v["spearman_rho_vs_baseline"] for v in variants if math.isfinite(v["spearman_rho_vs_baseline"])]
     min_overlap = min(v["top_n_overlap_fraction"] for v in variants)
     min_rho = min(finite_rho) if finite_rho else float("nan")
+    # Per-site stability: the fraction of settings in which the site survives in
+    # the top-N (matched within a fraction of the separation distance). This is
+    # evidence about the site, never a second score: it is reported beside the
+    # score and never multiplied into it.
+    match_km = _preset(config, "balanced").min_separation_km * (
+        settings.stability_match_fraction
+    )
+    for site in baseline_sites:
+        hits = 0
+        for coordinates in variant_sites:
+            if not coordinates:
+                continue
+            lats = np.asarray([c[0] for c in coordinates], dtype=np.float64)
+            lons = np.asarray([c[1] for c in coordinates], dtype=np.float64)
+            nearest = float(
+                top_sites.haversine_km(site["lat"], site["lon"], lats, lons).min()
+            )
+            if nearest <= match_km:
+                hits += 1
+        site["stability"] = hits / max(len(variant_sites), 1)
+    ordered = sorted(
+        baseline_sites, key=lambda entry: (-entry["stability"], -entry["site_score"])
+    )
+    for index, site in enumerate(ordered, start=1):
+        site["stable_rank"] = index
     verdict = (
         "rankings are stable enough to read the thermal dimension as a tie-breaker"
         if min_overlap >= 0.6 and min_rho >= 0.95
@@ -444,6 +504,18 @@ def thermal_sensitivity(
         "min_top_n_overlap_fraction": min_overlap,
         "min_spearman_rho": min_rho,
         "verdict": verdict,
+        "stability_match_km": match_km,
+        "n_settings": len(variant_sites),
+        "curve": [
+            {
+                "lat": site["lat"],
+                "lon": site["lon"],
+                "site_score": site["site_score"],
+                "stability": site["stability"],
+                "stable_rank": site["stable_rank"],
+            }
+            for site in ordered
+        ],
     }
 
 
@@ -490,6 +562,53 @@ def build(config: AppConfig | None = None) -> dict[str, Any]:
                 for preset in config.presets
             },
             "famous_radius_km": config.famous_radius_km,
+            "famous_sites": [
+                {
+                    "name": site.name,
+                    "lat": site.lat,
+                    "lon": site.lon,
+                    "reviewed": site.reviewed,
+                }
+                for site in config.famous_sites
+            ],
+            "physical_constraints": [
+                {
+                    "name": constraint.name,
+                    "group": constraint.group,
+                    "label": constraint.label,
+                    "target_value": constraint.target_value,
+                    "declared": constraint.declared,
+                    "weight_note": constraint.weight_note,
+                    "features": [
+                        {
+                            "id": feature.id,
+                            "p16": feature.p16,
+                            "p84": feature.p84,
+                            "units": feature.units,
+                        }
+                        for feature in constraint.features
+                    ],
+                }
+                for constraint in config.physical_constraints
+            ],
+            "caveats": {
+                "heuristic": config.caveats.heuristic,
+                "text": config.caveats.text,
+                "regions": [
+                    {
+                        "id": region.id,
+                        "label": region.label,
+                        "bounds": {
+                            "lat_min": region.lat_min,
+                            "lat_max": region.lat_max,
+                            "lon_min": region.lon_min,
+                            "lon_max": region.lon_max,
+                        },
+                        "note": region.note,
+                    }
+                    for region in config.caveats.regions
+                ],
+            },
             "thermal_sensitivity": {
                 "temperature_weights": list(
                     config.thermal_sensitivity.temperature_weights
@@ -505,6 +624,10 @@ def build(config: AppConfig | None = None) -> dict[str, Any]:
 
     for target in TARGETS:
         print(f"{target} …")
+        body_constraint = config.targets[target].get("dryness_constraint") or {}
+        dryness_constraint = next(
+            (c for c in config.physical_constraints if c.name == "dryness"), None
+        )
         target_payload: dict[str, Any] = {
             "features_used": sorted(diagnostics[target]),
             "feature_evidence": {
@@ -512,6 +635,19 @@ def build(config: AppConfig | None = None) -> dict[str, Any]:
                 for feature_id, diag in diagnostics[target].items()
             },
             "profiles_created_utc": profiles.get("created_utc"),
+            "physical_constraint": {
+                "name": "dryness",
+                "enabled": bool(body_constraint.get("enabled")),
+                "label": (dryness_constraint.label if dryness_constraint else ""),
+                "target_value": (
+                    dryness_constraint.target_value if dryness_constraint else None
+                ),
+                "reason": str(body_constraint.get("reason", "")).strip(),
+                "declared_tolerance": {
+                    feature.id: {"p16": feature.p16, "p84": feature.p84}
+                    for feature in (dryness_constraint.features if dryness_constraint else ())
+                },
+            },
             "presets": {},
         }
         groups = group_scores[target]
@@ -625,6 +761,15 @@ def build(config: AppConfig | None = None) -> dict[str, Any]:
                     score,
                     sites,
                 )
+                if sensitivity.get("applicable"):
+                    note = (
+                        f"fraction of {sensitivity['n_settings']} thermal settings "
+                        "in which this site stays in the top-N"
+                    )
+                else:
+                    note = str(sensitivity.get("reason", "not applicable"))
+                for site in sites:
+                    site["stability_note"] = note
         dataset.close()
         target_payload["thermal_sensitivity"] = sensitivity
         target_payload["coverage"] = {
@@ -661,6 +806,13 @@ def _pct(value: Any) -> str:
 
 def _num(value: Any, digits: int = 3) -> str:
     return f"{value:.{digits}g}" if isinstance(value, (int, float)) else "—"
+
+
+def _caveat_label(site: dict[str, Any]) -> str:
+    caveats = site.get("caveats") or []
+    if not caveats:
+        return "—"
+    return "ice-substrate"
 
 
 def _largest_gap(row: dict[str, Any]) -> str:
@@ -717,6 +869,14 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
         "* **qualitative thermal** — Moon temperature is scored by band distance, never",
         "  by a numeric Earth/Moon comparison; every such value is labelled",
         "  `qualitative` and the cited polar anchors are listed with it.",
+        "* **physical constraint** — the Moon and Mars have no rainfall and no",
+        "  vegetation, so precipitation is scored against a target of **0 mm** with a",
+        "  declared tolerance band (`declared_tolerance`), using the same rank and",
+        "  absolute maths. It is a bound, not a measured target distribution.",
+        "* **stability** — for each candidate, the fraction of sensitivity settings in",
+        "  which it stays in the top-N. Reported beside the score, never folded into it.",
+        "* **caveat flags** — heuristic geographic boxes where this feature set cannot",
+        "  distinguish ice cover from bare ground.",
         "",
         "## 2. Coverage per target",
         "",
@@ -736,8 +896,9 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
             "",
             "Mars legitimately uses fewer features: MOLA at ~3.7 km/px cannot resolve",
             "the 5 km roughness window or the Hurst lags, and its cited table has",
-            "thermal inertia but no temperatures. The renormalised weights below show",
-            "what is actually doing the work.",
+            "thermal inertia but no temperatures. Mars now also scores the declared",
+            "no-precipitation constraint, so its coverage is terrain + dryness. The",
+            "renormalised weights below show what is actually doing the work.",
             "",
             "## 3. Per-feature evidence",
             "",
@@ -766,6 +927,24 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
                 f"{_pct(diag['mean_rank_similarity'])} | {hidden} |"
             )
         lines.append("")
+        constraint_rows = [
+            (feature_id, diag)
+            for feature_id, diag in payload["targets"][target]["feature_evidence"].items()
+            if diag.get("physical_constraint")
+        ]
+        for feature_id, diag in constraint_rows:
+            tolerance = payload["targets"][target]["physical_constraint"][
+                "declared_tolerance"
+            ][feature_id]
+            lines.append(
+                f"- `{feature_id}` is a **physical constraint**: target "
+                f"{_num(diag['target_median'])} {diag['units']} (no precipitation), "
+                f"tolerance band {tolerance['p16']:g}–{tolerance['p84']:g} "
+                f"{diag['units']} declared in config, not measured. Scale "
+                f"{_num(diag['scale'])}, floor {_num(diag['floor'])}."
+            )
+        if constraint_rows:
+            lines.append("")
         qualitative = [
             (feature_id, diag)
             for feature_id, diag in payload["targets"][target]["feature_evidence"].items()
@@ -842,15 +1021,17 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
                     else []
                 )
                 + [
-                    "| # | Latitude | Longitude | Score | Famous near |",
-                    "|---|---|---|---|---|",
+                    "| # | Latitude | Longitude | Score | Stability | Famous near | Caveat |",
+                    "|---|---|---|---|---|---|---|",
                 ]
             )
             for index, site in enumerate(block["sites"][:10], start=1):
+                stability = site.get("stability")
                 lines.append(
                     f"| {index} | {site['lat']:.3f} | {site['lon']:.3f} | "
                     f"{_pct(site['site_score'])} | "
-                    f"{site['famous_name'] or '—'} |"
+                    f"{_pct(stability) if stability is not None else '—'} | "
+                    f"{site['famous_name'] or '—'} | {_caveat_label(site)} |"
                 )
             excluded = block["sites_excluding_famous"][:5]
             if excluded:
@@ -872,11 +1053,56 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
 
     lines.extend(
         [
+            "**Caveat legend.** `ice-substrate` means the site falls inside a",
+            "config-declared heuristic region where this feature set cannot tell ice",
+            "cover from bare ground. The regions are coarse boxes labelled heuristic",
+            "in `top_sites.json`, not ice masks.",
+            "",
+        ]
+    )
+    moon_sensitivity = payload["targets"]["moon"]["thermal_sensitivity"]
+    if moon_sensitivity.get("applicable") and moon_sensitivity.get("curve"):
+        lines.extend(
+            [
+                "### Stability-ranked candidates (Moon, balanced)",
+                "",
+                "Stability is the fraction of the thermal sensitivity settings in",
+                f"which the site stays in the top-N (matched within "
+                f"{moon_sensitivity['stability_match_km']:g} km, "
+                f"{moon_sensitivity['n_settings']} settings). It is evidence beside",
+                "the score, never a second score. A high score that survives few",
+                "settings is a fragile candidate.",
+                "",
+                "| Rank | Latitude | Longitude | Score | Stability | Score rank |",
+                "|---|---|---|---|---|---|",
+            ]
+        )
+        score_order = {
+            (round(site["lat"], 6), round(site["lon"], 6)): index
+            for index, site in enumerate(
+                sorted(
+                    moon_sensitivity["curve"],
+                    key=lambda entry: -entry["site_score"],
+                ),
+                start=1,
+            )
+        }
+        for index, site in enumerate(moon_sensitivity["curve"][:10], start=1):
+            key = (round(site["lat"], 6), round(site["lon"], 6))
+            lines.append(
+                f"| {index} | {site['lat']:.3f} | {site['lon']:.3f} | "
+                f"{_pct(site['site_score'])} | {_pct(site['stability'])} | "
+                f"{score_order[key]} |"
+            )
+        lines.append("")
+
+    lines.extend(
+        [
             "## 5. Known analogs and spot checks",
             "",
             "Scores are reported as found. Weights and band edges were **not** tuned to",
-            "improve any analog. `reviewed: false` means the coordinate/source is a",
-            "proposal awaiting the team's review.",
+            "improve any analog. All four proposed analogs were reviewed on 2026-11-15",
+            "and their coordinates are fixed; reviewing them changed no score.",
             "",
         ]
     )
@@ -909,6 +1135,25 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
             )
         lines.append("")
 
+    lines.extend(
+        [
+            "**Analog sources.** Only approved citations are printed. A source marked",
+            "`not independently verified` was supplied from memory and must be",
+            "spot-checked before it is displayed in the app; one site has no citation",
+            "at all and its source string is never shown.",
+            "",
+        ]
+    )
+    for site in config.analogs:
+        if not site.display_source:
+            lines.append(
+                f"- **{site.name}** — source not displayed (none cited; coordinates only)."
+            )
+            continue
+        status = "verified" if site.citation_verified else "not independently verified"
+        lines.append(f"- **{site.name}** — {site.source} ({status}).")
+    lines.append("")
+
     lines.extend(["## 6. Thermal sensitivity (Moon)", ""])
     sensitivity = payload["targets"]["moon"]["thermal_sensitivity"]
     if sensitivity.get("applicable"):
@@ -935,6 +1180,10 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
                 f"**Verdict:** {sensitivity['verdict']}. Minimum overlap "
                 f"{sensitivity['min_top_n_overlap_fraction']:.2f}, minimum rho "
                 f"{_num(sensitivity['min_spearman_rho'], 4)}.",
+                "",
+                f"Per-site stability uses all {sensitivity['n_settings']} settings and a "
+                f"{sensitivity['stability_match_km']:g} km match radius; it is stored on "
+                "every balanced Moon site in `top_sites.json` and ranked in section 4.",
                 "",
             ]
         )
@@ -967,9 +1216,25 @@ def write_phase3_report(config: AppConfig, payload: dict[str, Any]) -> Any:
             "* **Physical differences Earth cannot represent:** gravity, vacuum or thin",
             "  atmosphere, radiation, and the lunar day length. A high score is a",
             "  terrain/climate analogy, not a habitable environment.",
-            "* **Coverage differs by target.** Mars uses 4 of the 13 configured features",
-            "  and 3 of the 7 groups; its renormalised weights reflect that, and its",
+            "* **Coverage differs by target.** Mars uses "
+            f"{payload['targets']['mars']['coverage']['features_used']} of the "
+            f"{payload['targets']['mars']['coverage']['features_configured']} "
+            "configured features and "
+            f"{payload['targets']['mars']['coverage']['groups_scored']} of the "
+            f"{payload['targets']['mars']['coverage']['groups_configured']} groups; "
+            "its renormalised weights reflect that, and its",
             "  scores should not be read as 'as well evidenced' as the Moon's.",
+            "* **Dryness is a constraint, not a measurement.** The Moon and Mars",
+            "  targets have no precipitation, so the target is a physical 0 mm with a",
+            "  declared tolerance band. A high dryness score means 'no rainfall and no",
+            "  vegetation on Earth', not 'measured to be as dry as Mars'.",
+            "* **Ice and substrate are not distinguishable.** The caveat regions are",
+            "  coarse heuristic boxes, not ice masks, and no Earth ice, mineralogy or",
+            "  thermal-inertia layer is in this build. A flagged site may be ice, rock,",
+            "  or a mixture; our data cannot tell which.",
+            "* **Stability is not a score.** It reports how often a candidate survives",
+            "  the sensitivity settings. A high score with low stability is a fragile",
+            "  candidate, and stability was never used to tune anything.",
             "* **Surface composition is absent.** No Earth substrate, mineralogy or",
             "  thermal-inertia map is in this build, so a smooth ice sheet and a smooth",
             "  rock plain are indistinguishable to these features. The Mars ranking does",

@@ -86,6 +86,11 @@ def group_summary(
             for member in group.members
             if features.get(member, {}).get("resolution") not in (None, "unavailable")
         ]
+        constraint_members = [
+            member
+            for member in available_members
+            if features.get(member, {}).get("resolution") == "constraint"
+        ]
         group_reason = (
             str(not_applicable[group.name]).strip()
             if group.name in not_applicable
@@ -117,6 +122,14 @@ def group_summary(
 
         if not group.members:
             status = "not_applicable"
+        elif group.members and len(constraint_members) == len(group.members):
+            # A physical constraint (no precipitation) is scored, but its target
+            # band is declared rather than measured, so it is labelled as such.
+            status = "constraint"
+            group_reason = (
+                str(features[constraint_members[0]].get("resolution_note", "")).strip()
+                or group_reason
+            )
         elif not available_members:
             status = "not_applicable" if group.name in not_applicable else "unavailable"
         elif len(available_members) == len(group.members):
@@ -137,7 +150,7 @@ def group_summary(
     usable = [
         row
         for row in rows
-        if row["status"] in {"available", "partial"} and row["weight"] > 0
+        if row["status"] in {"available", "partial", "constraint"} and row["weight"] > 0
     ]
     total = sum(row["weight"] for row in usable)
     for row in rows:
@@ -164,6 +177,15 @@ def _feature_table(profile: dict[str, Any], config: AppConfig) -> list[str]:
             lines.append(
                 f"| `{definition.id}` | {definition.group} | qualitative | — | — | — | "
                 f"{span} | — | {definition.units} |"
+            )
+            continue
+        if resolution == "constraint":
+            lines.append(
+                f"| `{definition.id}` | {definition.group} | constraint | — | "
+                f"{float(entry['median']):g} | "
+                f"{float(entry['p16']):g}–{float(entry['p84']):g} | "
+                f"{float(entry['min']):g} | {float(entry['max']):g} | "
+                f"{definition.units} |"
             )
             continue
         if resolution == "unavailable" or entry.get("median") is None:
@@ -403,6 +425,16 @@ def write_phase2_report(
             "",
             *_group_table(groups["moon"]),
             *_group_notes(groups["moon"]),
+            "**No-precipitation constraint (Phase 3b).** The Moon has no atmosphere,",
+            "so its target precipitation is **0 mm** and no vegetation can grow. This is",
+            "a physical bound, not a measured distribution: the tolerance band (0–50 mm",
+            "annual, 0–4 mm driest month) is declared in `config/config.yaml` and every",
+            "entry is labelled `constraint`/`declared_tolerance`. It is scored with the",
+            "same rank and absolute maths as the terrain features, at weight 0.25 in the",
+            "balanced and cold-trap presets. An Earth site with precipitation is",
+            "physically unlike the target, and a vegetated site is unlike it whatever",
+            "its terrain scores.",
+            "",
             f"## Mars — {mars_cfg['label']}",
             "",
         ]
@@ -433,6 +465,11 @@ def write_phase2_report(
             "and the remaining weights are renormalised above. Mars also loses the 5 km",
             "roughness and Hurst outright: MOLA at 16 ppd (~3.7 km/px) does not resolve",
             "those windows.",
+            "",
+            "**No-precipitation constraint.** Mars has no rainfall and no vegetation, so",
+            "the target precipitation is 0 mm here too. The same declared tolerance band",
+            "and weight apply; the thin atmosphere is not treated as a precipitation",
+            "analog and no Mars dryness measurement is invented.",
             "",
             "## Thermal literature (cited reference values, not per-cell maps)",
             "",
