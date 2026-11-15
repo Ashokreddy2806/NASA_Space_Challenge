@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <text x="40" y="45" fill="#00f0ff" font-size="18" font-weight="bold">TARGET PROFILE // MARS JEZERO CRATER</text>
+  <text x="40" y="68" fill="#ffaa00" font-size="12" font-weight="bold">Perseverance Rover Delta Landing Site &bull; Clay-Carbonate-Basalt Lacustrine Basin</text>
+
+  <!-- Left: Jezero Mission Profile -->
+  <rect x="40" y="90" width="440" height="470" rx="8" fill="#0d1527" stroke="#ffaa00" stroke-width="1.2"/>
+  <text x="60" y="125" fill="#ffaa00" font-size="14" font-weight="bold">Jezero Geological &amp; Thermal Profile</text>
+
+  <!-- Jezero Crater Contour Diagram -->
+  <circle cx="260" cy="225" r="85" fill="#1f110b" stroke="#ffaa00" stroke-width="1.5"/>
+  <path d="M 180 225 Q 230 200 240 225 Q 250 250 220 250" fill="#ff8800" fill-opacity="0.3" stroke="#ffaa00"/>
+  <text x="210" y="220" fill="#fff" font-size="10" font-weight="bold">Neretva Delta</text>
+
+  <text x="60" y="345" fill="#8ba2c7" font-size="11">Location: <tspan fill="#fff">18.38° N, 77.58° E (Isidis Planitia rim)</tspan></text>
+  <text x="60" y="370" fill="#8ba2c7" font-size="11">Crater Relief: <tspan fill="#00ff88">1,120 m</tspan> (MOLA MEGDR)</text>
+  <text x="60" y="395" fill="#8ba2c7" font-size="11">Floor Slope: <tspan fill="#00ff88">2.8°</tspan> (Navigable delta plain)</text>
+  <text x="60" y="420" fill="#8ba2c7" font-size="11">Mean Temp: <tspan fill="#00f0ff">-58.95 °C (214.2 K)</tspan> (Putzig et al.)</text>
+  <text x="60" y="445" fill="#8ba2c7" font-size="11">Diurnal Thermal Swing: <tspan fill="#ff8800">78.6 °C</tspan> (Severe thermal fatigue)</text>
+  <text x="60" y="470" fill="#8ba2c7" font-size="11">Target Mineralogy: <tspan fill="#fff">Fe/Mg smectite clays, carbonates, olivine</tspan></text>
+  <text x="60" y="495" fill="#8ba2c7" font-size="11">Primary Science: <tspan fill="#00ff88">Astrobiology biosignature preservation</tspan></text>
+
+  <!-- Right: Top Jezero Analogues -->
+  <rect x="510" y="90" width="450" height="470" rx="8" fill="#0d1527" stroke="#00f0ff" stroke-width="1.2"/>
+  <text x="530" y="125" fill="#00f0ff" font-size="14" font-weight="bold">Top Analogues for Jezero Crater</text>
+
+  <!-- Site 1 -->
+  <rect x="530" y="145" width="410" height="90" rx="6" fill="#13203b" stroke="#00ff88" stroke-width="1"/>
+  <text x="545" y="170" fill="#00ff88" font-size="12" font-weight="bold">#1 Puna Plateau Volcanic Barren (Argentina)</text>
+  <text x="545" y="190" fill="#8ba2c7" font-size="10">Similarity Score: <tspan fill="#00ff88" font-weight="bold">83.09%</tspan> [Top Match Worldwide]</text>
+  <text x="545" y="210" fill="#fff" font-size="10">Basalt-clay-carbonate lake mineralogy, extreme UV &gt; 25 UVI</text>
+
+  <!-- Site 2 -->
+  <rect x="530" y="250" width="410" height="90" rx="6" fill="#13203b" stroke="#00f0ff" stroke-width="1"/>
+  <text x="545" y="275" fill="#00f0ff" font-size="12" font-weight="bold">#2 Qaidam Basin Yardangs (China)</text>
+  <text x="545" y="295" fill="#8ba2c7" font-size="10">Similarity Score: <tspan fill="#00f0ff" font-weight="bold">79.81%</tspan> [Overlooked Site]</text>
+  <text x="545" y="315" fill="#fff" font-size="10">Yardang field corrasion corridors, lacustrine evaporite stratigraphy</text>
+
+  <!-- Site 3 -->
+  <rect x="530" y="355" width="410" height="90" rx="6" fill="#13203b" stroke="#ffffff" stroke-opacity="0.2"/>
+  <text x="545" y="380" fill="#fff" font-size="12" font-weight="bold">#3 Death Valley Graben (USA)</text>
+  <text x="545" y="400" fill="#8ba2c7" font-size="10">Similarity Score: <tspan fill="#00ff88" font-weight="bold">76.50%</tspan> [Mobility: 98.7%]</text>
+  <text x="545" y="420" fill="#fff" font-size="10">Alluvial fan grain-size sorting, rover wheel abrasion testbed</text>
+</svg>

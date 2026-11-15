@@ -1,0 +1,74 @@
+# Weight configurations and presets for similarity engine
+
+presets:
+  # Preset 1: Rover mobility (terramechanics, slope navigation, obstacle avoidance)
+  rover_mobility:
+    description: "Prioritizes terrain traverse feasibility, chassis clearance, slope gradients, and multi-scale roughness"
+    weights:
+      slope_20km_deg: 0.30
+      roughness_5km_m: 0.20
+      roughness_10km_m: 0.15
+      roughness_20km_m: 0.10
+      relief_20km_m: 0.15
+      hurst_2_32km: 0.10
+      temp_mean_c: 0.00
+      temp_diurnal_range_c: 0.00
+      temp_min_coldest_c: 0.00
+      temp_annual_range_c: 0.00
+      precip_annual_mm: 0.00
+      precip_driest_month_mm: 0.00
+      psr_coverage_fraction: 0.00
+
+  # Preset 2: Cold-trap / ice (volatile preservation, permanently shadowed regions, cryogenic temperatures)
+  cold_trap_ice:
+    description: "Prioritizes extreme cryogenic temperatures, persistent cold traps, and volatile stability"
+    weights:
+      temp_min_coldest_c: 0.35
+      temp_mean_c: 0.20
+      psr_coverage_fraction: 0.25
+      precip_annual_mm: 0.10
+      slope_20km_deg: 0.05
+      relief_20km_m: 0.05
+      roughness_5km_m: 0.00
+      roughness_10km_m: 0.00
+      roughness_20km_m: 0.00
+      hurst_2_32km: 0.00
+      temp_diurnal_range_c: 0.00
+      temp_annual_range_c: 0.00
+      precip_driest_month_mm: 0.00
+
+  # Preset 3: Thermal cycling (thermal fatigue, diurnal amplitude, heat dissipation, battery cycles)
+  thermal_cycling:
+    description: "Prioritizes diurnal temperature swings, annual thermal range, and thermal extremes"
+    weights:
+      temp_diurnal_range_c: 0.35
+      temp_annual_range_c: 0.25
+      temp_mean_c: 0.20
+      temp_min_coldest_c: 0.10
+      slope_20km_deg: 0.05
+      roughness_10km_m: 0.05
+      relief_20km_m: 0.00
+      roughness_5km_m: 0.00
+      roughness_20km_m: 0.00
+      hurst_2_32km: 0.00
+      precip_annual_mm: 0.00
+      precip_driest_month_mm: 0.00
+      psr_coverage_fraction: 0.00
+
+  # Balanced default: Comprehensive all-round analog matching
+  balanced_default:
+    description: "Equalized balance across terrain roughness, slope, temperature, and aridity"
+    weights:
+      relief_20km_m: 0.10
+      slope_20km_deg: 0.15
+      roughness_10km_m: 0.15
+      hurst_2_32km: 0.10
+      temp_mean_c: 0.15
+      temp_diurnal_range_c: 0.15
+      temp_min_coldest_c: 0.10
+      precip_annual_mm: 0.10
+      roughness_5km_m: 0.00
+      roughness_20km_m: 0.00
+      temp_annual_range_c: 0.00
+      precip_driest_month_mm: 0.00
+      psr_coverage_fraction: 0.00

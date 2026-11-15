@@ -1,0 +1,63 @@
+# Target configuration for Phase 2 & Phase 3 planetary analog matching
+
+moon:
+  target_id: "moon_south_pole"
+  target_name: "Lunar South Pole"
+  body: "Moon"
+  mission_context: "NASA Artemis Program / Candidate Permanent Base Locations"
+  crs:
+    name: "Moon 2015 South Polar Stereographic"
+    proj_type: "polar_stereographic"
+    sphere_radius_m: 1737400.0
+    true_scale_lat: -90.0
+    central_meridian: 0.0
+    units: "metres"
+  aoi:
+    min_x_m: -303990.0
+    max_x_m: 303990.0
+    min_y_m: -303990.0
+    max_y_m: 303990.0
+    bounding_lat_max: -80.0
+    primary_focus_lat_max: -85.0
+  candidate_sites:
+    shackleton_rim:
+      lat: -89.9
+      lon: 0.0
+      elevation_m: 1200.0
+    connecting_ridge:
+      lat: -89.4
+      lon: 222.0
+      elevation_m: 1850.0
+    malapert_mountain:
+      lat: -86.0
+      lon: 2.7
+      elevation_m: 5000.0
+
+mars:
+  target_id: "mars_jezero_crater"
+  target_name: "Jezero Crater"
+  body: "Mars"
+  mission_context: "NASA Mars 2020 Perseverance Rover Landing Site / Sample Return"
+  crs:
+    name: "Mars Simple Cylindrical (MOLA areoid)"
+    proj_type: "cylindrical"
+    datum: "MOLA areoid (0 m at 3396.0 km radius)"
+    lon_convention: "0_to_360_east"
+    units: "degrees"
+  aoi:
+    center_lat: 18.38
+    center_lon_east: 77.58
+    min_lat: 17.0
+    max_lat: 20.0
+    min_lon_east: 76.0
+    max_lon_east: 79.5
+  alternative_target:
+    target_id: "mars_oxia_planum"
+    target_name: "Oxia Planum"
+    mission_context: "ESA/Roscosmos/NASA ExoMars Rosalind Franklin Landing Site"
+    center_lat: 18.28
+    center_lon_east: 335.37
+    min_lat: 17.0
+    max_lat: 19.5
+    min_lon_east: 334.0
+    max_lon_east: 337.0

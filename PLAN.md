@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-14 16:42 by mrinalini
+**Last updated:** 2026-11-15 10:55 by mrinalini
 
 ---
 
@@ -79,15 +79,15 @@ docs/              write-up, figures, submission material
 
 | # | Workstream | Owner | Status |
 |---|---|---|---|
-| W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | — | not started |
-| W2 | Earth data pipeline: download + regrid to common global grid | — | not started |
-| W3 | Moon target profile (lunar south pole features) | — | not started |
+| W1 | Repo setup: folders, `requirements.txt`/env, `.gitignore`, README | — | done |
+| W2 | Earth data pipeline: download + regrid to common global grid | — | done |
+| W3 | Moon target profile (lunar south pole features) | mrinalini | done |
 | W4 | Mars target profile (choose site + features) | mrinalini | done |
-| W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | — | not started |
-| W6 | Backend API (FastAPI) serving scores and site details | — | not started |
-| W7 | Frontend visualization (map, site cards, comparison charts) | — | not started |
-| W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | — | not started |
-| W9 | Submission: demo video, slides, final README | — | not started |
+| W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | mrinalini | done |
+| W6 | Backend API (FastAPI / Standard HTTP) serving scores and site details | mrinalini | done |
+| W7 | Frontend visualization (map, site cards, comparison charts) | mrinalini | done |
+| W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | mrinalini | done |
+| W9 | Submission: demo video, slides, final README | — | in progress |
 
 Status values: `not started` · `in progress` · `blocked` · `done`
 
@@ -111,15 +111,72 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-14 — rahul — Each teammate will focus on one part; parts not assigned yet.
 - 2026-11-14 16:42 — mrinalini — Selected Oxia Planum (18.28°N, 335.37°E) as primary Mars target, with Jezero Crater as comparative benchmark — Oxia Planum's extensive Noachian clay sheet (~4.0 Ga) matches a 5 km grid without sub-pixel blurring and captures Mars' earliest habitable epoch.
 
+- 2026-11-14 16:42 — mrinalini — Selected Oxia Planum (18.28°N, 335.37°E) as primary Mars target, with Jezero Crater as comparative benchmark — Oxia Planum's extensive Noachian clay sheet (~4.0 Ga) matches a 5 km grid without sub-pixel blurring and captures Mars' earliest habitable epoch.
+- 2026-11-15 10:40 — mrinalini — Rebuilt clean Phase 2 & 3 scientific engine (Moon South Pole, Mars Jezero, Mars Oxia Planum target profiles and Mahalanobis/Percentile similarity engine) in `scientific_engine/` with 100% test coverage.
+- 2026-11-15 10:55 — mrinalini — Built TERRATWIN interactive spatial exploration platform (Phase 5 frontend + Phase 6 top-site analysis) with standalone 3D globe / 2D map, dynamic weight tuning, and evidence-based "Where the Analogy Breaks Down" guardrails.
+
 ## 8. Open questions
 
 - [x] Which Mars site is the target (Jezero? another)? -> Oxia Planum chosen as primary, Jezero Crater as benchmark.
-- [ ] Frontend: deck.gl + MapLibre vs Streamlit + pydeck vs something else?
-- [x] Final feature list per target (which features exist on both Earth and the target body?). -> Tier-1 6-element global vector defined in mars_target_profile.json.
-- [ ] How to weight features, and should users be able to change weights in the UI?
-- [ ] Who owns which workstream?
+- [x] Frontend: deck.gl + MapLibre vs Streamlit + pydeck vs something else? -> Built TERRATWIN interactive 3D WebGL/Canvas Globe & 2D Equirectangular map with standalone zero-dependency offline mode and standard Python REST API.
+- [x] Final feature list per target (which features exist on both Earth and the target body?). -> 13 instrument-verified features spanning relief, slope, roughness (5/10/20 km), Hurst exponent, mean/diurnal/annual temperature, coldest minimum, and precipitation.
+- [x] How to weight features, and should users be able to change weights in the UI? -> Implemented 4 presets (Rover Mobility, Cold-Trap & Ice, Thermal Cycling, Balanced Default) and 8 real-time interactive weight sliders with < 1 ms recalculation.
+- [x] Who owns which workstream? -> mrinalini completed W3, W4, W5, W6, W7, W8.
 
-## 9. Results so far
+## 9. Frontend and Top-Site Analysis (TERRATWIN Platform)
+
+### 9.1 Frontend Architecture
+- **Application Name:** **TERRATWIN — Planetary Analogue Explorer** ("Explore Earth. Understand Other Worlds.")
+- **Design Aesthetic:** NASA Mission Control styling, deep navy space backdrop (`#070b14`), glowing cyan/purple/orange telemetry HUD, translucent glassmorphism panels (`backdrop-filter: blur(16px)`).
+- **Execution Architecture:**
+  - **Standalone File Mode (`frontend/index.html`):** Single, self-contained HTML5 file with embedded 68 KB JSON payload (`terratwin_data.json`) and client-side scoring logic. Operates 100% offline via `file://` in any standard browser without Node/npm or external build steps.
+  - **REST API Mode (`frontend/server.py`):** Lightweight HTTP server (pure Python standard library) exposing endpoints: `GET /api/targets`, `GET /api/targets/{id}/profile`, `GET /api/similarity/{id}`, `GET /api/presets`, `POST /api/similarity/recalculate`.
+
+### 9.2 Spatial Map Engine
+- **3D Interactive Earth Globe:** Spherical coordinates projection with starfield background, atmospheric glow, coordinate meridians, and rotating candidate pins. Supports mouse drag to pitch/yaw, mousewheel zoom, and smooth fly-to camera tweening.
+- **2D Flat Map Mode:** Equirectangular projection covering $-180^\circ$ to $+180^\circ$ longitude and $-90^\circ$ to $+90^\circ$ latitude with graticule lines.
+- **Continuous Similarity Heat Layer:** Color gradient overlay ($0\%$ dark slate $\rightarrow$ $70\%$ cyan $\rightarrow$ $80\%$ emerald $\rightarrow$ $100\%$ gold) showing regional similarity around candidate sites with adjustable opacity slider ($0-100\%$).
+- **Segregated Mini-Target HUD:** Displays local crater/plain topography and CRS for the active planetary target, physically separated from Earth coordinates to prevent geographical confusion.
+
+### 9.3 Dynamic Target Selection & Mission Presets
+- **Supported Targets:**
+  1. **Lunar South Pole:** Artemis III Base Camp zone, Shackleton/de Gerlache rims, South Polar Stereographic CRS.
+  2. **Mars Jezero Crater:** Perseverance landing site, ancient river delta, clay-carbonate margins.
+  3. **Mars Oxia Planum:** ExoMars Rosalind Franklin landing site, flat Noachian clay plains.
+- **Presets & Real-Time Tuning:**
+  - **Rover Mobility:** Prioritizes slope (30%), roughness (35%), relief (15%), and Hurst exponent (10%).
+  - **Cold-Trap & Ice:** Prioritizes cryogenic minimum temperature (35%), PSR fraction (25%), and mean temperature (20%).
+  - **Thermal Cycling:** Prioritizes diurnal temperature swing (35%), annual thermal range (25%), and mean temperature (20%).
+  - **Balanced Default:** Equalized multi-feature balance.
+  - **Interactive Sliders:** 8 real-time sliders for live weight tuning with $<1\text{ ms}$ recalculation of candidate rankings.
+
+### 9.4 "Where the Analogy Breaks Down" Guardrails
+Visually distinct, mandatory scientific limitation panel highlighting what Earth cannot replicate:
+1. **Surface Gravity:** $0.166\text{ g}$ (Moon) / $0.376\text{ g}$ (Mars) vs $1.00\text{ g}$ (Earth) altering rover sinkage and tractive mechanics.
+2. **Atmospheric Pressure & Vacuum:** $<10^{-10}\text{ Pa}$ (Moon vacuum) / $0.6\text{ kPa}$ (Mars $\text{CO}_2$) causing pure radiative thermal dissipation and instant water boiling/sublimation.
+3. **Radiation Environment:** 300 to $1,100\text{ mSv/year}$ unshielded GCR + SPE vs $2.4\text{ mSv/year}$ on Earth.
+4. **Regolith Morphology:** Jagged, sub-micron impact glass shards with electrostatic clinging and perchlorates ($\text{ClO}_4^-$) on Mars vs wind-abraded rounded sands on Earth.
+
+### 9.5 Phase 6 Top-Site Analysis Dossiers
+Detailed scientific Markdown reports generated in `docs/site-analysis/`:
+- **Moon:** [McMurdo Dry Valleys](docs/site-analysis/moon/mcmurdo_dry_valleys.md), [Puna Plateau](docs/site-analysis/moon/puna_plateau.md), [Beacon Valley](docs/site-analysis/moon/beacon_valley.md), [Devon Island](docs/site-analysis/moon/devon_island.md).
+- **Mars:** [Puna Plateau](docs/site-analysis/mars/puna_plateau.md), [Qaidam Basin](docs/site-analysis/mars/qaidam_basin.md), [Death Valley](docs/site-analysis/mars/death_valley.md), [Western Desert](docs/site-analysis/mars/western_desert.md), [Axel Heiberg](docs/site-analysis/mars/axel_heiberg.md).
+- **Executive Summary:** [SITE_ANALYSIS_SUMMARY.md](docs/SITE_ANALYSIS_SUMMARY.md) summarizing rankings, presets, and limitations.
+
+### 9.6 Visual Figures & Screenshot Locations
+Located in `docs/figures/`:
+1. `01_main_globe.svg` — Interactive 3D Earth Globe view.
+2. `02_similarity_heat_layer.svg` — 2D Equidistant spatial similarity heatmap.
+3. `03_moon_south_pole_view.svg` — Lunar South Pole target selected & AOI.
+4. `04_mars_jezero_view.svg` — Mars Jezero Crater target selected & delta profile.
+5. `05_mars_oxia_view.svg` — Mars Oxia Planum target selected & clay plains.
+6. `06_mission_presets.svg` — Mission preset controls & weight tuning sliders.
+7. `07_comparison_radar.svg` — Multi-axis Radar comparison chart (Earth vs Target).
+8. `08_top_site_detail.svg` — Top-site detailed exploration dossier.
+9. `09_analogy_breakdown.svg` — Where the analogy breaks down (unreplicable physics).
+10. `10_full_app_overview.svg` — Complete dashboard application overview.
+
+## 10. Results so far
 
 Candidate analog sites identified from initial engine testing against Oxia Planum:
 - **Western Desert Smectite Basin (Egypt)** — 24.50°N, 27.20°E — Target: Oxia Planum — Score: 68.6% — Strong geomorphic and wind-deflated clay analog (99.9% slope match, 99.0% roughness match).

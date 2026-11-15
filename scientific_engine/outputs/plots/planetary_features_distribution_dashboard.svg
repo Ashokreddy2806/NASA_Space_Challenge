@@ -1,0 +1,79 @@
+<svg width="840" height="420" xmlns="http://www.w3.org/2000/svg">
+  <foreignObject width="840" height="420">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="background:#0f172a;color:#f8fafc;padding:20px;border-radius:12px;font-family:-apple-system,sans-serif;font-size:12px;">
+      <h2 style="margin:0 0 4px 0;font-size:16px;color:#f8fafc;">Master Target Profile Distribution Matrix</h2>
+      <p style="margin:0 0 12px 0;color:#94a3b8;font-size:11px;">Phase 2 Verified Target Feature Distributions vs. Earth Land Global Median (docs/FEATURES.md contract)</p>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+          <tr style="border-bottom:2px solid #475569;color:#cbd5e1;text-align:left;">
+            <th style="padding:6px;">Feature</th>
+            <th style="padding:6px;">Units</th>
+            <th style="padding:6px;text-align:right;color:#38bdf8;">Earth Land (Median)</th>
+            <th style="padding:6px;text-align:right;color:#e2e8f0;">Moon South Pole</th>
+            <th style="padding:6px;text-align:right;color:#f97316;">Mars Jezero</th>
+            <th style="padding:6px;text-align:right;color:#ef4444;">Mars Oxia Planum</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Local Relief in 20 km Window</td>
+      <td style="padding:6px;color:#94a3b8;">m</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">78.7</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">3650.0</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">1120.0</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">310.0</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Terrain Slope in 20 km Window</td>
+      <td style="padding:6px;color:#94a3b8;">degrees</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">0.3</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">9.8</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">2.8</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">1.2</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">High-Pass Roughness at 10 km Baseline</td>
+      <td style="padding:6px;color:#94a3b8;">m</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">8.4</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">31.5</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">24.5</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">9.5</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Scale-Robust Roughness (Hurst Exponent)</td>
+      <td style="padding:6px;color:#94a3b8;">unitless</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">0.6</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">0.7</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">0.7</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">0.7</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Annual Mean Temperature</td>
+      <td style="padding:6px;color:#94a3b8;">deg C</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">-0.8</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">-168.2</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">-59.0</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">-60.6</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Diurnal Temperature Range (Delta T)</td>
+      <td style="padding:6px;color:#94a3b8;">deg C</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">9.5</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">120.0</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">78.6</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">72.4</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155;height:32px;">
+      <td style="padding:6px;color:#f8fafc;font-weight:500;">Cold Extreme / Minimum Temperature</td>
+      <td style="padding:6px;color:#94a3b8;">deg C</td>
+      <td style="padding:6px;color:#38bdf8;text-align:right;">-22.1</td>
+      <td style="padding:6px;color:#e2e8f0;text-align:right;">-233.2</td>
+      <td style="padding:6px;color:#f97316;text-align:right;">-89.8</td>
+      <td style="padding:6px;color:#ef4444;text-align:right;">-95.0</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+  </foreignObject>
+</svg>

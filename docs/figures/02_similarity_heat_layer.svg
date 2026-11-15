@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <text x="40" y="50" fill="#00f0ff" font-size="20" font-weight="bold" letter-spacing="2">SPATIAL SIMILARITY HEAT LAYER (2D EQUIDISTANT)</text>
+  <text x="40" y="75" fill="#8ba2c7" font-size="12">Continuous Percentile-Rank Color Gradient &bull; Preserving Native 0.05° Resolution</text>
+
+  <!-- Map Frame -->
+  <rect x="50" y="100" width="900" height="420" rx="8" fill="#0b172a" stroke="#00f0ff" stroke-width="1.2" stroke-opacity="0.4"/>
+
+  <!-- Latitude/Longitude Graticule -->
+  <g stroke="#ffffff" stroke-opacity="0.08" stroke-width="1">
+    <line x1="50" y1="170" x2="950" y2="170"/><line x1="50" y1="240" x2="950" y2="240"/>
+    <line x1="50" y1="310" x2="950" y2="310"/><line x1="50" y1="380" x2="950" y2="380"/>
+    <line x1="50" y1="450" x2="950" y2="450"/>
+    <line x1="200" y1="100" x2="200" y2="520"/><line x1="350" y1="100" x2="350" y2="520"/>
+    <line x1="500" y1="100" x2="500" y2="520"/><line x1="650" y1="100" x2="650" y2="520"/>
+    <line x1="800" y1="100" x2="800" y2="520"/>
+  </g>
+
+  <!-- Heatmap Halo Envelopes -->
+  <!-- Puna Plateau Heat Halo -->
+  <circle cx="330" cy="380" r="65" fill="#00ff88" fill-opacity="0.25"/>
+  <circle cx="330" cy="380" r="35" fill="#00ff88" fill-opacity="0.4"/>
+  <circle cx="330" cy="380" r="6" fill="#00ff88"/>
+  <text x="345" y="385" fill="#fff" font-size="11" font-weight="bold">Puna Plateau (83.1%)</text>
+
+  <!-- Qaidam Basin Heat Halo -->
+  <circle cx="730" cy="220" r="60" fill="#00ff88" fill-opacity="0.25"/>
+  <circle cx="730" cy="220" r="30" fill="#00ff88" fill-opacity="0.4"/>
+  <circle cx="730" cy="220" r="6" fill="#00ff88"/>
+  <text x="745" y="225" fill="#fff" font-size="11" font-weight="bold">Qaidam Basin (82.8%)</text>
+
+  <!-- McMurdo Dry Valleys Heat Halo -->
+  <circle cx="850" cy="480" r="55" fill="#00f0ff" fill-opacity="0.25"/>
+  <circle cx="850" cy="480" r="28" fill="#00f0ff" fill-opacity="0.4"/>
+  <circle cx="850" cy="480" r="6" fill="#00f0ff"/>
+  <text x="690" y="485" fill="#fff" font-size="11" font-weight="bold">McMurdo Valleys (78.5%)</text>
+
+  <!-- Western Desert Heat Halo -->
+  <circle cx="570" cy="250" r="50" fill="#00f0ff" fill-opacity="0.25"/>
+  <circle cx="570" cy="250" r="5" fill="#00f0ff"/>
+  <text x="585" y="255" fill="#fff" font-size="11">Western Desert (78.2%)</text>
+
+  <!-- Death Valley Heat Halo -->
+  <circle cx="210" cy="225" r="45" fill="#0072ff" fill-opacity="0.3"/>
+  <circle cx="210" cy="225" r="5" fill="#0072ff"/>
+  <text x="100" y="230" fill="#fff" font-size="11">Death Valley (76.5%)</text>
+
+  <!-- Heat Legend Footer -->
+  <rect x="300" y="545" width="400" height="35" rx="6" fill="#0d1527" stroke="#ffffff" stroke-opacity="0.15"/>
+  <defs>
+    <linearGradient id="legendGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="25%" stop-color="#0072ff"/>
+      <stop offset="60%" stop-color="#00f0ff"/>
+      <stop offset="85%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#ffaa00"/>
+    </linearGradient>
+  </defs>
+  <rect x="360" y="557" width="280" height="10" rx="3" fill="url(#legendGrad)" stroke="#ffffff" stroke-opacity="0.2"/>
+  <text x="320" y="566" fill="#8ba2c7" font-size="10">0%</text>
+  <text x="655" y="566" fill="#00ff88" font-size="10" font-weight="bold">100%</text>
+</svg>

@@ -1,0 +1,126 @@
+# Feature definitions and alignment specifications (docs/FEATURES.md contract)
+
+features:
+  relief_20km_m:
+    long_name: "Local relief in a 20 km window"
+    group: "terrain"
+    units: "m"
+    formula: "p95(elevation) - p5(elevation) in 20 km metric window"
+    earth_source: "ETOPO 2022 60 arc-second via 2 km AEQD grid"
+    moon_source: "LOLA LDEM_80S_80MPP_ADJ"
+    mars_source: "MOLA MEGDR megt90n000eb.img"
+    direction: "two_sided"
+
+  slope_20km_deg:
+    long_name: "Mean slope in a 20 km window"
+    group: "terrain"
+    units: "degrees"
+    formula: "mean of per-cell gradient magnitude in 20 km window"
+    earth_source: "ETOPO 2022 via 2 km AEQD grid"
+    moon_source: "LOLA LDEM_80S_80MPP_ADJ gradient and LDRM_80S_1000MPP_ADJ_SLP_800M/1600M"
+    mars_source: "MOLA MEGDR derived gradient"
+    direction: "two_sided"
+
+  roughness_5km_m:
+    long_name: "High-pass roughness at 5 km"
+    group: "terrain"
+    units: "m"
+    formula: "std(z - Gaussian(z, sigma=2.5 km)) in 5 km window"
+    earth_source: "ETOPO 2022"
+    moon_source: "LOLA DEM residual / LDRM_80S_1000MPP_ADJ_ROUGH_800M"
+    mars_source: "MOLA DEM residual (limited by 3.7 km native pixel; flag if limited)"
+    direction: "two_sided"
+
+  roughness_10km_m:
+    long_name: "High-pass roughness at 10 km"
+    group: "terrain"
+    units: "m"
+    formula: "std(z - Gaussian(z, sigma=5.0 km)) in 10 km window"
+    earth_source: "ETOPO 2022"
+    moon_source: "LOLA DEM residual"
+    mars_source: "MOLA DEM residual"
+    direction: "two_sided"
+
+  roughness_20km_m:
+    long_name: "High-pass roughness at 20 km"
+    group: "terrain"
+    units: "m"
+    formula: "std(z - Gaussian(z, sigma=10.0 km)) in 20 km window"
+    earth_source: "ETOPO 2022"
+    moon_source: "LOLA DEM residual / LDRM_80S_1000MPP_ADJ_ROUGH_1600M"
+    mars_source: "MOLA DEM residual"
+    direction: "two_sided"
+
+  hurst_2_32km:
+    long_name: "Scale-robust roughness (Hurst exponent)"
+    group: "terrain"
+    units: "unitless"
+    formula: "half the OLS slope of log(structure function) vs log(lag) for lags 2, 4, 8, 16, 32 km"
+    earth_source: "ETOPO 2022 32 km analysis window"
+    moon_source: "LOLA LDRM_80S_1000MPP_ADJ_H and LDRM_80S_1000MPP_ADJ_SPSLP"
+    mars_source: "MOLA derived where lags >= 7.4 km exist, else flagged"
+    direction: "two_sided"
+
+  temp_mean_c:
+    long_name: "Annual mean air/surface temperature"
+    group: "temperature"
+    units: "degC"
+    earth_source: "WorldClim 2.1 bio_1 (air temp climatology)"
+    moon_source: "moon_thermal_literature.csv (Williams et al. 2019)"
+    mars_source: "mars_thermal_literature.csv (Martinez et al. 2023 / Putzig et al. 2005)"
+    direction: "two_sided"
+
+  temp_diurnal_range_c:
+    long_name: "Mean diurnal temperature range"
+    group: "temperature"
+    units: "degC"
+    earth_source: "WorldClim 2.1 bio_2 (day-night swing proxy)"
+    moon_source: "moon_thermal_literature.csv"
+    mars_source: "mars_thermal_literature.csv"
+    direction: "two_sided"
+
+  temp_min_coldest_c:
+    long_name: "Minimum temperature of coldest period (cold-trap proxy)"
+    group: "temperature_and_ice"
+    units: "degC"
+    earth_source: "WorldClim 2.1 bio_6 (cold-extreme proxy for lunar cold traps)"
+    moon_source: "moon_thermal_literature.csv (cold traps 40-110 K)"
+    mars_source: "mars_thermal_literature.csv (winter night 183.4 K)"
+    direction: "two_sided"
+
+  temp_annual_range_c:
+    long_name: "Annual temperature range"
+    group: "temperature"
+    units: "degC"
+    earth_source: "WorldClim 2.1 bio_7"
+    moon_source: "moon_thermal_literature.csv"
+    mars_source: "mars_thermal_literature.csv"
+    direction: "two_sided"
+
+  precip_annual_mm:
+    long_name: "Annual precipitation (dryness constraint)"
+    group: "dryness"
+    units: "mm"
+    earth_source: "WorldClim 2.1 bio_12"
+    moon_source: "Constraint: strictly 0 mm (airless body)"
+    mars_source: "Constraint: strictly 0 mm (hyper-arid surface)"
+    direction: "one_sided_lower_is_better"
+
+  precip_driest_month_mm:
+    long_name: "Precipitation of driest month"
+    group: "dryness"
+    units: "mm"
+    earth_source: "WorldClim 2.1 bio_14"
+    moon_source: "Constraint: strictly 0 mm"
+    mars_source: "Constraint: strictly 0 mm"
+    direction: "one_sided_lower_is_better"
+
+  psr_coverage_fraction:
+    long_name: "Permanently shadowed region fraction (> 1 km2)"
+    group: "cold_trap_ice"
+    units: "fraction"
+    formula: "Area of PSR polygons in cell / cell area"
+    earth_source: "Not directly available; proxied by temp_min_coldest_c and permafrost presence"
+    moon_source: "LPSR_80S_20MPP_ADJ_1km2.csv"
+    mars_source: "Not in MVP"
+    direction: "two_sided"

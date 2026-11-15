@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <text x="40" y="45" fill="#00f0ff" font-size="18" font-weight="bold">TARGET PROFILE // LUNAR SOUTH POLE</text>
+  <text x="40" y="68" fill="#9d4edd" font-size="12" font-weight="bold">Artemis III Base Camp Exploration Zone &bull; Shackleton / de Gerlache Massif</text>
+
+  <!-- Left: Target Geodetic AOI Card -->
+  <rect x="40" y="90" width="440" height="470" rx="8" fill="#0d1527" stroke="#9d4edd" stroke-width="1.2"/>
+  <text x="60" y="125" fill="#9d4edd" font-size="14" font-weight="bold">Planetary Geodetic Parameters</text>
+
+  <!-- Polar Stereographic Projection Diagram -->
+  <circle cx="260" cy="230" r="90" fill="#050a14" stroke="#9d4edd" stroke-width="1.5"/>
+  <circle cx="260" cy="230" r="50" fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-dasharray="3,3"/>
+  <circle cx="260" cy="230" r="4" fill="#00f0ff"/>
+  <text x="250" y="245" fill="#fff" font-size="9">90°S Pole</text>
+
+  <text x="60" y="355" fill="#8ba2c7" font-size="11">CRS: <tspan fill="#fff">Moon 2015 South Polar Stereographic (R=1737.4 km)</tspan></text>
+  <text x="60" y="380" fill="#8ba2c7" font-size="11">AOI Extent: <tspan fill="#fff">Poleward of 85°S (Radius ≤ 151.8 km)</tspan></text>
+  <text x="60" y="405" fill="#8ba2c7" font-size="11">Topographic Relief: <tspan fill="#00ff88">3,650 m</tspan> (LOLA LDEM_80S)</text>
+  <text x="60" y="430" fill="#8ba2c7" font-size="11">Mean Slope: <tspan fill="#00ff88">9.8°</tspan> (20 km scale)</text>
+  <text x="60" y="455" fill="#8ba2c7" font-size="11">Mean Surface Temp: <tspan fill="#00f0ff">-168.15 °C (105 K)</tspan> (Diviner M3)</text>
+  <text x="60" y="480" fill="#8ba2c7" font-size="11">Cold Trap Min Temp: <tspan fill="#ff3366">-233.15 °C (40 K)</tspan> (Williams et al.)</text>
+  <text x="60" y="505" fill="#8ba2c7" font-size="11">PSR Surface Area: <tspan fill="#fff">15.5%</tspan> (Permanently Shadowed)</text>
+
+  <!-- Right: Ranked Earth Analogue Match Results -->
+  <rect x="510" y="90" width="450" height="470" rx="8" fill="#0d1527" stroke="#00f0ff" stroke-width="1.2"/>
+  <text x="530" y="125" fill="#00f0ff" font-size="14" font-weight="bold">Ranked Earth Analogues for Moon Target</text>
+
+  <!-- Rank 1 Card -->
+  <rect x="530" y="145" width="410" height="90" rx="6" fill="#13203b" stroke="#00ff88" stroke-width="1"/>
+  <text x="545" y="170" fill="#00ff88" font-size="12" font-weight="bold">#1 Puna Plateau Volcanic Barren (Argentina)</text>
+  <text x="545" y="190" fill="#8ba2c7" font-size="10">Overall Match: <tspan fill="#00ff88" font-weight="bold">81.57%</tspan> [Overlooked Site]</text>
+  <text x="545" y="210" fill="#fff" font-size="10">Matches: Hurst fractal roughness (100%), Micro-roughness (99.9%)</text>
+  <text x="545" y="225" fill="#ff8800" font-size="9">Limitations: Lacks deep cryo (min -25 °C vs -233 °C)</text>
+
+  <!-- Rank 2 Card -->
+  <rect x="530" y="250" width="410" height="90" rx="6" fill="#13203b" stroke="#00f0ff" stroke-width="1"/>
+  <text x="545" y="275" fill="#00f0ff" font-size="12" font-weight="bold">#2 Beacon Valley Permafrost (Antarctica)</text>
+  <text x="545" y="295" fill="#8ba2c7" font-size="10">Overall Match: <tspan fill="#00f0ff" font-weight="bold">79.81%</tspan> [Overlooked Site]</text>
+  <text x="545" y="315" fill="#fff" font-size="10">Matches: Desiccated till over massive ice, Slope (99.4%)</text>
+  <text x="545" y="330" fill="#00ff88" font-size="9">Best Mission: Percussive coring drill volatile testing</text>
+
+  <!-- Rank 3 Card -->
+  <rect x="530" y="355" width="410" height="90" rx="6" fill="#13203b" stroke="#ffffff" stroke-opacity="0.2"/>
+  <text x="545" y="380" fill="#fff" font-size="12" font-weight="bold">#3 McMurdo Dry Valleys (Antarctica)</text>
+  <text x="545" y="400" fill="#8ba2c7" font-size="10">Overall Match: <tspan fill="#00ff88" font-weight="bold">78.45%</tspan> [Famous Site]</text>
+  <text x="545" y="420" fill="#fff" font-size="10">Matches: Slope (98.2%), Roughness (99.7%), Aridity (95.0%)</text>
+  <text x="545" y="435" fill="#00f0ff" font-size="9">Mobility Score: 96.2% (Gold-standard LTV terramechanics)</text>
+</svg>

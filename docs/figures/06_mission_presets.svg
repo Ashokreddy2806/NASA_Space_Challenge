@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <text x="40" y="45" fill="#00f0ff" font-size="18" font-weight="bold">MISSION PRESETS &amp; REAL-TIME WEIGHT TUNING</text>
+  <text x="40" y="68" fill="#8ba2c7" font-size="12">Dynamic Weight Recalibration &bull; Instant Multi-Feature Scoring Engine</text>
+
+  <!-- Preset Cards Grid -->
+  <g transform="translate(40, 95)">
+    <!-- Rover Mobility -->
+    <rect x="0" y="0" width="215" height="130" rx="6" fill="#0d1527" stroke="#00ff88" stroke-width="1"/>
+    <text x="15" y="28" fill="#00ff88" font-size="12" font-weight="bold">🚜 ROVER MOBILITY</text>
+    <text x="15" y="50" fill="#8ba2c7" font-size="10">Terramechanics &amp; Slopes</text>
+    <text x="15" y="75" fill="#fff" font-size="10">Slope Weight: <tspan fill="#00ff88">30%</tspan></text>
+    <text x="15" y="95" fill="#fff" font-size="10">Roughness (5k/10k): <tspan fill="#00ff88">35%</tspan></text>
+    <text x="15" y="115" fill="#fff" font-size="10">Relief: <tspan fill="#00ff88">15%</tspan></text>
+
+    <!-- Cold Trap -->
+    <rect x="235" y="0" width="215" height="130" rx="6" fill="#0d1527" stroke="#00f0ff" stroke-width="1"/>
+    <text x="250" y="28" fill="#00f0ff" font-size="12" font-weight="bold">❄️ COLD TRAP &amp; ICE</text>
+    <text x="250" y="50" fill="#8ba2c7" font-size="10">Cryogenic Volatiles</text>
+    <text x="250" y="75" fill="#fff" font-size="10">Min Temp: <tspan fill="#00f0ff">35%</tspan></text>
+    <text x="250" y="95" fill="#fff" font-size="10">PSR Area: <tspan fill="#00f0ff">25%</tspan></text>
+    <text x="250" y="115" fill="#fff" font-size="10">Mean Temp: <tspan fill="#00f0ff">20%</tspan></text>
+
+    <!-- Thermal Cycling -->
+    <rect x="470" y="0" width="215" height="130" rx="6" fill="#0d1527" stroke="#ffaa00" stroke-width="1"/>
+    <text x="485" y="28" fill="#ffaa00" font-size="12" font-weight="bold">🌡️ THERMAL CYCLING</text>
+    <text x="485" y="50" fill="#8ba2c7" font-size="10">Diurnal Stress Fatigue</text>
+    <text x="485" y="75" fill="#fff" font-size="10">Diurnal ΔT: <tspan fill="#ffaa00">35%</tspan></text>
+    <text x="485" y="95" fill="#fff" font-size="10">Annual ΔT: <tspan fill="#ffaa00">25%</tspan></text>
+    <text x="485" y="115" fill="#fff" font-size="10">Mean Temp: <tspan fill="#ffaa00">20%</tspan></text>
+
+    <!-- Balanced Default -->
+    <rect x="705" y="0" width="215" height="130" rx="6" fill="#0d1527" stroke="#9d4edd" stroke-width="1"/>
+    <text x="720" y="28" fill="#9d4edd" font-size="12" font-weight="bold">⚖️ BALANCED DEFAULT</text>
+    <text x="720" y="50" fill="#8ba2c7" font-size="10">All-Round Analogue</text>
+    <text x="720" y="75" fill="#fff" font-size="10">Terrain Group: <tspan fill="#9d4edd">50%</tspan></text>
+    <text x="720" y="95" fill="#fff" font-size="10">Thermal Group: <tspan fill="#9d4edd">40%</tspan></text>
+    <text x="720" y="115" fill="#fff" font-size="10">Aridity Group: <tspan fill="#9d4edd">10%</tspan></text>
+  </g>
+
+  <!-- Interactive Sliders Demonstration Box -->
+  <rect x="40" y="255" width="920" height="300" rx="8" fill="#0d1527" stroke="#00f0ff" stroke-width="1"/>
+  <text x="60" y="285" fill="#00f0ff" font-size="14" font-weight="bold">Real-Time Weight Sliders (Client-Side Instant Recalculation &lt; 1 ms)</text>
+
+  <!-- Slider 1 -->
+  <text x="60" y="325" fill="#fff" font-size="11">Mean Slope Gradient (20km)</text>
+  <text x="450" y="325" fill="#00ff88" font-size="11" font-weight="bold">30%</text>
+  <rect x="60" y="335" width="400" height="6" rx="3" fill="#1b2a47"/>
+  <rect x="60" y="335" width="120" height="6" rx="3" fill="#00ff88"/>
+  <circle cx="180" cy="338" r="7" fill="#00ff88"/>
+
+  <!-- Slider 2 -->
+  <text x="60" y="380" fill="#fff" font-size="11">High-Pass Roughness (10km)</text>
+  <text x="450" y="380" fill="#00ff88" font-size="11" font-weight="bold">20%</text>
+  <rect x="60" y="390" width="400" height="6" rx="3" fill="#1b2a47"/>
+  <rect x="60" y="390" width="80" height="6" rx="3" fill="#00ff88"/>
+  <circle cx="140" cy="393" r="7" fill="#00ff88"/>
+
+  <!-- Slider 3 -->
+  <text x="520" y="325" fill="#fff" font-size="11">Diurnal Temperature Swing</text>
+  <text x="910" y="325" fill="#ffaa00" font-size="11" font-weight="bold">35%</text>
+  <rect x="520" y="335" width="400" height="6" rx="3" fill="#1b2a47"/>
+  <rect x="520" y="335" width="140" height="6" rx="3" fill="#ffaa00"/>
+  <circle cx="660" cy="338" r="7" fill="#ffaa00"/>
+
+  <!-- Slider 4 -->
+  <text x="520" y="380" fill="#fff" font-size="11">Minimum Cold-Extreme Temperature</text>
+  <text x="910" y="380" fill="#00f0ff" font-size="11" font-weight="bold">35%</text>
+  <rect x="520" y="390" width="400" height="6" rx="3" fill="#1b2a47"/>
+  <rect x="520" y="390" width="140" height="6" rx="3" fill="#00f0ff"/>
+  <circle cx="660" cy="393" r="7" fill="#00f0ff"/>
+</svg>

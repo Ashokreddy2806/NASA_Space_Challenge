@@ -1,0 +1,136 @@
+<svg width="980" height="580" xmlns="http://www.w3.org/2000/svg" style="background:#090d16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.8"/>
+    </filter>
+    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="40%" stop-color="#94a3b8"/>
+      <stop offset="60%" stop-color="#f97316"/>
+      <stop offset="80%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="980" height="580" fill="#090d16"/>
+
+  <!-- Title Header -->
+  <rect x="0" y="0" width="980" height="58" fill="#0f172a"/>
+  <text x="24" y="28" fill="#f8fafc" font-size="16" font-weight="bold">Planetary Analog Similarity Map: Mars Jezero Crater</text>
+  <text x="24" y="46" fill="#94a3b8" font-size="11">Target ID: mars_jezero_crater | Reference Grid: Global Earth 0.05° (WorldClim 2.1 + ETOPO 2022) | Balanced Preset</text>
+
+  <!-- Ocean / Globe Box -->
+  <rect x="60.0" y="70.0" width="840.0" height="420.0" fill="#0d1527" stroke="#1e293b" stroke-width="1.5" rx="4"/>
+
+  <!-- Graticule Lines -->
+  <!-- Equator -->
+  <line x1="60.0" y1="280.0" x2="900.0" y2="280.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="66.0" y="276.0" fill="#64748b" font-size="9">0° Equator</text>
+
+  <!-- Tropics -->
+  <line x1="60.0" y1="225.4" x2="900.0" y2="225.4" stroke="#1e293b" stroke-width="0.8"/>
+  <line x1="60.0" y1="334.6" x2="900.0" y2="334.6" stroke="#1e293b" stroke-width="0.8"/>
+
+  <!-- Polar Circles -->
+  <line x1="60.0" y1="124.6" x2="900.0" y2="124.6" stroke="#334155" stroke-dasharray="2,2" stroke-width="0.8"/>
+  <text x="66.0" y="121.6" fill="#64748b" font-size="8.5">66.5°N Arctic</text>
+  <line x1="60.0" y1="435.4" x2="900.0" y2="435.4" stroke="#334155" stroke-dasharray="2,2" stroke-width="0.8"/>
+  <text x="66.0" y="432.4" fill="#64748b" font-size="8.5">66.5°S Antarctic</text>
+
+  <!-- Prime Meridian -->
+  <line x1="480.0" y1="70.0" x2="480.0" y2="490.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="484.0" y="84.0" fill="#64748b" font-size="9">0° PM</text>
+
+  <!-- Continent Contours (Indicative Coastline Vectors) -->
+  <path d="M 120 120 Q 180 100 240 130 T 320 220 T 300 320 T 250 420" fill="none" stroke="#1e293b" stroke-width="1.2"/>
+  <path d="M 440 130 Q 520 110 580 140 T 560 260 T 510 380" fill="none" stroke="#1e293b" stroke-width="1.2"/>
+  <path d="M 600 130 Q 720 120 820 160 T 780 280 T 720 360" fill="none" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Plotted Candidate Markers -->
+  
+    <!-- Site: McMurdo Dry Valleys (Antarctica) -->
+    <circle cx="858.0" cy="460.8" r="7" fill="#22c55e" stroke="#facc15" stroke-width="1.5" opacity="0.95"/>
+    <text x="858.0" y="451.8" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">McMurdo Dry Valleys (78%)</text>
+
+    <!-- Site: Atacama Desert Salar (Chile) -->
+    <circle cx="320.2" cy="334.8" r="6" fill="#eab308" stroke="#facc15" stroke-width="1.5" opacity="0.95"/>
+    <text x="320.2" y="325.8" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Atacama Desert Salar (67%)</text>
+
+    <!-- Site: Devon Island / Haughton Crater (Canada) -->
+    <circle cx="271.2" cy="104.1" r="7" fill="#22c55e" stroke="#facc15" stroke-width="1.5" opacity="0.95"/>
+    <text x="271.2" y="95.1" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Devon Island / Haughton Crater (75%)</text>
+
+    <!-- Site: Death Valley Graben (USA) -->
+    <circle cx="207.2" cy="194.8" r="7" fill="#22c55e" stroke="#facc15" stroke-width="1.5" opacity="0.95"/>
+    <text x="207.2" y="185.8" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Death Valley Graben (75%)</text>
+
+    <!-- Site: Iceland Highland Lava Field -->
+    <circle cx="435.7" cy="128.6" r="6" fill="#eab308" stroke="#facc15" stroke-width="1.5" opacity="0.95"/>
+    <text x="435.7" y="119.6" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Iceland Highland Lava Field (69%)</text>
+
+    <!-- Site: Qaidam Basin Yardangs (Tibetan Plateau) -->
+    <circle cx="698.6" cy="193.3" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="698.6" y="184.3" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Qaidam Basin Yardangs (80%)</text>
+
+    <!-- Site: Western Desert Clay Basin (Dakhla/Kharga) -->
+    <circle cx="548.1" cy="220.5" r="6" fill="#eab308" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="548.1" y="211.5" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Western Desert Clay Basin (68%)</text>
+
+    <!-- Site: Beacon Valley Permafrost (Transantarctic Mtns) -->
+    <circle cx="854.9" cy="461.6" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="854.9" y="452.6" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Beacon Valley Permafrost (79%)</text>
+
+    <!-- Site: Axel Heiberg Island Cold Springs -->
+    <circle cx="268.2" cy="94.7" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="268.2" y="110.7" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Axel Heiberg Island Cold Springs (79%)</text>
+
+    <!-- Site: Salar de Uyuni Salt Crust (Altiplano) -->
+    <circle cx="322.3" cy="327.4" r="6" fill="#eab308" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="322.3" y="318.4" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Salar de Uyuni Salt Crust (60%)</text>
+
+    <!-- Site: Puna Plateau Volcanic Barren -->
+    <circle cx="323.2" cy="337.9" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="323.2" y="328.9" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Puna Plateau Volcanic Barren (83%)</text>
+
+    <!-- Site: Namib Gravel Plains (Central Erg Margin) -->
+    <circle cx="515.7" cy="335.3" r="6" fill="#eab308" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="515.7" y="326.3" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Namib Gravel Plains (69%)</text>
+
+    <!-- Site: Ellesmere Island Polar Fjord Highlands -->
+    <circle cx="315.5" cy="90.5" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="315.5" y="106.5" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Ellesmere Island Polar Fjord Highlands (78%)</text>
+
+    <!-- Site: Svalbard Arctic Permafrost Plain -->
+    <circle cx="516.4" cy="97.5" r="7" fill="#22c55e" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="516.4" y="113.5" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Svalbard Arctic Permafrost Plain (71%)</text>
+
+    <!-- Site: Danakil Depression Evaporite Basin -->
+    <circle cx="574.0" cy="246.8" r="6" fill="#eab308" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <text x="574.0" y="237.8" fill="#f8fafc" font-size="9.5" font-weight="600" text-anchor="middle" filter="url(#shadow)">Danakil Depression Evaporite Basin (68%)</text>
+
+
+  <!-- Footer Cartographic Metadata -->
+  <!-- Scale Bar & CRS -->
+  <rect x="60" y="505" width="280" height="58" fill="#0f172a" rx="6" stroke="#1e293b"/>
+  <text x="75" y="524" fill="#f8fafc" font-size="10.5" font-weight="600">CRS: WGS 84 (EPSG:4326) Equirectangular</text>
+  <text x="75" y="540" fill="#94a3b8" font-size="9.5">Grid Resolution: 0.05° (~5 km at equator)</text>
+  <line x1="75" y1="552" x2="195" y2="552" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="75" y1="548" x2="75" y2="556" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="195" y1="548" x2="195" y2="556" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="135" y="548" fill="#cbd5e1" font-size="8" text-anchor="middle">5,000 km</text>
+
+  <!-- Similarity Legend -->
+  <rect x="580" y="505" width="320" height="58" fill="#0f172a" rx="6" stroke="#1e293b"/>
+  <text x="595" y="523" fill="#f8fafc" font-size="10.5" font-weight="600">Similarity Match Score</text>
+  <rect x="595" y="531" width="240" height="10" fill="url(#scoreGrad)" rx="3"/>
+  <text x="595" y="553" fill="#94a3b8" font-size="9">0% (Dissimilar)</text>
+  <text x="715" y="553" fill="#94a3b8" font-size="9">50%</text>
+  <text x="815" y="553" fill="#22c55e" font-size="9" font-weight="600">100% (High)</text>
+
+  <!-- Famous vs Overlooked Legend Marker -->
+  <circle cx="852" cy="536" r="4.5" fill="#22c55e" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="862" y="540" fill="#cbd5e1" font-size="9">Overlooked</text>
+  <circle cx="852" cy="520" r="4.5" fill="#22c55e" stroke="#facc15" stroke-width="1.5"/>
+  <text x="862" y="524" fill="#cbd5e1" font-size="9">Famous</text>
+</svg>

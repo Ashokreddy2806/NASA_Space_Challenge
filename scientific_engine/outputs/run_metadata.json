@@ -1,0 +1,65 @@
+{
+  "execution_timestamp_utc": "2026-11-15T08:50:20.785628+00:00",
+  "runtime_seconds": 0.012,
+  "system_info": {
+    "platform": "macOS-26.7.2-arm64-arm-64bit",
+    "python_version": "3.9.6",
+    "executable": "/Library/Developer/CommandLineTools/usr/bin/python3"
+  },
+  "standards": {
+    "earth_reference_grid": "0.05 deg WGS 84 (7200 x 3600), WorldClim 2.1 + ETOPO 2022",
+    "moon_reference_crs": "Moon 2015 South Polar Stereographic (R=1737.4 km, True at 90S, central 0)",
+    "mars_reference_crs": "Mars Simple Cylindrical (MOLA areoid datum, 0-360 deg East)",
+    "estimator_spec": "docs/FEATURES.md locked contract"
+  },
+  "target_summaries": {
+    "moon_south_pole": {
+      "relief_20km_m": 3650.0,
+      "slope_20km_deg": 9.8,
+      "temp_mean_c": -168.15,
+      "psr_coverage_fraction": 0.155
+    },
+    "mars_jezero_crater": {
+      "relief_20km_m": 1120.0,
+      "slope_20km_deg": 2.8,
+      "temp_mean_c": -58.95
+    },
+    "mars_oxia_planum": {
+      "relief_20km_m": 310.0,
+      "slope_20km_deg": 1.2,
+      "temp_mean_c": -60.65
+    }
+  },
+  "output_inventory": {
+    "profiles": [
+      "outputs/profiles/target_profiles.json"
+    ],
+    "validation": [
+      "outputs/validation/analog_validation.csv"
+    ],
+    "rankings": [
+      "outputs/rankings/all_target_rankings.json",
+      "outputs/rankings/rankings_moon_south_pole.csv",
+      "outputs/rankings/rankings_mars_jezero_crater.csv",
+      "outputs/rankings/rankings_mars_oxia_planum.csv"
+    ],
+    "maps": [
+      "similarity_map_moon_south_pole.svg",
+      "similarity_map_mars_jezero_crater.svg",
+      "similarity_map_mars_oxia_planum.svg"
+    ],
+    "plots": [
+      "dist_relief_20km_m.svg",
+      "dist_slope_20km_deg.svg",
+      "dist_roughness_10km_m.svg",
+      "dist_hurst_2_32km.svg",
+      "dist_temp_mean_c.svg",
+      "dist_temp_diurnal_range_c.svg",
+      "dist_temp_min_coldest_c.svg",
+      "planetary_features_distribution_dashboard.svg",
+      "radar_comparison_moon_south_pole.svg",
+      "radar_comparison_mars_jezero_crater.svg",
+      "radar_comparison_mars_oxia_planum.svg"
+    ]
+  }
+}

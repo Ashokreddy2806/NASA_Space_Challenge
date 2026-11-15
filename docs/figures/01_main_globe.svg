@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <defs>
+    <radialGradient id="spaceGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#0072ff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#070b14" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="globeSphere" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e3a63"/>
+      <stop offset="65%" stop-color="#0d1f38"/>
+      <stop offset="100%" stop-color="#050c17"/>
+    </radialGradient>
+    <filter id="neon">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Stars -->
+  <g fill="#fff" opacity="0.6">
+    <circle cx="80" cy="90" r="1.2"/><circle cx="210" cy="50" r="1.5"/><circle cx="450" cy="110" r="1"/>
+    <circle cx="780" cy="80" r="1.5"/><circle cx="920" cy="140" r="1.2"/><circle cx="150" cy="520" r="1"/>
+    <circle cx="850" cy="480" r="1.5"/><circle cx="900" cy="350" r="1"/><circle cx="120" cy="300" r="1.2"/>
+  </g>
+
+  <!-- Title HUD -->
+  <text x="40" y="50" fill="#00f0ff" font-size="20" font-weight="bold" letter-spacing="2">TERRATWIN // 3D INTERACTIVE GLOBE</text>
+  <text x="40" y="75" fill="#8ba2c7" font-size="12">Spherical Projection &bull; Orbital Graticule &bull; Real-time Planetary Telemetry</text>
+
+  <!-- Globe Atmosphere Glow -->
+  <circle cx="500" cy="320" r="230" fill="url(#spaceGlow)"/>
+
+  <!-- Globe Sphere -->
+  <circle cx="500" cy="320" r="180" fill="url(#globeSphere)" stroke="#00f0ff" stroke-width="1.5" stroke-opacity="0.5"/>
+
+  <!-- Graticule Rings -->
+  <!-- Parallels -->
+  <ellipse cx="500" cy="230" rx="155" ry="32" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.15"/>
+  <ellipse cx="500" cy="320" rx="180" ry="38" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.25"/>
+  <ellipse cx="500" cy="410" rx="155" ry="32" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.15"/>
+
+  <!-- Meridians -->
+  <path d="M 500 140 C 420 220 420 420 500 500" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.18"/>
+  <path d="M 500 140 C 580 220 580 420 500 500" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.18"/>
+  <line x1="500" y1="140" x2="500" y2="500" stroke="#00f0ff" stroke-width="0.8" stroke-opacity="0.3"/>
+
+  <!-- Continents Silhouettes -->
+  <path d="M 460 210 Q 520 220 510 260 T 470 300 Q 450 280 440 240 Z" fill="#152847" stroke="#00f0ff" stroke-width="0.8" stroke-opacity="0.4"/>
+  <path d="M 430 330 Q 480 340 470 410 T 420 450 Q 410 400 420 350 Z" fill="#152847" stroke="#00f0ff" stroke-width="0.8" stroke-opacity="0.4"/>
+
+  <!-- Candidate Analog Pins -->
+  <!-- Puna Plateau -->
+  <circle cx="440" cy="390" r="14" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-dasharray="2,2"/>
+  <circle cx="440" cy="390" r="5" fill="#00ff88" filter="url(#neon)"/>
+  <rect x="455" y="380" width="165" height="24" rx="4" fill="#0d1527" stroke="#00ff88" stroke-width="1"/>
+  <text x="465" y="396" fill="#fff" font-size="10" font-weight="bold">Puna Plateau [83.1%]</text>
+
+  <!-- McMurdo Dry Valleys -->
+  <circle cx="510" cy="475" r="12" fill="none" stroke="#00f0ff" stroke-width="1.5"/>
+  <circle cx="510" cy="475" r="4" fill="#00f0ff"/>
+  <rect x="525" y="465" width="180" height="24" rx="4" fill="#0d1527" stroke="#00f0ff" stroke-width="1"/>
+  <text x="535" y="481" fill="#fff" font-size="10" font-weight="bold">McMurdo Valleys [78.5%]</text>
+
+  <!-- Death Valley -->
+  <circle cx="390" cy="270" r="10" fill="none" stroke="#ffaa00" stroke-width="1.5"/>
+  <circle cx="390" cy="270" r="4" fill="#ffaa00"/>
+  <rect x="250" y="260" width="130" height="24" rx="4" fill="#0d1527" stroke="#ffaa00" stroke-width="1"/>
+  <text x="260" y="276" fill="#fff" font-size="10" font-weight="bold">Death Valley [76.5%]</text>
+
+  <!-- HUD Telemetry Box -->
+  <rect x="760" y="40" width="200" height="110" rx="6" fill="#0d1527" fill-opacity="0.85" stroke="#00f0ff" stroke-opacity="0.3"/>
+  <text x="775" y="65" fill="#00f0ff" font-size="11" font-weight="bold">ORBITAL TELEMETRY</text>
+  <text x="775" y="88" fill="#8ba2c7" font-size="10">Target: <tspan fill="#9d4edd">mars_jezero_crater</tspan></text>
+  <text x="775" y="108" fill="#8ba2c7" font-size="10">Preset: <tspan fill="#00ff88">balanced_default</tspan></text>
+  <text x="775" y="128" fill="#8ba2c7" font-size="10">FOV: <tspan fill="#fff">45° (Orthographic)</tspan></text>
+</svg>

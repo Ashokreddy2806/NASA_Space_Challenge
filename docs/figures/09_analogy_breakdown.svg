@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" style="background:#070b14; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <text x="40" y="45" fill="#ff8800" font-size="18" font-weight="bold">⚠️ WHERE THE ANALOGY BREAKS DOWN: UNREPLICABLE PLANETARY PHYSICS</text>
+  <text x="40" y="68" fill="#8ba2c7" font-size="12">Essential Scientific Guardrails &bull; Fundamental Environmental Disparities That Earth Cannot Replicate</text>
+
+  <!-- 4 Primary Physical Breakdown Cards -->
+  <g transform="translate(40, 95)">
+    <!-- 1. Gravity -->
+    <rect x="0" y="0" width="440" height="105" rx="6" fill="#0d1527" stroke="#ff8800" stroke-width="1.2"/>
+    <text x="15" y="24" fill="#ff8800" font-size="12" font-weight="bold">1. SURFACE GRAVITY DISPARITY</text>
+    <text x="350" y="24" fill="#ff8800" font-size="10" font-weight="bold">[PHYSICAL LIMIT]</text>
+    <text x="15" y="45" fill="#8ba2c7" font-size="10">Earth: 1.00 g (9.81 m/s²) &bull; Moon: 0.166 g (~1/6 g) &bull; Mars: 0.376 g (~3/8 g)</text>
+    <text x="15" y="65" fill="#fff" font-size="10">Scientific Consequence: Rover tractive force, wheel sinkage in regolith, slope</text>
+    <text x="15" y="80" fill="#fff" font-size="10">stability, and human locomotion fatigue operate under completely different physics.</text>
+
+    <!-- 2. Atmosphere -->
+    <rect x="470" y="0" width="440" height="105" rx="6" fill="#0d1527" stroke="#ff8800" stroke-width="1.2"/>
+    <text x="485" y="24" fill="#ff8800" font-size="12" font-weight="bold">2. ATMOSPHERIC PRESSURE &amp; VACUUM</text>
+    <text x="820" y="24" fill="#ff8800" font-size="10" font-weight="bold">[PHYSICAL LIMIT]</text>
+    <text x="485" y="45" fill="#8ba2c7" font-size="10">Earth: 101.3 kPa (N₂/O₂) &bull; Moon: &lt;10⁻¹⁰ Pa (Vacuum) &bull; Mars: 0.6 kPa (Thin CO₂)</text>
+    <text x="485" y="65" fill="#fff" font-size="10">Scientific Consequence: No aerodynamic drag on Moon; pure radiative thermal</text>
+    <text x="485" y="80" fill="#fff" font-size="10">cooling; liquid water boils and sublimates immediately on planetary surfaces.</text>
+
+    <!-- 3. Radiation -->
+    <rect x="0" y="125" width="440" height="105" rx="6" fill="#0d1527" stroke="#ff3366" stroke-width="1.2"/>
+    <text x="15" y="149" fill="#ff3366" font-size="12" font-weight="bold">3. COSMIC &amp; SOLAR PARTICLE RADIATION</text>
+    <text x="350" y="149" fill="#ff3366" font-size="10" font-weight="bold">[PHYSICAL LIMIT]</text>
+    <text x="15" y="170" fill="#8ba2c7" font-size="10">Earth: ~2.4 mSv/yr (Protected) &bull; Moon/Mars: 300 to 1,100 mSv/yr (Unshielded GCR+SPE)</text>
+    <text x="15" y="190" fill="#fff" font-size="10">Scientific Consequence: Rapid single-event electronic latchups; solar array</text>
+    <text x="15" y="205" fill="#fff" font-size="10">browning; lethal cumulative biological DNA damage for crewed operations.</text>
+
+    <!-- 4. Regolith Chemistry -->
+    <rect x="470" y="125" width="440" height="105" rx="6" fill="#0d1527" stroke="#ff3366" stroke-width="1.2"/>
+    <text x="485" y="149" fill="#ff3366" font-size="12" font-weight="bold">4. REGOLITH SHARPNESS &amp; PERCHLORATES</text>
+    <text x="810" y="149" fill="#ff3366" font-size="10" font-weight="bold">[MEASURED MISMATCH]</text>
+    <text x="485" y="170" fill="#8ba2c7" font-size="10">Earth: Weathered rounded sands &bull; Moon/Mars: Sub-micron jagged glass + ClO₄⁻</text>
+    <text x="485" y="190" fill="#fff" font-size="10">Scientific Consequence: Extreme mechanical seal wear; electrostatic clinging;</text>
+    <text x="485" y="205" fill="#fff" font-size="10">toxic thyroid disruption from perchlorates; severe space suit fabric abrasion.</text>
+  </g>
+
+  <!-- Summary Box -->
+  <rect x="40" y="355" width="910" height="190" rx="8" fill="#141a29" stroke="#ffffff" stroke-opacity="0.15"/>
+  <text x="60" y="385" fill="#00f0ff" font-size="14" font-weight="bold">Scientific Integrity Commitment</text>
+  <text x="60" y="415" fill="#fff" font-size="11">TERRATWIN explicitly prohibits claiming environmental equivalence based solely on mathematical similarity scores.</text>
+  <text x="60" y="435" fill="#8ba2c7" font-size="11">Terrestrial analogues are valid exclusively for specific subsystem tests (e.g., rover chassis suspension, autonomous navigation,</text>
+  <text x="60" y="455" fill="#8ba2c7" font-size="11">drill torque, or UV sensor coating degradation). System-level mission architectures must incorporate testing under simulated</text>
+  <text x="60" y="475" fill="#8ba2c7" font-size="11">vacuum and thermal-radiation chambers.</text>
+</svg>
