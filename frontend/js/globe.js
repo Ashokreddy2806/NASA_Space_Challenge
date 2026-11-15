@@ -6,8 +6,22 @@ const BODY = { moon: { name: "the Moon", target: "the lunar south pole" }, mars:
 const $ = id => document.getElementById(id);
 const state = { target: "moon", preset: "balanced", hideFamous: false, sites: [], sel: -1, presets: null, rotate: true, flying: false, req: 0 };
 
+/* Static mode: window.STATIC_DATA_BASE (js/config.js) points at pre-exported files (Vercel Blob); empty = live FastAPI. */
+const STATIC = (window.STATIC_DATA_BASE || "").replace(/\/$/, "");
+const staticUrl = path => {
+  const [p, q = ""] = path.split("?"), a = new URLSearchParams(q);
+  if (p === "/score-map-info") return `${STATIC}/score-map-info.json`;
+  if (p === "/presets") return `${STATIC}/presets.json`;
+  const m = p.match(/^\/targets\/(\w+)\/(top-sites|score\.png)$/);
+  const preset = a.get("preset") || "balanced";
+  if (m && m[2] === "score.png") return `${STATIC}/score/${m[1]}_${preset}.png`;
+  if (m) return `${STATIC}/top-sites/${m[1]}_${preset}_${a.get("exclude_famous") === "true" ? "nofamous" : "all"}.json`;
+  throw new Error("no static export for " + path);
+};
+const endpoint = path => STATIC ? staticUrl(path) : API + path;
+
 const get = async path => {
-  const r = await fetch(API + path);
+  const r = await fetch(endpoint(path));
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
   return r.json();
 };
@@ -84,7 +98,7 @@ let bounds = [-180, -90, 180, 90], loadingHeat = 0;
 async function refreshHeat() {
   const id = ++loadingHeat;
   try {
-    const url = await buildHeat(`${API}/targets/${state.target}/score.png?preset=${state.preset}&step=5`, bounds);
+    const url = await buildHeat(endpoint(`/targets/${state.target}/score.png?preset=${state.preset}&step=5`), bounds);
     if (id !== loadingHeat) return;
     const src = map.getSource("heat"); src.updateImage({ url, coordinates: [[-180, 85.0511], [180, 85.0511], [180, -85.0511], [-180, -85.0511]] });
     status("");
@@ -211,7 +225,7 @@ async function reload() {
 document.querySelectorAll(".pills button").forEach(b => b.onclick = () => { if (!map.getSource("pins")) return; if (state.target !== b.dataset.target) { state.target = b.dataset.target; reload(); } });
 $("preset").onchange = async e => {
   const prev = state.preset; state.preset = e.target.value;
-  try { await get(`/targets/${state.target}/top-sites?preset=${state.preset}&n=1`); } catch (err) { state.preset = prev; $("preset").value = prev; status(err.message); setTimeout(status, 3500); return; }
+  try { await get(`/targets/${state.target}/top-sites?preset=${state.preset}&n=8`); } catch (err) { state.preset = prev; $("preset").value = prev; status(err.message); setTimeout(status, 3500); return; }
   reload();
 };
 $("famous").onchange = e => { state.hideFamous = e.target.checked; deselect(); loadSites(); };

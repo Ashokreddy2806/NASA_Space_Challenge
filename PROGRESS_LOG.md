@@ -6,7 +6,14 @@ Who did what, and when. Each team member has **their own section**. Only write i
 
 1. Go to **your** section below.
 2. Update the **Now working on** line.
-3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->` marker.
+3. Add a new entry **at the top** of your entries (newest first), directly under the `<!-- entries -->
+
+#### 2026-11-15 16:01 — Deployed to Vercel with Blob storage
+- **Did:** Live at https://analog-earth.vercel.app. Exported every endpoint the globe app calls (26 files, 5.2 MB) to static files, uploaded to a public Vercel Blob store (`analog-earth-data`), and deployed `frontend/` as a static site. Frontend reads Blob when `window.STATIC_DATA_BASE` is set, live FastAPI otherwise.
+- **Files:** `backend/api/export_static.py`, `deploy/deploy.sh`, `deploy/README.md`, `frontend/js/config.js`, `frontend/js/globe.js`
+- **Next:** none required; rerun `deploy/deploy.sh` after any score rebuild.
+- **Blockers:** none
+` marker.
 4. Use this format:
 
 ```markdown
@@ -27,8 +34,16 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 <!-- entries -->
 
+#### 2026-11-15 15:28 — 7-slide submission deck
+- **Did:** Built a 7-slide web deck (dark Horizon look, written to be read without a speaker): title, problem, approach, data + pipeline, results (Peruvian Andes 0.80, Eastern Desert Egypt 0.92, known-analog sanity check), app screenshots, limits + next steps. Numbers taken from `README.md` and `docs/SITE_ANALYSIS.md`. Images: `docs/figures/app_globe.png` and two stills from the demo video. Team line: Rahul · Ashok · Mrinalini · Chandu.
+- **Files:** deck is hosted, not in the repo: https://claude.ai/artifact/613FGs2KeJvuTSQJBeYUYN (private until shared from its Share menu; exports to .pptx / PDF)
+- **Next:** team review of wording; share the link or export a PDF for the submission page; the Compare-chart still shows a faint "Loading chart" label, re-capture if it bothers anyone.
+- **Blockers:** none
+
 #### 2026-11-15 15:19 — 30-second demo video
 - **Did:** Recorded a 30 s, 1920x1080, 30 fps demo of the live app (headless Chrome screencast, scripted take: intro title, Moon top site in the Peruvian Andes 80%, Compare radar, switch to Mars, Egypt Eastern Desert 92%, end card). Captions are overlaid by the script; the app code is unchanged. Audio is a synthesized ambient pad (ffmpeg), no licensed music.
+- **Update 15:27:** re-recorded with Chandu added to the end-card credits (Rahul · Ashok · Mrinalini · Chandu).
+- **Update 15:52:** voice-over version redone with the open-source Kokoro TTS model (voice `af_heart`, run locally, more natural than macOS `say`), script rewritten phrase by phrase with deliberate pauses at a relaxed 0.94-0.98x pace, timed to the cuts, ambient bed ducked under the voice: `docs/video/analog_earth_30s_voiceover.mp4`.
 - **Files:** `docs/video/analog_earth_30s.mp4` (21 MB, not committed), `docs/video/capture.js`
 - **Next:** team review of caption wording; re-record after the frontend polish lands (`node capture.js <framesDir>` with the server on :8000, needs `playwright-core`).
 - **Blockers:** none

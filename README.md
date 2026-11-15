@@ -6,6 +6,8 @@ Analog Earth scores all 8.7 million land cells of a 0.05° (about 5 km) global g
 
 Built for the NASA Space Apps Challenge, *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars* ([problem statement](PROBLEM_STATEMENT.md)).
 
+**Live demo: <https://analog-earth.vercel.app>**
+
 ![The Analog Earth globe showing the top Earth analogs of the lunar south pole](docs/figures/app_globe.png)
 
 ## Why
@@ -87,7 +89,7 @@ Two small hand-made tables of cited thermal values, `Moon/moon_thermal_literatur
 make all
 ```
 
-**3. Open the app** at <http://localhost:8000/> (interactive API docs at `/docs`).
+**3. Open the app** (or use the hosted copy, see [deploy/README.md](deploy/README.md)) at <http://localhost:8000/> (interactive API docs at `/docs`).
 
 ```bash
 make serve

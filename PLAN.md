@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 15:19 by rahul (30 s demo video recorded: `docs/video/analog_earth_30s.mp4`)
+**Last updated:** 2026-11-15 16:01 by rahul (deployed to https://analog-earth.vercel.app; 7-slide submission deck built: https://claude.ai/artifact/613FGs2KeJvuTSQJBeYUYN)
 
 ---
 
@@ -88,7 +88,7 @@ docs/              write-up, figures, submission material
 | W6 | Backend API (FastAPI) serving scores and site details | rahul | done |
 | W7 | Frontend visualization (map, site cards, comparison charts) | rahul | done |
 | W8 | Top-site analysis + write-up (matches, mismatches, exploration use, Earth's limits) | rahul | done |
-| W9 | Submission: demo video, slides, final README | rahul | README + storyboard + slides done; video not recorded |
+| W9 | Submission: demo video, slides, final README | rahul | README, storyboard, 30 s video and 7-slide deck done; awaiting team review |
 | W3 | Moon target profile (lunar south pole features) | ashok | done |
 | W4 | Mars target profile (choose site + features) | ashok | done |
 | W5 | Similarity engine: normalization, weights, scores, per-feature breakdown | ashok | done |
@@ -179,6 +179,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 14:26 — rahul — **Replace WorldClim with NASA products from the challenge's Earthdata resource** (plan drafted, not implemented; products proposed, pending rahul's confirmation): temperature from MODIS LST CMG 0.05° (`MOD11C3`/`MYD11C3` v061, LP DAAC, https://doi.org/10.5067/MODIS/MOD11C3.061), precipitation from GPM IMERG Final monthly 0.1° (`GPM_3IMERGM` V07, GES DISC, https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07), land mask from MODIS land cover CMG 0.05° (`MCD12C1` v061, https://doi.org/10.5067/MODIS/MCD12C1.061) — WorldClim is not a NASA product and is air temperature, while the Moon/Mars targets are surface temperatures. Supersedes the WorldClim choice once built; needs an Earthdata login.
 - 2026-11-15 15:10 — rahul — **Frontend look: "Horizon"** — full-bleed globe (MapLibre 5.6 globe + deck-free overlay, Esri imagery, Terrarium DEM terrain, Plotly compare), minimal text; chosen from three mocked directions (paper atlas, dark console, full-bleed). Keeps MapLibre + Plotly from the earlier decision; heat layer is a PNG overlay, not deck.gl. Imagery/DEM tiles are fetched live (Esri World Imagery, AWS Terrarium, both keyless) — record them as datasets.
 - 2026-11-15 15:16 — rahul — **Docs and repo cleanup**: README rewritten, `docs/README.md` index added, API/frontend/site-analysis/submission docs rewritten against the current engine; proof outputs (`docs/proof_*_report.md`, `docs/figures/proof_*.png`) are now git-ignored and regenerated on demand (commands in `docs/hardcode_audit.md`); stale architecture script/figure, old-UI screenshots and empty `notebooks/` removed from git — the docs described an older engine and half the tracked size was regenerable figures. Not committed yet; removal of Ashok's proof outputs awaits his OK.
+- 2026-11-15 16:01 — rahul — Host as static site on Vercel with exported data in public Vercel Blob (https://analog-earth.vercel.app) — the 700 MB NetCDF API cannot run in a serverless function and the app only uses fixed endpoints.
 
 ## 8. Open questions
 
