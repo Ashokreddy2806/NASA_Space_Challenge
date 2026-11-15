@@ -25,6 +25,7 @@ class GridStore:
 
     def __init__(self, path: Path, mode: str = "w") -> None:
         self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         self.dataset = Dataset(str(self.path), mode, format="NETCDF4")
         if mode == "w":
             self.dataset.createDimension("lat", NY)

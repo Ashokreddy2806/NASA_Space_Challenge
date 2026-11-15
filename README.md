@@ -1,72 +1,105 @@
 # Earth Analogs of Moon and Mars Base Sites
 
-Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site**, explain the match feature by feature, and show where the analogy breaks down.
+Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site (Jezero)**, explain the match feature by feature, and show where the analogy breaks down.
 
-> **Status: Phase 1 complete.** The Earth 0.05° feature grid is built: 13
-> terrain/climate variables plus a WorldClim land mask, with figures and a
-> coverage report. Phase 2 (Moon/Mars target profiles) is next.
+NASA Space Apps 2026 · *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars*
+
+![Architecture](docs/figures/architecture.png)
+
+![Lunar south pole map](docs/figures/frontend_moon.png)
+
+> **Status: all 7 phases complete on branch `rahul/data-setup`.** Earth feature grid, target profiles, similarity engine, API, interactive map and site write-up are done. **Open gap:** temperatures are not scored, because no site-specific cited values exist for the lunar south pole or Jezero.
 
 ## What this is
 
-A data-driven analog finder, not a "this desert looks like Mars" slideshow. Every Earth cell gets a vector of physically comparable measurements (terrain, temperature, dryness, ice/cold-trap proxy). The same features are measured on the Moon and Mars target regions. A weighted percentile-distance score ranks Earth, and every ranking is accompanied by its per-feature breakdown and its limitations.
+A data-driven analog finder, not a "this desert looks like Mars" slideshow. Every Earth land cell (0.05°, ~5 km) gets a vector of physically comparable measurements: relief, slope, roughness at three scales, a scale-robust Hurst exponent, dryness, and an ice/cold proxy. The same features are measured on the Moon and Mars target regions with the same estimators. Each target value is placed on **Earth's own percentile scale**, and every Earth cell is ranked by weighted percentile distance. Every ranking comes with its per-feature breakdown, what is not scored, and what Earth cannot replicate.
 
-## Quick start
+## Headline results
+
+| Target | Best overall (balanced) | Why | Source |
+|---|---|---|---|
+| Jezero (Mars) | Nazca/Ica desert, Peru (-14.9, -75.0), score 98 | relief 428 vs 427 m, slope 1.55° vs 1.52°, ~3 mm/yr | [SITE_ANALYSIS](docs/SITE_ANALYSIS.md) |
+| Jezero (Mars) | Eastern Desert, Egypt; Lop Nur region, China | hyper-arid terrain match; wind-carved landscape | same |
+| Lunar south pole | Transantarctic region, Antarctica (cold-trap preset), 98 | terrain match plus the coldest air in the grid (-63 °C) | same |
+| Lunar south pole | Western Kunlun / Aksai Chin; southern Peruvian Andes | terrain match, but warm: not cold analogs | same |
+
+Validation against Atacama, Dry Valleys, Devon Island, Death Valley and Iceland: all 9 expected-feature checks pass ([validation.md](docs/validation.md)). Place names are approximate; see the limits below.
+
+## Reproduce the results from a fresh clone
+
+Needs Python 3.11 or 3.12 and about 3 GB of disk for the raw data. Commands are for macOS/Linux; on Windows use a venv and `python -m` equivalents.
 
 ```bash
-# macOS / Linux, from NASA_Space_Challenge/ (use Python 3.11 or 3.12)
-python3.11 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-make phase0                                   # tests + writes docs/data_inventory.md
-```
-
-```bash
-# Windows, from the repository root
-python -m venv .venv
-.venv\Scripts\activate
-python -m pip install -r NASA_Space_Challenge/requirements.txt
+git clone https://github.com/Ashokreddy2806/NASA_Space_Challenge.git
 cd NASA_Space_Challenge
-python -m backend.pipeline.inspect_datasets   # writes docs/data_inventory.md
-python -m backend.pipeline.earth_climate      # WorldClim -> 0.05° climate + land mask (~1 min)
-python -m backend.pipeline.earth_terrain      # ETOPO -> 0.05° terrain features (~8 min)
-python -m backend.pipeline.build_earth_features  # merge, mask, figures, report (~2 min)
-python -m pytest -q                           # Phase 0 + Phase 1 smoke tests
+git checkout rahul/data-setup
+python3.11 -m venv .venv && source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-The raw datasets are expected in `../Datasets/` (`Moon/`, `Mars/`, `Earth/`) and are **not** committed. Set `NASA_DATA_ROOT` to override the location.
-Teammates can fetch the shared copy (private Hugging Face dataset, ask Rahul for access) with
-`hf download rahuloruganti/nasa-analog-data --repo-type dataset --local-dir ../Datasets`.
+**1. Raw data** into `../Datasets/{Moon,Mars,Earth}` (not in git). Either fetch the shared copy (private Hugging Face dataset, ask Rahul for access):
 
-### Phase 1 outputs
+```bash
+hf download rahuloruganti/nasa-analog-data --repo-type dataset --local-dir ../Datasets
+```
 
-| Path | Contents |
-|---|---|
-| `data/processed/earth_features.nc` | 7200 × 3600 0.05° grid: relief, slope, three roughness scales, Hurst, five temperature statistics, two precipitation variables (all NaN over ocean), plus `land_mask` and `land_fraction` |
-| `data/processed/earth_features_meta.json` | machine-readable ranges, coverage and spot checks |
-| `docs/earth_grid_report.md` | coverage, polar notes, spot checks and limits |
-| `docs/figures/earth_*.png` | one quick-look map per feature plus a combined overview |
+or download from the public portals (about 2 GB; sources listed in `docs/DATA_CATALOG.md`):
 
-Intermediate files (`earth_terrain.nc`, `earth_climate.nc`) are deleted after a successful merge; run with `--keep-intermediates` to retain them.
+```bash
+python -m backend.pipeline.download T1 T2 --yes
+python -m backend.pipeline.download_datasets
+```
+
+Set `NASA_DATA_ROOT` to use another folder. The two literature CSVs (`Moon/moon_thermal_literature.csv`, `Mars/mars_thermal_literature.csv`) come with the shared copy; they hold only equatorial/global values, so targets stay unscored for temperature.
+
+**2. Rebuild everything and run all tests (about 6 minutes):**
+
+```bash
+make all
+```
+
+This runs, in order: `earth_climate`, `earth_terrain`, `build_earth_features` (Phase 1), `target_profiles` (Phase 2), `run_scoring` (Phase 3), then `pytest`. Outputs: `data/processed/*.nc` (git-ignored), `docs/target_profiles.json`, `docs/top_sites.json`, `docs/validation.md`, `docs/figures/*.png`.
+
+**3. Run the app:**
+
+```bash
+make serve          # then open http://localhost:8000/   (or /?target=mars_jezero, API docs at /docs)
+```
+
+The map app needs internet (CDN libraries and basemap). Endpoint reference: [docs/API.md](docs/API.md).
+
+## Method in five lines
+
+1. Earth: ETOPO 2022 and WorldClim 2.1 on a 0.05° land grid, 13 features ([FEATURES.md](docs/FEATURES.md)).
+2. Moon and Mars: the same estimators on a 2 km grid (Moon reprojected from LOLA polar stereographic; Mars from MOLA around Jezero).
+3. Normalization: each value becomes its percentile in the area-weighted Earth distribution; targets beyond Earth's range sit at the end of the scale.
+4. Score: `100 × (1 − weighted mean |cell percentile − target percentile|)`, with presets (balanced, rover mobility, cold-trap/ice, thermal cycling) and adjustable weights.
+5. Output: ranked sites, per-feature sub-scores, mismatches and limits, shown in the map app.
 
 ## Repository layout
 
 ```
-NASA_Space_Challenge/
-  backend/
-    pipeline/       one ingestion/regrid script per source dataset
-    engine/         percentile normalization, weighted scoring, ranking
-    api/            FastAPI application
-    paths.py        single source of truth for data locations
-  data/             raw/ and processed/ (git-ignored, created by scripts)
-  docs/             inventory, feature definitions, figures, submission text
-  frontend/         interactive map (Phase 5)
-  notebooks/        exploration only
-  tests/            one smoke test per phase
+backend/
+  pipeline/   downloads, Earth grid (Phase 1), target_profiles.py (Phase 2)
+  engine/     similarity.py (Phase 3), run_scoring.py
+  api/        FastAPI app (Phase 4); also serves the frontend
+  paths.py    data locations (../Datasets, NASA_DATA_ROOT)
+frontend/     deck.gl + MapLibre + Plotly map app (Phase 5)
+docs/         method, validation, site analysis, submission pack, figures
+tests/        one test file per phase
 ```
 
-## Data sources and credits
+## Documentation
 
-No data were re-downloaded for this project; the team uses local copies.
+- [docs/SUBMISSION.md](docs/SUBMISSION.md): demo-video storyboard, slide outline, judging checklist
+- [docs/SITE_ANALYSIS.md](docs/SITE_ANALYSIS.md): top candidates and what they teach us
+- [docs/validation.md](docs/validation.md): known-analog validation
+- [docs/FEATURES.md](docs/FEATURES.md): feature definitions and normalization
+- [docs/API.md](docs/API.md): endpoints
+- [docs/DATA_CATALOG.md](docs/DATA_CATALOG.md), [docs/DATASETS.md](docs/DATASETS.md), [docs/data_inventory.md](docs/data_inventory.md): data
+- [PLAN.md](PLAN.md), [PROGRESS_LOG.md](PROGRESS_LOG.md), [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md): team documents
+
+## Data sources and credits
 
 | Body | Product | Credit / citation |
 |---|---|---|
@@ -74,25 +107,18 @@ No data were re-downloaded for this project; the team uses local copies.
 | Moon | Permanently shadowed regions > 1 km² polygon table | NASA GSFC PGDA LOLA south-polar products (same DOI) |
 | Moon | Global context DEM (`ldem_16.tif`) | NASA SVS lunar DEM, 16 pixels/degree |
 | Mars | MOLA MEGDR topography, 16 pixels/degree | MGS MOLA, PDS Geosciences Node, <https://doi.org/10.17189/1519460> |
-| Earth | WorldClim 2.1 bioclimatic variables, 2.5 arc-minute | Fick & Hijmans (2017), *International Journal of Climatology* 37(12), 4302–4315, <https://doi.org/10.1002/joc.5086> |
+| Earth | WorldClim 2.1 bioclimatic variables, 2.5 arc-minute | Fick & Hijmans (2017), *Int. J. Climatology* 37(12), 4302–4315, <https://doi.org/10.1002/joc.5086> |
 | Earth | ETOPO 2022 global relief, 60 arc-second | NOAA NCEI (2022), <https://doi.org/10.25921/fd45-gt74> |
+| Moon, Mars | Reference temperatures (equatorial / global, not used as targets) | NASA NSSDC Moon and Mars fact sheets; Sefton-Nash et al. (2019) *Icarus*, <https://doi.org/10.1016/j.icarus.2019.06.002> |
+| Map | Basemap tiles | CARTO / OpenStreetMap contributors |
 
-Full file-level details, local names, sizes and verification results: [`docs/data_inventory.md`](docs/data_inventory.md). Dataset manifest: [`docs/DATASETS.md`](docs/DATASETS.md).
+Libraries: deck.gl, MapLibre GL JS, Plotly, FastAPI, rasterio, xarray/netCDF4, scipy, matplotlib.
 
 ## Honest limits (carried through every output)
 
-- WorldClim provides **air temperature** (1970–2000 climatology), not surface skin temperature. It cannot reproduce lunar or Martian surface temperatures.
-- Moon rasters cover only the south-polar stereographic tile (80°S at the edge midpoints; corners reach ~76°S). They are never interpreted as a lon/lat grid.
-- Mars MOLA is 16 pixels/degree (~3.7 km); ETOPO is ~1.85 km; lunar terrain products are 80 m–1 km. Features are therefore compared in **kilometre-sized windows**, and coarse sources are explicitly noted.
-- Earth cannot reproduce reduced gravity, vacuum or the thin Martian atmosphere, or the radiation environment.
-- Moon and Mars temperature values come from cited literature CSVs, never from invented numbers.
-
-## Documentation
-
-- [PLAN.md](PLAN.md) — approach, architecture, workstreams, decisions
-- [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) — challenge definition
-- [PROGRESS_LOG.md](PROGRESS_LOG.md) — who did what
-- [docs/DATASETS.md](docs/DATASETS.md) — dataset manifest
-- [docs/data_inventory.md](docs/data_inventory.md) — Phase 0 verification
-- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions and Phase 1 implementation record
-- [docs/earth_grid_report.md](docs/earth_grid_report.md) — Phase 1 grid coverage and limits
+- **Temperatures are not scored.** WorldClim is air temperature (1970–2000), not surface skin temperature, and no site-specific cited lunar-pole or Jezero values exist yet, so warm sites can score 98 for the lunar pole.
+- **Scores are percentile ranks.** Many cells score 97–98, so rank order among them is weak evidence; "dry" means dry for Earth, not rainless.
+- **Place names are approximate** (identified from coordinates) and "overlooked" means outside our nine-region famous list, not unstudied.
+- **Resolution.** Earth cells are ~5 km; the Moon region is 300 km across, Jezero 50 km. Mars 5 km roughness is resolution-limited (weight 0) and its Hurst exponent uses reduced lags.
+- **Moon rasters are polar stereographic** and are reprojected, never read as lon/lat.
+- **Earth cannot reproduce** reduced gravity, vacuum or the thin Martian atmosphere, or the radiation environment.
