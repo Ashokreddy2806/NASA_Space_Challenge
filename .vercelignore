@@ -1,0 +1,10 @@
+backend/
+config/
+data/
+Datasets/
+docs/
+notebooks/
+tests/
+.venv/
+.vercel-tools/
+.env*

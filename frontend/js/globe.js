@@ -8,6 +8,7 @@ const state = { target: "moon", preset: "balanced", hideFamous: false, sites: []
 
 /* Static mode: window.STATIC_DATA_BASE (js/config.js) points at pre-exported files (Vercel Blob); empty = live FastAPI. */
 const STATIC = (window.STATIC_DATA_BASE || "").replace(/\/$/, "");
+const DATA_BASE = String(window.EARTH_ANALOG_DEMO?.dataBase || "").replace(/\/$/, "");
 const staticUrl = path => {
   const [p, q = ""] = path.split("?"), a = new URLSearchParams(q);
   if (p === "/score-map-info") return `${STATIC}/score-map-info.json`;
@@ -20,11 +21,25 @@ const staticUrl = path => {
 };
 const endpoint = path => STATIC ? staticUrl(path) : API + path;
 
-const get = async path => {
-  const r = await fetch(endpoint(path));
+async function checkedJson(url) {
+  const r = await fetch(url);
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
   return r.json();
+}
+const get = async path => {
+  if (!DATA_BASE) return checkedJson(endpoint(path));
+  if (path === "/presets") return checkedJson(`${DATA_BASE}/presets.json`);
+  if (path === "/score-map-info") return checkedJson(`${DATA_BASE}/score-map-info.json`);
+  const url = new URL(path, location.href), match = url.pathname.match(/^\/targets\/(moon|mars)\/top-sites$/);
+  if (!match) throw new Error(`No presentation data for ${path}`);
+  const target = match[1], preset = url.searchParams.get("preset") || "balanced";
+  const result = await checkedJson(`${DATA_BASE}/sites/${target}/${encodeURIComponent(preset)}.json`);
+  result.sites = url.searchParams.get("exclude_famous") === "true" ? result.sites_excluding_famous : result.sites;
+  return result;
 };
+const scoreUrl = (target, preset) => DATA_BASE
+  ? `${DATA_BASE}/scores/${target}/${encodeURIComponent(preset)}.png`
+  : endpoint(`/targets/${target}/score.png?preset=${encodeURIComponent(preset)}&step=5`);
 const fmtLat = v => `${Math.abs(v).toFixed(1)}°${v < 0 ? "S" : "N"}`, fmtLon = v => `${Math.abs(v).toFixed(1)}°${v < 0 ? "W" : "E"}`;
 const siteName = s => (s.famous && s.famous_name) || `${Math.abs(Math.round(s.lat))}°${s.lat < 0 ? "S" : "N"} ${Math.abs(Math.round(s.lon))}°${s.lon < 0 ? "W" : "E"}`;
 const pct = s => Math.round(s.site_score * 100);
@@ -98,7 +113,7 @@ let bounds = [-180, -90, 180, 90], loadingHeat = 0;
 async function refreshHeat() {
   const id = ++loadingHeat;
   try {
-    const url = await buildHeat(endpoint(`/targets/${state.target}/score.png?preset=${state.preset}&step=5`), bounds);
+    const url = await buildHeat(scoreUrl(state.target, state.preset), bounds);
     if (id !== loadingHeat) return;
     const src = map.getSource("heat"); src.updateImage({ url, coordinates: [[-180, 85.0511], [180, 85.0511], [180, -85.0511], [-180, -85.0511]] });
     status("");

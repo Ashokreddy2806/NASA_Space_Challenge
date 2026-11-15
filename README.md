@@ -6,7 +6,7 @@ Analog Earth scores all 8.7 million land cells of a 0.05° (about 5 km) global g
 
 Built for the NASA Space Apps Challenge, *Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars* ([problem statement](PROBLEM_STATEMENT.md)).
 
-**Live demo: <https://analog-earth.vercel.app>**
+**Open the presentation map:** [Earth Analog Finder](https://earth-analog-finder.vercel.app/) · [Analog Earth team demo](https://analog-earth.vercel.app/)
 
 ![The Analog Earth globe showing the top Earth analogs of the lunar south pole](docs/figures/app_globe.png)
 
@@ -18,6 +18,32 @@ Space agencies test rovers, instruments and crews at a handful of Earth analog s
 - **Whole planet.** Every land cell is scored, not a shortlist of deserts.
 - **Beyond the famous sites.** Every ranking is available with the well-known analogs (Atacama, Dry Valleys, Devon Island, ...) removed.
 - **Honest.** Each site shows what does not match, what is not scored, and what Earth can never replicate.
+
+<details>
+<summary><strong>New here? A quick tour</strong></summary>
+
+1. Choose whether you want to compare Earth with the Moon's south pole or Jezero crater on Mars.
+2. Pick a priority such as balanced matching, rover mobility, cold traps, or thermal cycling.
+3. Click a ranked dot or location to see which measurements match and which do not. Open **Compare** to see the candidate alongside a perfect match.
+4. Turn on **Hide famous** to see alternatives beyond the best-known Earth analogs.
+
+The score summarizes the measured features under the selected priority. It is not a probability that a site will work for a mission, and scores for the Moon and Mars cannot be compared directly.
+
+</details>
+
+<details>
+<summary><strong>What can Earth never reproduce?</strong></summary>
+
+Earth cannot reproduce another world's gravity, the Moon's vacuum, Mars's thin atmosphere, or space radiation. The current temperature evidence also has limits: Earth data describe historical air temperatures, not the surface temperature of another world. These limits are shown with the site evidence so a strong match is not mistaken for a perfect copy.
+
+</details>
+
+<details>
+<summary><strong>How does the public presentation stay fast?</strong></summary>
+
+The live presentation loads a static map interface and compact, precomputed score and site files from Vercel Blob. The hosted files total about 5.2 MB; the roughly 700 MB research grids are not downloaded by visitors. The complete research API and raw data remain available for local reproduction using the steps below.
+
+</details>
 
 ## Results at a glance
 

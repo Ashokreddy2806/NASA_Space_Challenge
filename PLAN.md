@@ -3,7 +3,7 @@
 > Living document. Update it whenever a task starts, finishes, gets blocked, or a decision is made.
 > Problem definition: [PROBLEM_STATEMENT.md](PROBLEM_STATEMENT.md) · What happened: [PROGRESS_LOG.md](PROGRESS_LOG.md) · Rules for AI assistants: [AGENTS.md](AGENTS.md)
 
-**Last updated:** 2026-11-15 16:01 by rahul (deployed to https://analog-earth.vercel.app; 7-slide submission deck built: https://claude.ai/artifact/613FGs2KeJvuTSQJBeYUYN)
+**Last updated:** 2026-11-15 16:08 by ashok (second public presentation link and nontechnical README tour)
 
 ---
 
@@ -180,6 +180,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 15:10 — rahul — **Frontend look: "Horizon"** — full-bleed globe (MapLibre 5.6 globe + deck-free overlay, Esri imagery, Terrarium DEM terrain, Plotly compare), minimal text; chosen from three mocked directions (paper atlas, dark console, full-bleed). Keeps MapLibre + Plotly from the earlier decision; heat layer is a PNG overlay, not deck.gl. Imagery/DEM tiles are fetched live (Esri World Imagery, AWS Terrarium, both keyless) — record them as datasets.
 - 2026-11-15 15:16 — rahul — **Docs and repo cleanup**: README rewritten, `docs/README.md` index added, API/frontend/site-analysis/submission docs rewritten against the current engine; proof outputs (`docs/proof_*_report.md`, `docs/figures/proof_*.png`) are now git-ignored and regenerated on demand (commands in `docs/hardcode_audit.md`); stale architecture script/figure, old-UI screenshots and empty `notebooks/` removed from git — the docs described an older engine and half the tracked size was regenerable figures. Not committed yet; removal of Ashok's proof outputs awaits his OK.
 - 2026-11-15 16:01 — rahul — Host as static site on Vercel with exported data in public Vercel Blob (https://analog-earth.vercel.app) — the 700 MB NetCDF API cannot run in a serverless function and the app only uses fixed endpoints.
+- 2026-11-15 16:08 — ashok — Publish a second public Vercel presentation at https://earth-analog-finder.vercel.app, backed by a separate public Blob store with 18 precomputed assets (~5.2 MB); keep the research-sized NetCDF files out of browser requests.
 
 ## 8. Open questions
 

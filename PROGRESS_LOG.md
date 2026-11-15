@@ -154,9 +154,27 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 ## ashok
 
-**Now working on:** Phase 4 (FastAPI) — Phase 3b complete and awaiting approval
+**Now working on:** 7-slide submission deck awaiting team review
 
 <!-- entries -->
+
+#### 2026-11-15 16:08 — Public presentation map and README
+- **Did:** Deployed the interactive Moon/Mars map publicly on Vercel and its 18 compact result assets (~5.2 MB) to public Vercel Blob. Confirmed the anonymous production link opens and the map loads ranked sites and controls. Rewrote the README for nontechnical visitors with a live link, visual walkthrough, plain-language score/limits explanations, expandable details, and setup links.
+- **Files:** `frontend/`, `backend/pipeline/build_demo_assets.py`, `vercel.json`, `.vercelignore`, `.gitignore`, `README.md`, `PLAN.md`, `PROGRESS_LOG.md`
+- **Next:** team review of the public demo and submission deck
+- **Blockers:** none
+
+#### 2026-11-15 15:32 — Non-technical README walkthrough and Vercel deployment check
+- **Did:** Reworked the repository landing page with a plain-language project summary, illustrated Moon/Mars map tour, clickable evidence links, expandable science/setup details and an architecture diagram. Pulled `origin/main` fast-forward to `9a62b91`. Checked Vercel readiness; no CLI, project link or local login is configured, and the API depends on about 709 MB of local processed data.
+- **Files:** `README.md`, `PROGRESS_LOG.md`
+- **Next:** Identify a public API/data host and connect a Vercel project before deploying a working map.
+- **Blockers:** Vercel cannot serve a functional app from a static upload alone; the API and large result files need an available deployment/storage path and account connection.
+
+#### 2026-11-15 15:30 — 7-slide submission deck (data-driven, no app screenshots)
+- **Did:** Built `docs/Earth_Analog_Finder_Deck.pptx` — 7 slides, 16:9, white, BTU logo left and NASA Space Apps logo right on every slide, speaker notes on all 7. All figures are generated from `data/processed` (`scores_moon.nc`, `scores_mars.nc`, `deck_summary.json`) rather than screenshots of the local app. Slides: title/team, challenge, Moon–Earth–Mars data, method pipeline + feature groups + four priorities, global score maps with headline sites (Moon 80/100 High Andes, Peru; Mars 92/100 Eastern Desert, Egypt), priority winners + known-analog validation, and uses vs. what Earth cannot replicate. Scores shown as 25 km area-weighted 0–100 site scores; Moon/Mars never compared.
+- **Files:** `docs/make_deck.py`, `docs/make_deck_assets.py`, `docs/figures/deck/` (incl. trimmed BTU + Space Apps logos), `docs/deck_preview/`, `docs/Earth_Analog_Finder_Deck.pptx`
+- **Next:** team review and any copy/layout edits; then commit the deck (currently untracked).
+- **Blockers:** none. Deck uses Segoe UI, so non-Windows machines will substitute the font.
 
 #### 2026-11-15 13:33 — Phase 3b: no-precipitation constraint, site stability, caveats and provenance
 - **Did:** Added the **dryness constraint** on both targets (target 0 mm, declared tolerance 0–50 mm annual / 0–4 mm driest month, labelled `constraint` / `declared_tolerance`, same rank + absolute engine, weight 0.25 in `balanced`/`cold_trap_ice`, 0 in `rover_mobility`/`thermal_cycling`). Added **per-site stability** from the nine sensitivity settings (fraction staying in the top-N within 25 km), ranked beside the score. Fixed `aggregate_candidates` so sensitivity runs rank sites exactly like the report list (stability no longer spuriously 0). Added **ice/substrate caveat** boxes (Greenland, Antarctic) with "our data cannot distinguish ice cover from bare ground", and **analog provenance** (`reviewed`, `display_source`, `citation_verified`); Mauna Kea's source is never emitted. Rebuilt profiles (303.8 s) and engine (286.9 s). Coverage now Moon 10/13, 6/7; Mars 6/13, 4/7. Top sites: Moon balanced −10.275, −77.575 (0.795, stability 0.78); Moon cold_trap −84.325, 175.525 (0.783); Mars balanced 25.675, 34.575 (0.917); Mars cold_trap no longer equivalent to balanced. **114 tests pass.**
