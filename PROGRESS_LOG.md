@@ -27,6 +27,12 @@ Keep entries short. Big decisions also go in the **Decisions log** in [PLAN.md](
 
 <!-- entries -->
 
+#### 2026-11-15 12:30 — Mars temperature: no accessible source, left unsourced
+- **Did:** Looked for a Jezero ground-temperature source. MEDA papers (Martínez 2023, Nature Geoscience 2022) could not be read (host down, paywall/login); MACDA v2.0 is about 201 GB and coarse; MCD has no documented point API. Decision logged in PLAN.md; Mars temperature features stay dropped and listed as not scored.
+- **Files:** `PLAN.md`
+- **Next:** If a teammate can supply the Martínez et al. 2023 PDF (doi 10.1029/2022JE007537), add its printed values to the Jezero profile.
+- **Blockers:** access to a Mars temperature source.
+
 #### 2026-11-15 12:10 — Site write-ups (W8 draft)
 - **Did:** `docs/site_writeups.md`: 16 data-backed site cards (Moon balanced top 5 without famous sites + cold-trap top 3; Jezero balanced top 5 + rover-mobility top 3). Each lists Earth vs target values with sub-scores, what matches, what does not (with numbers), the target's own spread, preset-keyed exploration guidance and what Earth cannot replicate; closes with what the ranking cannot tell yet and the failed validation analogs. Place names are offline GeoNames nearest places (CC BY 4.0).
 - **Files:** `backend/engine/write_sites.py`, `tests/test_write_sites.py`, `docs/site_writeups.md`, `requirements.txt` (reverse_geocoder), `MATCH/PARTIAL` moved to `similarity.py`

@@ -140,6 +140,7 @@ Append newest at the bottom. Format: `YYYY-MM-DD HH:MM — <name> — decision �
 - 2026-11-15 10:44 — rahul — Scoring changed from Earth-percentile distance to **scaled physical distance** (log1p for relief/slope/roughness, log1p(x/ref) for precipitation, divided by Earth P95−P5) — percentile distance saturated (many cells at 94–98) and hid large physical gaps in the tails.
 - 2026-11-15 10:44 — rahul — Ice proxy is now like-for-like (also added to `balanced` at weight 0.5, superseding the 10:05 'ice excluded' preset note): Moon = Diviner cold-trap area fraction, Earth = fraction of a 0.25° window whose warmest month stays below 0 °C (compared on sqrt scale). It replaces "coldest-month air temperature at percentile 0".
 - 2026-11-15 10:44 — rahul — Validation checks are now **overall rank percentile ≥ 75** of known analogs (not per-feature sub-scores that pass by construction); failures are published.
+- 2026-11-15 12:30 — rahul — Jezero temperatures stay **unsourced** (team choice): the open candidates were unreachable or unsuitable — Martínez et al. 2023 (JGR Planets, MEDA ground temperature; INTA host refuses connections, Wiley paywalled), the Nature Geoscience 2022 MEDA paper (login redirect), MACDA v2.0 (CEDA, ~201 GB, coarse grid). No Mars temperature is guessed; revisit if someone supplies the PDF or an accessible MEDA/MCS product.
 
 ## 8. Open questions
 
