@@ -169,7 +169,9 @@ groups:
       - temp_min_coldest_c
       - temp_annual_range_c
   dryness:
-    weight: 1.0
+    # Physical constraint on both targets (no rainfall, no vegetation), scored
+    # with the same engine at the same low weight as the thermal anchors.
+    weight: 0.25
     members: [precip_annual_mm, precip_driest_month_mm]
   ice_proxy:
     # Target context, not a score: Earth has no ice map, so the Moon's PSR area

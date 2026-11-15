@@ -20,7 +20,7 @@ distance is computed.
 | 3 | **Roughness (multi-scale)** | ETOPO high-pass residual standard deviation at 5, 10 and 20 km windows | LOLA `ROUGH_800M`, `ROUGH_1600M` and DEM residuals | MOLA DEM residuals, limited by 3.7 km pixels | m |
 | 4 | **Scale-robust roughness** | Hurst exponent from log–log elevation structure function over 2–32 km | LOLA `H` and `SPSLP` products | MOLA-derived Hurst where resolution allows; otherwise flagged unavailable | unitless / σ per km |
 | 5 | **Temperature statistics and swing** | WorldClim `bio_1` (mean), `bio_2` (diurnal range proxy), `bio_5` (warmest month max), `bio_6` (coldest month min), `bio_7` (annual range) | Literature CSV (`moon_thermal_literature.csv`) | Literature CSV (`mars_thermal_literature.csv`) | °C |
-| 6 | **Dryness** | WorldClim `bio_12` (annual precipitation), `bio_14` (driest-month precipitation) | Airless: treated as one-sided "drier than any Earth desert" constraint, not a measured target value | Hyper-arid: same one-sided treatment | mm |
+| 6 | **Dryness** | WorldClim `bio_12` (annual precipitation), `bio_14` (driest-month precipitation) | Physical constraint: no rainfall, target 0 mm with a declared tolerance band (not a measured target) | Same physical constraint: no rainfall, target 0 mm | mm |
 
 ### Ice / cold-trap proxy (MVP auxiliary dimension)
 
@@ -82,10 +82,15 @@ coldest-month minimum, annual range.
 
 ### 6. Dryness
 Earth: `bio_12` annual precipitation and `bio_14` driest-month precipitation.
-The Moon has no atmosphere and Mars is hyper-arid, so dryness is a **one-sided
-constraint**: an Earth site can be "not dry enough", but a wet target value is
-not fabricated. This dimension mainly separates true desert candidates from
-merely cold or rocky ones.
+The Moon and Mars have no rainfall and no vegetation, so dryness is a **physical
+constraint** with a declared target of **0 mm** (Phase 3b). The target is a
+bound, not a measured distribution: the tolerance band (0–50 mm annual, 0–4 mm
+driest month) is declared in `config/config.yaml` and every entry is labelled
+`constraint` / `declared_tolerance`. It is scored with exactly the same rank and
+absolute maths as a measured feature (Gaussian on the real-unit gap with a
+floored scale), at weight 0.25 in the balanced and cold-trap presets, so a wet or
+vegetated site is demoted without outvoting the terrain metrics. No lunar or
+Martian precipitation value is fabricated.
 
 ## Phase 1 implementation record (Earth)
 
@@ -128,8 +133,9 @@ Implementation rules:
   `docs/earth_grid_report.md`; the ranker must area-weight rather than count cells.
 - **Temperature type.** WorldClim is air temperature, not surface skin
   temperature. It is a climate analog, not a radiation or vacuum analog.
-- **Dryness is one-sided.** No lunar/Martian precipitation value is fabricated;
-  the scorer treats "drier than Earth's driest desert" as a constraint.
+- **Dryness is a declared constraint.** No lunar/Martian precipitation value is
+  fabricated: the target is a physical 0 mm with a tolerance band declared in
+  config, and the result is labelled `declared_tolerance`, never "measured".
 
 ## Phase 2 implementation record (Moon and Mars)
 
@@ -253,6 +259,17 @@ this build, so it is context only.
 10. **Thermal sensitivity**: band edges and the temperature weight are varied
     over the configured grid; top-N overlap and Spearman rho are reported, with
     an honest verdict. Ranking changes are not hidden.
+11. **Physical constraints (Phase 3b)**: a target value that is a physical bound
+    (no precipitation) is declared with a tolerance band in `config/config.yaml`,
+    labelled `constraint` / `declared_tolerance`, and scored with the same rank
+    and absolute maths as any measured feature. The weight is config-only.
+12. **Site stability**: using the sensitivity runs, each candidate gets the
+    fraction of settings in which it stays in the top-N (matched within a
+    configured fraction of the separation). It is stored beside the score, ranked
+    in the report, and never folded into the score.
+13. **Caveat flags**: config declares heuristic geographic regions where this
+    feature set cannot distinguish ice cover from bare ground. Sites inside one
+    carry that caveat on their card. The regions are flags, not ice masks.
 
 ## Window and resolution policy
 

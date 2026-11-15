@@ -59,6 +59,16 @@ the coordinate system or a CRS, not a project setting), or **presentation**
 | Thermal table file names and scoring groups | not present | `paths.yaml` → `sources.*.thermal`, `targets.yaml` → `thermal_groups` |
 | Hurst sensitivity sample count, seed, patch size, drop lag, verdict thresholds | not present | `config.yaml` → `hurst_sensitivity` |
 | Distribution sample stride | not present | `config.yaml` → `distribution.sample_stride_px` |
+| Similarity kernel, spread floor, hidden-gap thresholds, CDF quantiles | not present | `config.yaml` → `scoring` |
+| Four presets: weights, labels, top-N, minimum separation | not present | `presets.yaml` |
+| Famous-site list and matching radius | not present | `validation_sites.yaml` → `famous`, `famous_radius_km` |
+| Thermal sensitivity grid, sample count, seed, top-N | not present | `config.yaml` → `thermal_sensitivity` |
+| Per-site stability match fraction | not present | `config.yaml` → `thermal_sensitivity.stability_match_fraction` |
+| No-precipitation constraint: target value, tolerance band, label, weight note | not present | `config.yaml` → `physical_constraints.dryness` |
+| Dryness weight per preset and group weight | not present | `presets.yaml`, `features.yaml` → groups |
+| Per-body dryness reason and enable/disable | not present | `targets.yaml` → `*.dryness_constraint` |
+| Ice/substrate caveat boxes, label, text, heuristic flag | not present | `config.yaml` → `caveats` |
+| Analog provenance: reviewed, display_source, citation_verified | prose only | `validation_sites.yaml` → `analogs` |
 
 Two structural changes came with this:
 
@@ -151,9 +161,12 @@ band-distance scoring, area-weighted percentiles and group means, preset
 renormalisation and NaN propagation, NMS separation, high-latitude site
 aggregation, famous-site filtering, the hidden-gap flag, the qualitative
 feature rows, and the structure of `top_sites.json` / `scores_*.nc` including the
-configured weights, top-N and separation. Every value is read from
+configured weights, top-N and separation. Phase 3b adds the declared
+no-precipitation constraint (entries, group status, floored scale, coverage),
+caveat regions, per-site stability and stability ranking, both site lists for
+every preset, and analog source provenance. Every value is read from
 `config/*.yaml`; the tests contain no target coordinate, window or weight.
-`pytest` → **99 passed**.
+`pytest` → **114 passed**.
 
 ## 7. Reproducing the audit
 

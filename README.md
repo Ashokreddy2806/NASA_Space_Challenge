@@ -2,16 +2,19 @@
 
 Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site**, explain the match feature by feature, and show where the analogy breaks down.
 
-> **Status: Phase 3 complete.** The Earth 0.05° feature grid is built, the Moon
+> **Status: Phase 3b complete.** The Earth 0.05° feature grid is built, the Moon
 > (poleward of 85°S) and Mars (Jezero, 150 km disc) target profiles are computed
 > with the same feature registry over the same physical windows, and the
 > similarity engine writes global score maps, per-feature evidence and
-> non-maximum-suppressed candidate sites for four config-driven presets. Both
-> cited thermal tables are ingested as **reference values** and the Moon's polar
-> temperature anchors are scored qualitatively; Mars has thermal inertia but no
-> temperatures, so its temperature features stay unavailable. All parameters —
-> grid, windows, lags, percentiles, targets, weights, presets, bands, top-N,
-> separation, famous sites and file names — live in `config/*.yaml`.
+> non-maximum-suppressed candidate sites for four config-driven presets. Phase 3b
+> adds a declared no-precipitation constraint on both targets, per-site stability
+> from the sensitivity runs, and ice/substrate caveat flags for polar
+> ice-sheet regions. Both cited thermal tables are ingested as **reference
+> values** and the Moon's polar temperature anchors are scored qualitatively;
+> Mars has thermal inertia but no temperatures, so its temperature features stay
+> unavailable. All parameters — grid, windows, lags, percentiles, targets,
+> weights, presets, bands, top-N, separation, famous sites, tolerance bands,
+> caveat regions and file names — live in `config/*.yaml`.
 
 ## What this is
 
@@ -30,7 +33,7 @@ python -m backend.pipeline.earth_climate      # WorldClim -> 0.05° climate + la
 python -m backend.pipeline.earth_terrain      # ETOPO -> 0.05° terrain features (~8 min)
 python -m backend.pipeline.build_earth_features  # merge, mask, figures, report (~2 min)
 python -m backend.targets.build_target_profiles  # Moon + Mars profiles, PSR and Hurst checks (~4 min)
-python -m backend.engine.build_scores            # score maps, top sites, sensitivity, report (~1.5 min)
+python -m backend.engine.build_scores            # score maps, top sites, stability, report (~3 min)
 python -m pytest -q                           # Phase 0 + 1 + 2 + 3 tests
 ```
 
@@ -72,8 +75,8 @@ Intermediate files (`earth_terrain.nc`, `earth_climate.nc`) are deleted after a 
 | Path | Contents |
 |---|---|
 | `data/processed/scores_moon.nc`, `scores_mars.nc` | per-group similarity grids and one score grid per preset, area-weighted on the 0.05° grid, plus the preset coverage grid |
-| `data/processed/top_sites.json` | for each target and preset: renormalised weights, coverage, score statistics, NMS sites with and without famous analogs, per-feature absolute gap / rank similarity / hidden-gap flag, validation sites, thermal sensitivity |
-| `docs/phase3_report.md` | similarity definition, coverage per target, per-feature evidence, top sites, analog results, sensitivity verdict, what does not match |
+| `data/processed/top_sites.json` | for each target and preset: renormalised weights, coverage, score statistics, NMS sites with and without famous analogs, per-feature absolute gap / rank similarity / hidden-gap flag, physical-constraint evidence, per-site stability, caveat flags, validation sites (with source provenance), thermal sensitivity |
+| `docs/phase3_report.md` | similarity definition, coverage per target, per-feature evidence incl. the declared constraint, top sites with stability and caveats, analog results and sources, sensitivity verdict, what does not match |
 
 Scores are **Earth-relative**. A Moon score and a Mars score are never
 comparable: they use different feature sets, different coverage and different
@@ -121,7 +124,9 @@ Full file-level details, local names, sizes and verification results: [`docs/dat
 - Mars MOLA is 16 pixels/degree (~3.7 km); ETOPO is ~1.85 km; lunar terrain products are 80 m–1 km. Features are therefore compared in **kilometre-sized windows**, and coarse sources are explicitly noted.
 - Earth cannot reproduce reduced gravity, vacuum or the thin Martian atmosphere, or the radiation environment.
 - Moon and Mars temperature values come from cited literature CSVs, never from invented numbers. They are reference numbers, not per-cell maps, so Moon temperature is scored **qualitatively** (banded polar anchors) and Mars temperature is unavailable.
-- No Earth substrate, mineralogy or thermal-inertia map is in this build, so a smooth ice sheet and a smooth rock plain are indistinguishable to the terrain features. The Mars ranking is a terrain result, not a composition result.
+- No Earth substrate, mineralogy or thermal-inertia map is in this build, so a smooth ice sheet and a smooth rock plain are indistinguishable to the terrain features. Sites inside the declared heuristic ice-sheet boxes carry that caveat on their card. The Mars ranking is a terrain result, not a composition result.
+- The Moon and Mars have no rainfall and no vegetation, so the dryness target is a **physical 0 mm** with a tolerance band declared in config. A high dryness score means "no rainfall and no vegetation on Earth", not a measured match to Mars or the Moon.
+- Site stability is the fraction of thermal sensitivity settings in which a candidate stays in the top-N. It is evidence beside the score, never a second score, and it was not used to tune anything.
 
 ## Documentation
 

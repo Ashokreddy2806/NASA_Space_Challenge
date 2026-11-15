@@ -166,6 +166,54 @@ class ThermalSensitivityConfig:
     top_n: int
     rank_sample_count: int
     random_seed: int
+    stability_match_fraction: float
+
+
+@dataclass(frozen=True)
+class ConstraintFeature:
+    """One feature of a physical constraint, with its declared tolerance band."""
+
+    id: str
+    p16: float
+    p84: float
+    units: str
+
+
+@dataclass(frozen=True)
+class PhysicalConstraint:
+    """A physical bound (e.g. no precipitation) scored like a target feature.
+
+    The target value is a physical bound, not a measured distribution; the band
+    around it is a declared tolerance, which is why ``declared`` is recorded.
+    """
+
+    name: str
+    group: str
+    label: str
+    target_value: float
+    features: tuple[ConstraintFeature, ...]
+    weight_note: str
+    declared: bool = True
+
+
+@dataclass(frozen=True)
+class CaveatRegion:
+    """Heuristic geographic box that triggers a site-card caveat."""
+
+    id: str
+    label: str
+    lat_min: float
+    lat_max: float
+    lon_min: float
+    lon_max: float
+    note: str = ""
+
+
+@dataclass(frozen=True)
+class CaveatConfig:
+    heuristic: bool
+    text: str
+    regions: tuple[CaveatRegion, ...]
 
 
 @dataclass(frozen=True)
@@ -187,6 +235,7 @@ class FamousSite:
     name: str
     lat: float
     lon: float
+    reviewed: bool = True
 
 
 @dataclass(frozen=True)
@@ -261,6 +310,8 @@ class ValidationSite:
     targets: tuple[str, ...] = ()
     source: str = ""
     reviewed: bool = True
+    display_source: bool = True
+    citation_verified: bool = False
 
 
 @dataclass(frozen=True)
@@ -286,6 +337,8 @@ class AppConfig:
     presets: tuple[Preset, ...]
     scoring: ScoringConfig
     thermal_sensitivity: ThermalSensitivityConfig
+    physical_constraints: tuple[PhysicalConstraint, ...]
+    caveats: CaveatConfig
 
     @property
     def all_features(self) -> tuple[FeatureDefinition, ...]:
@@ -490,11 +543,18 @@ def load_config(
             targets=tuple(str(body) for body in raw.get("targets", ())),
             source=str(raw.get("source", "")),
             reviewed=bool(raw.get("reviewed", True)),
+            display_source=bool(raw.get("display_source", True)),
+            citation_verified=bool(raw.get("citation_verified", False)),
         )
         for raw in validation_raw.get("analogs", [])
     )
     famous_sites = tuple(
-        FamousSite(name=str(raw["name"]), lat=float(raw["lat"]), lon=float(raw["lon"]))
+        FamousSite(
+            name=str(raw["name"]),
+            lat=float(raw["lat"]),
+            lon=float(raw["lon"]),
+            reviewed=bool(raw.get("reviewed", True)),
+        )
         for raw in validation_raw.get("famous", [])
     )
     famous_radius_km = float(validation_raw.get("famous_radius_km", 100.0))
@@ -529,6 +589,72 @@ def load_config(
         top_n=int(sensitivity_raw["top_n"]),
         rank_sample_count=int(sensitivity_raw["rank_sample_count"]),
         random_seed=int(sensitivity_raw["random_seed"]),
+        stability_match_fraction=float(
+            sensitivity_raw.get("stability_match_fraction", 0.5)
+        ),
+    )
+
+    constraints_raw = config_raw.get("physical_constraints", {}) or {}
+    physical_constraints = tuple(
+        PhysicalConstraint(
+            name=name,
+            group=str(raw["group"]),
+            label=str(raw.get("label", name)),
+            target_value=float(raw.get("target_value", 0.0)),
+            features=tuple(
+                ConstraintFeature(
+                    id=str(feature_id),
+                    p16=float(spec.get("p16", raw.get("target_value", 0.0))),
+                    p84=float(spec["p84"]),
+                    units=str(spec.get("units", "")),
+                )
+                for feature_id, spec in (raw.get("features") or {}).items()
+            ),
+            weight_note=str(raw.get("weight_note", "")).strip(),
+        )
+        for name, raw in constraints_raw.items()
+    )
+    feature_groups = {feature.id: feature.group for feature in terrain + climate}
+    group_names = {group.name for group in groups}
+    for constraint in physical_constraints:
+        if constraint.group not in group_names:
+            raise ValueError(
+                f"physical constraint {constraint.name} references unknown group "
+                f"{constraint.group}"
+            )
+        for feature in constraint.features:
+            if feature.id not in feature_groups:
+                raise ValueError(
+                    f"physical constraint {constraint.name} references unknown "
+                    f"feature {feature.id}"
+                )
+            if feature_groups[feature.id] != constraint.group:
+                raise ValueError(
+                    f"physical constraint {constraint.name} feature {feature.id} "
+                    f"is not in group {constraint.group}"
+                )
+            if not feature.p16 <= constraint.target_value <= feature.p84:
+                raise ValueError(
+                    f"physical constraint {constraint.name} feature {feature.id} "
+                    "does not contain the target value"
+                )
+
+    caveats_raw = config_raw.get("caveats", {}) or {}
+    caveats = CaveatConfig(
+        heuristic=bool(caveats_raw.get("heuristic", True)),
+        text=str(caveats_raw.get("text", "")),
+        regions=tuple(
+            CaveatRegion(
+                id=str(raw["id"]),
+                label=str(raw.get("label", raw["id"])),
+                lat_min=float(raw["bounds"]["lat_min"]),
+                lat_max=float(raw["bounds"]["lat_max"]),
+                lon_min=float(raw["bounds"]["lon_min"]),
+                lon_max=float(raw["bounds"]["lon_max"]),
+                note=str(raw.get("note", "")),
+            )
+            for raw in caveats_raw.get("regions", [])
+        ),
     )
 
     presets = tuple(
@@ -581,4 +707,6 @@ def load_config(
         presets=presets,
         scoring=scoring,
         thermal_sensitivity=thermal_sensitivity,
+        physical_constraints=physical_constraints,
+        caveats=caveats,
     )

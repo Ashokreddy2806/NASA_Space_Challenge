@@ -17,7 +17,7 @@ from netCDF4 import Dataset
 
 from backend.config import load_config
 from backend.engine import build_scores, similarity, top_sites
-from backend.targets import thermal
+from backend.targets import constraints, thermal
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -166,6 +166,65 @@ def test_configured_thermal_unavailable_reasons_are_applied(config) -> None:
     assert entries["temp_mean_c"]["resolution"] == "unavailable"
     assert entries["temp_mean_c"]["resolution_note"]
     assert math.isnan(entries["temp_mean_c"]["median"])
+
+
+# --- Physical constraints and caveats ---------------------------------------
+
+
+def test_dryness_constraint_entries_are_declared(config) -> None:
+    constraint = next(c for c in config.physical_constraints if c.name == "dryness")
+    for target in ("moon", "mars"):
+        entries = constraints.dryness_constraint_entries(
+            config, config.targets[target]
+        )
+        assert set(entries) == {feature.id for feature in constraint.features}
+        for feature in constraint.features:
+            entry = entries[feature.id]
+            assert entry["resolution"] == "constraint"
+            assert entry["distribution"] == "declared_tolerance"
+            assert entry["physical_constraint"] is True
+            assert entry["n_cells"] == 0
+            assert entry["median"] == pytest.approx(constraint.target_value)
+            assert entry["p16"] == pytest.approx(feature.p16)
+            assert entry["p84"] == pytest.approx(feature.p84)
+            assert entry["median"] < entry["p84"]
+
+
+def test_disabled_constraint_returns_no_entries(config) -> None:
+    target = dict(config.targets["mars"])
+    target["dryness_constraint"] = {"enabled": False}
+    assert constraints.dryness_constraint_entries(config, target) == {}
+
+
+def test_constraint_uses_the_same_floored_scale(config) -> None:
+    profile = {
+        "features": constraints.dryness_constraint_entries(
+            config, config.targets["moon"]
+        )
+    }
+    scaled = similarity.scaled_features(config, profile)
+    assert set(scaled) == {"precip_annual_mm", "precip_driest_month_mm"}
+    for feature in scaled.values():
+        assert feature.qualitative is False
+        assert feature.physical_constraint is True
+        assert feature.declared_distribution is True
+        assert feature.floor > 0
+        assert feature.scale == pytest.approx(max(feature.sigma, feature.floor))
+        # The declared band's half-spread is the scale before the floor.
+        assert feature.sigma == pytest.approx(
+            (profile["features"][feature.id]["p84"] - feature.median) / 2.0
+        )
+
+
+def test_caveats_flag_the_declared_ice_regions(config) -> None:
+    caveats = top_sites.caveats_for(config, -77.5, 162.0)
+    assert [entry["id"] for entry in caveats] == ["antarctic_ice_sheet"]
+    assert caveats[0]["text"] == config.caveats.text
+    assert caveats[0]["heuristic"] is True
+    assert caveats[0]["region_note"]
+    greenland = top_sites.caveats_for(config, 72.0, -40.0)
+    assert [entry["id"] for entry in greenland] == ["greenland_ice_sheet"]
+    assert top_sites.caveats_for(config, 0.0, 0.0) == []
 
 
 # --- Presets and renormalisation --------------------------------------------
@@ -441,6 +500,131 @@ def test_artifact_keeps_targets_separate(config) -> None:
     mars = payload["targets"]["mars"]["coverage"]
     assert moon["features_used"] != mars["features_used"]
     assert moon["groups_scored"] != mars["groups_scored"]
+
+
+def test_physical_constraint_reaches_scores_and_coverage(config) -> None:
+    path = config.output("top_sites")
+    _require(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    constraint = next(c for c in config.physical_constraints if c.name == "dryness")
+    declared = {feature.id for feature in constraint.features}
+    for target in ("moon", "mars"):
+        block = payload["targets"][target]
+        assert block["physical_constraint"]["enabled"] is True
+        assert block["physical_constraint"]["label"] == constraint.label
+        assert set(block["physical_constraint"]["declared_tolerance"]) == declared
+        assert declared <= set(block["features_used"])
+        assert block["coverage"]["features_used"] == len(block["features_used"])
+        evidence = block["feature_evidence"]
+        for feature_id in declared:
+            assert evidence[feature_id]["physical_constraint"] is True
+            assert evidence[feature_id]["declared_distribution"] is True
+            assert evidence[feature_id]["group"] == constraint.group
+        for site in block["presets"]["balanced"]["sites"][:3]:
+            rows = {row["feature"]: row for row in site["features"]}
+            for feature_id in declared:
+                assert rows[feature_id]["physical_constraint"] is True
+                assert rows[feature_id]["declared_distribution"] is True
+
+
+def test_every_preset_carries_both_site_lists(config) -> None:
+    path = config.output("top_sites")
+    _require(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    for target, block in payload["targets"].items():
+        for preset in config.presets:
+            entry = block["presets"][preset.name]
+            assert entry["sites"], (target, preset.name)
+            assert entry["sites_excluding_famous"], (target, preset.name)
+            assert len(entry["sites"]) <= preset.top_n
+            assert len(entry["sites_excluding_famous"]) <= preset.top_n
+            assert not any(
+                site["famous"] for site in entry["sites_excluding_famous"]
+            )
+
+
+def test_stability_is_reported_and_ranked(config) -> None:
+    path = config.output("top_sites")
+    _require(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    sensitivity = payload["targets"]["moon"]["thermal_sensitivity"]
+    assert sensitivity["applicable"] is True
+    assert sensitivity["n_settings"] == len(sensitivity["variants"])
+    assert sensitivity["n_settings"] > 0
+    match_km = (
+        next(p for p in config.presets if p.name == "balanced").min_separation_km
+        * config.thermal_sensitivity.stability_match_fraction
+    )
+    assert sensitivity["stability_match_km"] == pytest.approx(match_km)
+    curve = sensitivity["curve"]
+    assert curve
+    for entry in curve:
+        assert 0.0 <= entry["stability"] <= 1.0
+
+    def key(entry: dict) -> tuple[float, float]:
+        return (-entry["stability"], -entry["site_score"])
+
+    assert [key(entry) for entry in curve] == sorted(key(entry) for entry in curve)
+    sites = payload["targets"]["moon"]["presets"]["balanced"]["sites"]
+    by_position = {
+        (round(entry["lat"], 6), round(entry["lon"], 6)): entry for entry in curve
+    }
+    for site in sites:
+        assert site["stability"] is not None
+        assert 0.0 <= site["stability"] <= 1.0
+        match = by_position[(round(site["lat"], 6), round(site["lon"], 6))]
+        assert site["stability"] == pytest.approx(match["stability"])
+        assert site["stable_rank"] == match["stable_rank"]
+        assert str(sensitivity["n_settings"]) in site["stability_note"]
+    # Where stability is not computed the field is null with a reason, never 0.
+    for target in ("moon", "mars"):
+        for preset in config.presets:
+            if target == "moon" and preset.name == "balanced":
+                continue
+            for site in payload["targets"][target]["presets"][preset.name]["sites"]:
+                assert site["stability"] is None
+                assert site["stability_note"]
+
+
+def test_caveat_flags_and_sources_reach_the_artifact(config) -> None:
+    path = config.output("top_sites")
+    _require(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    flagged = 0
+    for block in payload["targets"].values():
+        for preset in config.presets:
+            for site in block["presets"][preset.name]["sites"]:
+                for caveat in site["caveats"]:
+                    flagged += 1
+                    assert caveat["text"] == config.caveats.text
+                    assert caveat["heuristic"] is True
+    assert flagged > 0, "no site falls inside a declared caveat region"
+    rows = {
+        row["name"]: row
+        for row in payload["targets"]["mars"]["presets"]["balanced"]["validation"]
+    }
+    assert rows["Mauna Kea summit"]["source"] is None
+    assert rows["Mauna Kea summit"]["display_source"] is False
+    assert rows["Mauna Kea summit"]["citation_verified"] is False
+    assert rows["Licancabur"]["source"]
+    assert rows["Licancabur"]["citation_verified"] is True
+    assert "spot-check" in rows["Rio Tinto"]["source"]
+
+
+def test_target_profiles_mark_the_constraint_group(config) -> None:
+    path = config.output("target_profiles")
+    _require(path)
+    profiles = json.loads(path.read_text(encoding="utf-8"))
+    constraint = next(c for c in config.physical_constraints if c.name == "dryness")
+    for target in ("moon", "mars"):
+        groups = {row["group"]: row for row in profiles[target]["groups"]}
+        assert groups[constraint.group]["status"] == "constraint"
+        assert groups[constraint.group]["renormalised_weight"] > 0
+        for feature in constraint.features:
+            entry = profiles[target]["features"][feature.id]
+            assert entry["resolution"] == "constraint"
+            assert entry["distribution"] == "declared_tolerance"
+            assert entry["median"] == pytest.approx(constraint.target_value)
 
 
 def test_thermal_sensitivity_covers_the_required_grid(config) -> None:

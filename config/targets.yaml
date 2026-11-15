@@ -77,9 +77,16 @@ moon:
     temperature: >-
       lunar surface temperature and thermal inertia come only from the cited
       thermal table, never from a raster or a guess.
-    dryness: >-
-      the Moon has no atmosphere and no precipitation; dryness is represented by
-      the PSR ice proxy instead
+  # Physical constraint applied both to the target vector and to Earth: an airless
+  # body has no rainfall and no vegetation, so the target precipitation is 0 mm.
+  # The tolerance band and the scoring weight live in config/config.yaml and
+  # config/presets.yaml, never here.
+  dryness_constraint:
+    enabled: true
+    reason: >-
+      the Moon has no atmosphere and no rainfall, and no vegetation can grow; an
+      Earth site receiving precipitation is physically unlike the target, and a
+      vegetated site is unlike it whatever its terrain scores.
   unavailable_features: []
   ice_proxy:
     kind: psr_area_fraction
@@ -118,8 +125,11 @@ mars:
     temp_annual_range_c: >-
       the supplied Mars table has no surface temperatures at all (thermal inertia
       only), so this feature is unavailable and excluded from the Mars score
-    dryness: >-
-      Mars has no rainfall record of this kind; the thin atmosphere is not a
-      precipitation analog and no dryness value is invented
+  dryness_constraint:
+    enabled: true
+    reason: >-
+      Mars has no rainfall and no vegetation; the thin atmosphere is not a
+      precipitation analog, so an Earth site with appreciable precipitation is
+      physically unlike the target. This is a bound, not a measured Mars value.
   ice_proxy: null
   longitude_convention: 0-360 east

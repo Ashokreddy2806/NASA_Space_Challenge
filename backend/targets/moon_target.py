@@ -26,7 +26,7 @@ from rasterio.windows import Window
 
 from backend.config import AppConfig, FeatureDefinition
 from backend.features import registry
-from backend.targets import thermal
+from backend.targets import constraints, thermal
 from backend.targets.distribution import profile_entry
 from backend.targets.geometry import polar_coordinates, polar_radius_m
 from backend.targets.psr import load_psr_table, rasterize_psr
@@ -450,6 +450,7 @@ def analyse_moon(config: AppConfig | None = None) -> dict[str, Any]:
     thermal_entries.update(thermal.qualitative_thermal_features(config, table, moon))
     thermal.apply_thermal_unavailable(thermal_entries, moon)
     entries.update(thermal_entries)
+    entries.update(constraints.dryness_constraint_entries(config, moon))
     definitions = {definition.id: definition for definition in config.all_features}
     for feature_id in moon.get("unavailable_features") or []:
         definition = definitions.get(feature_id)
