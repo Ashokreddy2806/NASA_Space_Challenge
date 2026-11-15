@@ -143,6 +143,53 @@ class HurstSensitivityConfig:
 
 
 @dataclass(frozen=True)
+class ScoringConfig:
+    """Phase 3 similarity maths, all values from config."""
+
+    absolute_kernel: str
+    spread_floor_fraction: float
+    spread_floor_units: Mapping[str, float]
+    rank_reference: str
+    hidden_gap_rank_similarity: float
+    hidden_gap_absolute_similarity: float
+    area_weighting: bool
+    cdf_quantiles: int
+    site_aggregation_fraction_of_separation: float
+
+
+@dataclass(frozen=True)
+class ThermalSensitivityConfig:
+    """Band/weight sensitivity test required by the thermal decision."""
+
+    temperature_weights: tuple[float, ...]
+    band_edge_shifts_c: tuple[float, ...]
+    top_n: int
+    rank_sample_count: int
+    random_seed: int
+
+
+@dataclass(frozen=True)
+class Preset:
+    """One scoring preset: group weights, top-N count and site separation."""
+
+    name: str
+    label: str
+    description: str
+    weights: Mapping[str, float]
+    top_n: int
+    min_separation_km: float
+
+
+@dataclass(frozen=True)
+class FamousSite:
+    """A well-known analog, used only to filter the second top-N list."""
+
+    name: str
+    lat: float
+    lon: float
+
+
+@dataclass(frozen=True)
 class FeatureDefinition:
     """One registered feature: a function plus its configured parameters."""
 
@@ -172,6 +219,8 @@ class GroupDefinition:
     name: str
     weight: float
     members: tuple[str, ...]
+    scored: bool = True
+    role: str = ""
 
 
 @dataclass(frozen=True)
@@ -209,6 +258,9 @@ class ValidationSite:
     lon: float
     notes: str = ""
     expect: Mapping[str, Mapping[str, float]] = field(default_factory=dict)
+    targets: tuple[str, ...] = ()
+    source: str = ""
+    reviewed: bool = True
 
 
 @dataclass(frozen=True)
@@ -228,6 +280,12 @@ class AppConfig:
     outputs: OutputPaths
     targets: Mapping[str, Any]
     validation_sites: tuple[ValidationSite, ...]
+    analogs: tuple[ValidationSite, ...]
+    famous_sites: tuple[FamousSite, ...]
+    famous_radius_km: float
+    presets: tuple[Preset, ...]
+    scoring: ScoringConfig
+    thermal_sensitivity: ThermalSensitivityConfig
 
     @property
     def all_features(self) -> tuple[FeatureDefinition, ...]:
@@ -257,6 +315,7 @@ _DEFAULT_CONFIG_FILES = (
     "paths.yaml",
     "targets.yaml",
     "validation_sites.yaml",
+    "presets.yaml",
 )
 
 
@@ -366,6 +425,8 @@ def load_config(
             name=name,
             weight=float(raw.get("weight", 1.0)),
             members=tuple(raw.get("members", ())),
+            scored=bool(raw.get("scored", True)),
+            role=str(raw.get("role", "")),
         )
         for name, raw in features_raw.get("groups", {}).items()
     )
@@ -406,7 +467,7 @@ def load_config(
         if "body" in target and target["body"] != body:
             raise ValueError(f"target {body} declares body {target['body']}")
 
-    sites_raw = merged["validation_sites.yaml"].get("sites", [])
+    validation_raw = merged["validation_sites.yaml"]
     sites = tuple(
         ValidationSite(
             name=str(raw["name"]),
@@ -414,9 +475,89 @@ def load_config(
             lon=float(raw["lon"]),
             notes=str(raw.get("notes", "")),
             expect=raw.get("expect", {}) or {},
+            targets=tuple(str(body) for body in raw.get("targets", ())),
+            source=str(raw.get("source", "")),
+            reviewed=bool(raw.get("reviewed", True)),
         )
-        for raw in sites_raw
+        for raw in validation_raw.get("sites", [])
     )
+    analogs = tuple(
+        ValidationSite(
+            name=str(raw["name"]),
+            lat=float(raw["lat"]),
+            lon=float(raw["lon"]),
+            notes=str(raw.get("notes", "")),
+            targets=tuple(str(body) for body in raw.get("targets", ())),
+            source=str(raw.get("source", "")),
+            reviewed=bool(raw.get("reviewed", True)),
+        )
+        for raw in validation_raw.get("analogs", [])
+    )
+    famous_sites = tuple(
+        FamousSite(name=str(raw["name"]), lat=float(raw["lat"]), lon=float(raw["lon"]))
+        for raw in validation_raw.get("famous", [])
+    )
+    famous_radius_km = float(validation_raw.get("famous_radius_km", 100.0))
+
+    scoring_raw = config_raw["scoring"]
+    scoring = ScoringConfig(
+        absolute_kernel=str(scoring_raw["absolute_kernel"]),
+        spread_floor_fraction=float(scoring_raw["spread_floor_fraction"]),
+        spread_floor_units={
+            str(key): float(value)
+            for key, value in (scoring_raw.get("spread_floor_units") or {}).items()
+        },
+        rank_reference=str(scoring_raw["rank_reference"]),
+        hidden_gap_rank_similarity=float(scoring_raw["hidden_gap_rank_similarity"]),
+        hidden_gap_absolute_similarity=float(
+            scoring_raw["hidden_gap_absolute_similarity"]
+        ),
+        area_weighting=bool(scoring_raw["area_weighting"]),
+        cdf_quantiles=int(scoring_raw["cdf_quantiles"]),
+        site_aggregation_fraction_of_separation=float(
+            scoring_raw["site_aggregation_fraction_of_separation"]
+        ),
+    )
+    sensitivity_raw = config_raw["thermal_sensitivity"]
+    thermal_sensitivity = ThermalSensitivityConfig(
+        temperature_weights=tuple(
+            float(value) for value in sensitivity_raw["temperature_weights"]
+        ),
+        band_edge_shifts_c=tuple(
+            float(value) for value in sensitivity_raw["band_edge_shifts_c"]
+        ),
+        top_n=int(sensitivity_raw["top_n"]),
+        rank_sample_count=int(sensitivity_raw["rank_sample_count"]),
+        random_seed=int(sensitivity_raw["random_seed"]),
+    )
+
+    presets = tuple(
+        Preset(
+            name=name,
+            label=str(raw.get("label", name)),
+            description=str(raw.get("description", "")).strip(),
+            weights={
+                str(key): float(value)
+                for key, value in (raw.get("weights") or {}).items()
+            },
+            top_n=int(raw["top_n"]),
+            min_separation_km=float(raw["min_separation_km"]),
+        )
+        for name, raw in merged["presets.yaml"]["presets"].items()
+    )
+    group_names = {group.name for group in groups}
+    for preset in presets:
+        unknown = set(preset.weights) - group_names
+        if unknown:
+            raise ValueError(
+                f"preset {preset.name} references unknown groups: {sorted(unknown)}"
+            )
+        if preset.top_n <= 0 or preset.min_separation_km <= 0:
+            raise ValueError(f"preset {preset.name} needs positive top_n/separation")
+    feature_names = {feature.id for feature in terrain + climate}
+    for feature_id in scoring.spread_floor_units:
+        if feature_id not in feature_names:
+            raise ValueError(f"spread_floor_units references unknown feature {feature_id}")
 
     return AppConfig(
         grid=grid,
@@ -434,4 +575,10 @@ def load_config(
         outputs=outputs,
         targets=targets,
         validation_sites=sites,
+        analogs=analogs,
+        famous_sites=famous_sites,
+        famous_radius_km=famous_radius_km,
+        presets=presets,
+        scoring=scoring,
+        thermal_sensitivity=thermal_sensitivity,
     )

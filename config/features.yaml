@@ -160,7 +160,8 @@ groups:
     weight: 1.0
     members: [hurst_2_32km]
   temperature:
-    weight: 1.0
+    # Qualitative band mapping (approved 2026-11-15): low default weight.
+    weight: 0.25
     members:
       - temp_mean_c
       - temp_diurnal_range_c
@@ -171,5 +172,9 @@ groups:
     weight: 1.0
     members: [precip_annual_mm, precip_driest_month_mm]
   ice_proxy:
-    weight: 1.0
+    # Target context, not a score: Earth has no ice map, so the Moon's PSR area
+    # fraction is a constant and cannot rank Earth sites. Shown on the card.
+    weight: 0.0
+    scored: false
+    role: target context (PSR area fraction); Earth has no equivalent map
     members: []

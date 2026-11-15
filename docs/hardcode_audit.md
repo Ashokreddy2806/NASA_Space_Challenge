@@ -146,7 +146,14 @@ the registry refuses unknown feature functions. `tests/test_phase2.py` adds PSR
 parsing/rasterising/verification, the thermal readers (long statistic table, flat
 reference table, exact Kelvin conversion, derived ranges, missing table),
 the Mars profile's unavailable-window reasons, and group-weight renormalisation.
-`pytest` → **75 passed**.
+`tests/test_phase3.py` adds the absolute/rank similarity maths, the floored spread,
+band-distance scoring, area-weighted percentiles and group means, preset
+renormalisation and NaN propagation, NMS separation, high-latitude site
+aggregation, famous-site filtering, the hidden-gap flag, the qualitative
+feature rows, and the structure of `top_sites.json` / `scores_*.nc` including the
+configured weights, top-N and separation. Every value is read from
+`config/*.yaml`; the tests contain no target coordinate, window or weight.
+`pytest` → **99 passed**.
 
 ## 7. Reproducing the audit
 

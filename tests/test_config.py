@@ -50,7 +50,12 @@ def test_groups_reference_known_features(config) -> None:
     assert config.groups, "no scoring groups configured"
     for group in config.groups:
         assert set(group.members) <= known, f"{group.name} has unknown members"
-        assert group.weight > 0
+        # A scored group must carry weight; a context-only group (PSR area
+        # fraction) is deliberately zero-weight because Earth has no map for it.
+        if group.scored:
+            assert group.weight > 0, f"{group.name} is scored but weightless"
+        else:
+            assert group.weight == 0, f"{group.name} is context only but weighted"
 
 
 def test_validation_sites_come_from_yaml(config) -> None:

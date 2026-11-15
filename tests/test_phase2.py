@@ -312,7 +312,9 @@ def test_flat_table_schema_is_reported_as_reference_only(
     assert "reference quantities, not per-cell rows" in (
         entries["temp_mean_c"]["resolution_note"]
     )
-    assert "pending user approval" in entries["temp_mean_c"]["resolution_note"]
+    assert "no qualitative band mapping is defined" in (
+        entries["temp_mean_c"]["resolution_note"]
+    )
 
 
 # --- Group summaries and weight renormalisation ------------------------------
@@ -355,7 +357,10 @@ def test_group_summary_marks_partial_groups(config) -> None:
     rows = {row["group"]: row for row in group_summary(config, profile, config.targets["moon"])}
     assert rows["roughness"]["status"] == "partial"
     assert missing not in rows["roughness"]["available_members"]
-    assert rows["ice_proxy"]["status"] == "available"
+    # ice_proxy is target context: Earth has no equivalent map, so it is never
+    # scored and never carries weight.
+    assert rows["ice_proxy"]["status"] == "context"
+    assert rows["ice_proxy"]["renormalised_weight"] == 0.0
 
 
 def test_group_summary_uses_configured_weights(config) -> None:
@@ -458,5 +463,11 @@ def test_target_profiles_json_is_publishable(config) -> None:
         for entry in payload[body]["features"].values():
             assert "resolution" in entry
             assert "units" in entry
-            if entry["resolution"] != "unavailable":
+            if entry["resolution"] == "qualitative":
+                # Banded anchors are not per-cell measurements: no median, but
+                # the target band and the cited anchor range must be present.
+                assert entry["target_band"] >= 0
+                assert entry["bands_c"] == sorted(entry["bands_c"])
+                assert entry["anchor_range_c"][0] <= entry["anchor_range_c"][1]
+            elif entry["resolution"] != "unavailable":
                 assert entry["median"] is not None

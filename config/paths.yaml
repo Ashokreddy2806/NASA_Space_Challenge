@@ -41,6 +41,10 @@ outputs:
   phase2_report: phase2_report.md
   psr_report: psr_verification.md
   hurst_sensitivity: hurst_sensitivity.md
+  scores_moon: scores_moon.nc
+  scores_mars: scores_mars.nc
+  top_sites: top_sites.json
+  phase3_report: phase3_report.md
   hardcode_audit: hardcode_audit.md
   earth_figure_prefix: earth_
   overview_figure: earth_features_overview.png

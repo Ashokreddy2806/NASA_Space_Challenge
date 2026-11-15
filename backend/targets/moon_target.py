@@ -447,6 +447,8 @@ def analyse_moon(config: AppConfig | None = None) -> dict[str, Any]:
 
     table = thermal.thermal_availability(config, "moon")
     thermal_entries = thermal.match_thermal_features(config, table, moon)
+    thermal_entries.update(thermal.qualitative_thermal_features(config, table, moon))
+    thermal.apply_thermal_unavailable(thermal_entries, moon)
     entries.update(thermal_entries)
     definitions = {definition.id: definition for definition in config.all_features}
     for feature_id in moon.get("unavailable_features") or []:
@@ -505,6 +507,7 @@ def analyse_moon(config: AppConfig | None = None) -> dict[str, Any]:
             "entries": table["table"],
             "references": table.get("references", []),
             "derived": table.get("derived", []),
+            "context_only": thermal.thermal_context(config, table, moon),
         },
         "runtime_seconds": time.perf_counter() - started,
     }

@@ -58,6 +58,17 @@ def group_summary(
             "weight": group.weight,
             "members": list(group.members),
         }
+        if not group.scored:
+            row.update(
+                {
+                    "status": "context",
+                    "available_members": [],
+                    "reason": group.role or "target context, not scored",
+                }
+            )
+            rows.append(row)
+            continue
+
         if group.name == "ice_proxy":
             available = bool(ice.get("available"))
             row.update(
@@ -123,7 +134,11 @@ def group_summary(
         )
         rows.append(row)
 
-    usable = [row for row in rows if row["status"] in {"available", "partial"}]
+    usable = [
+        row
+        for row in rows
+        if row["status"] in {"available", "partial"} and row["weight"] > 0
+    ]
     total = sum(row["weight"] for row in usable)
     for row in rows:
         row["renormalised_weight"] = (
@@ -142,6 +157,15 @@ def _feature_table(profile: dict[str, Any], config: AppConfig) -> list[str]:
         if not entry:
             continue
         resolution = entry.get("resolution", "unavailable")
+        if resolution == "qualitative":
+            low = float(entry.get("min", float("nan")))
+            high = float(entry.get("max", float("nan")))
+            span = f"{low:.1f}" if low == high else f"{low:.1f}–{high:.1f}"
+            lines.append(
+                f"| `{definition.id}` | {definition.group} | qualitative | — | — | — | "
+                f"{span} | — | {definition.units} |"
+            )
+            continue
         if resolution == "unavailable" or entry.get("median") is None:
             lines.append(
                 f"| `{definition.id}` | {definition.group} | unavailable | — | — | — | — | — | {definition.units} |"
@@ -161,6 +185,29 @@ def _feature_table(profile: dict[str, Any], config: AppConfig) -> list[str]:
             f"| `{definition.id}` | {definition.group} | {resolution} | {entry.get('n_cells', 0):,} | "
             f"{fmt('median')} | {spread} | {fmt('min')} | {fmt('max')} | {definition.units} |"
         )
+    qualitative = [
+        entry
+        for entry in profile["features"].values()
+        if entry.get("resolution") == "qualitative"
+    ]
+    if qualitative:
+        lines.append("")
+        lines.append("Banded qualitative anchors (not per-cell measurements):")
+        lines.append("")
+        for entry in qualitative:
+            low = float(entry["min"])
+            high = float(entry["max"])
+            span = (
+                f"{low:.2f} °C (single cited value)"
+                if low == high
+                else f"{low:.2f} to {high:.2f} °C"
+            )
+            lines.append(
+                f"- `{entry.get('anchor_rows', [])}` -> {entry.get('anchor_label', '')}. "
+                f"Anchor range {span}; target "
+                f"band {entry['target_band']} of {entry['n_bands'] - 1} "
+                f"(edges {entry['bands_c']} °C, band 0 = coldest)."
+            )
     return lines
 
 
@@ -395,6 +442,16 @@ def write_phase2_report(
             "typical values — not per-cell maps. They therefore cannot be compared",
             "numerically with WorldClim 2 m air temperature; a qualitative anchor mapping",
             "is a Phase 3 decision and is not implemented here.",
+            "",
+            "**Approved qualitative mapping (option A, banded anchors).** Two Moon",
+            "features are scored from exact polar rows: `temp_min_coldest_c` from the",
+            "PSR/cold-trap temperatures and `temp_max_warmest_c` from the 89°S",
+            "peak-illumination maximum. Earth cells are placed in configured bands and",
+            "the score is band distance; every such output carries the `qualitative`",
+            "label. Mean temperature, diurnal swing and annual range stay unavailable",
+            "because the table has no cited polar value for them. The 400 K subsolar",
+            "maximum and 100 K night value are **equatorial** and are shown on the site",
+            "card as context only — they never enter a score.",
             "",
         ]
     )

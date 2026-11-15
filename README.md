@@ -2,13 +2,16 @@
 
 Rank every place on Earth by how closely it resembles a candidate **lunar south-pole base region** or a **Mars landing site**, explain the match feature by feature, and show where the analogy breaks down.
 
-> **Status: Phase 2 complete.** The Earth 0.05° feature grid is built, and the
-> Moon (poleward of 85°S) and Mars (Jezero, 150 km disc) target profiles are
-> computed with the same feature registry over the same physical windows. All
-> parameters — grid, windows, lags, percentiles, targets, validation sites and
-> file names — live in `config/*.yaml`. The two cited thermal tables were still
-> missing at build time, so Moon/Mars temperature is reported unavailable rather
-> than guessed.
+> **Status: Phase 3 complete.** The Earth 0.05° feature grid is built, the Moon
+> (poleward of 85°S) and Mars (Jezero, 150 km disc) target profiles are computed
+> with the same feature registry over the same physical windows, and the
+> similarity engine writes global score maps, per-feature evidence and
+> non-maximum-suppressed candidate sites for four config-driven presets. Both
+> cited thermal tables are ingested as **reference values** and the Moon's polar
+> temperature anchors are scored qualitatively; Mars has thermal inertia but no
+> temperatures, so its temperature features stay unavailable. All parameters —
+> grid, windows, lags, percentiles, targets, weights, presets, bands, top-N,
+> separation, famous sites and file names — live in `config/*.yaml`.
 
 ## What this is
 
@@ -26,8 +29,9 @@ python -m backend.pipeline.inspect_datasets   # writes docs/data_inventory.md
 python -m backend.pipeline.earth_climate      # WorldClim -> 0.05° climate + land mask (~1 min)
 python -m backend.pipeline.earth_terrain      # ETOPO -> 0.05° terrain features (~8 min)
 python -m backend.pipeline.build_earth_features  # merge, mask, figures, report (~2 min)
-python -m backend.targets.build_target_profiles  # Moon + Mars profiles, PSR and Hurst checks (~5 min)
-python -m pytest -q                           # Phase 0 + Phase 1 + Phase 2 tests
+python -m backend.targets.build_target_profiles  # Moon + Mars profiles, PSR and Hurst checks (~4 min)
+python -m backend.engine.build_scores            # score maps, top sites, sensitivity, report (~1.5 min)
+python -m pytest -q                           # Phase 0 + 1 + 2 + 3 tests
 ```
 
 Proof that configuration drives everything (no code edits):
@@ -63,6 +67,18 @@ Intermediate files (`earth_terrain.nc`, `earth_climate.nc`) are deleted after a 
 | `docs/psr_verification.md` | data-driven PSR checks: CRS interpretation, DEM extent, topographic position, slope finding |
 | `docs/hurst_sensitivity.md` | Earth Hurst with and without the 2 km lag |
 
+### Phase 3 outputs
+
+| Path | Contents |
+|---|---|
+| `data/processed/scores_moon.nc`, `scores_mars.nc` | per-group similarity grids and one score grid per preset, area-weighted on the 0.05° grid, plus the preset coverage grid |
+| `data/processed/top_sites.json` | for each target and preset: renormalised weights, coverage, score statistics, NMS sites with and without famous analogs, per-feature absolute gap / rank similarity / hidden-gap flag, validation sites, thermal sensitivity |
+| `docs/phase3_report.md` | similarity definition, coverage per target, per-feature evidence, top sites, analog results, sensitivity verdict, what does not match |
+
+Scores are **Earth-relative**. A Moon score and a Mars score are never
+comparable: they use different feature sets, different coverage and different
+target distributions.
+
 ## Repository layout
 
 ```
@@ -72,7 +88,7 @@ NASA_Space_Challenge/
     features/       the single feature registry used by Earth, Moon and Mars
     targets/        Moon/Mars profiles, PSR verification, thermal reader, Hurst check
     pipeline/       one ingestion/regrid script per source dataset
-    engine/         percentile normalization, weighted scoring, ranking
+    engine/         similarity maths, NMS top sites, score builds and reports
     api/            FastAPI application
     paths.py        single source of truth for data locations
   config/           every tunable value: grid, windows, lags, targets, sites, files
@@ -104,7 +120,8 @@ Full file-level details, local names, sizes and verification results: [`docs/dat
 - Moon rasters cover only the south-polar stereographic tile (80°S at the edge midpoints; corners reach ~76°S). They are never interpreted as a lon/lat grid.
 - Mars MOLA is 16 pixels/degree (~3.7 km); ETOPO is ~1.85 km; lunar terrain products are 80 m–1 km. Features are therefore compared in **kilometre-sized windows**, and coarse sources are explicitly noted.
 - Earth cannot reproduce reduced gravity, vacuum or the thin Martian atmosphere, or the radiation environment.
-- Moon and Mars temperature values come from cited literature CSVs, never from invented numbers.
+- Moon and Mars temperature values come from cited literature CSVs, never from invented numbers. They are reference numbers, not per-cell maps, so Moon temperature is scored **qualitatively** (banded polar anchors) and Mars temperature is unavailable.
+- No Earth substrate, mineralogy or thermal-inertia map is in this build, so a smooth ice sheet and a smooth rock plain are indistinguishable to the terrain features. The Mars ranking is a terrain result, not a composition result.
 
 ## Documentation
 
@@ -113,9 +130,10 @@ Full file-level details, local names, sizes and verification results: [`docs/dat
 - [PROGRESS_LOG.md](PROGRESS_LOG.md) — who did what
 - [docs/DATASETS.md](docs/DATASETS.md) — dataset manifest
 - [docs/data_inventory.md](docs/data_inventory.md) — Phase 0 verification
-- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions, Phase 1 and Phase 2 implementation records
-- [docs/hardcode_audit.md](docs/hardcode_audit.md) — no-hard-coding audit and the two configuration proofs
+- [docs/FEATURES.md](docs/FEATURES.md) — locked feature definitions, Phase 1–3 implementation records
+- [docs/hardcode_audit.md](docs/hardcode_audit.md) — no-hard-coding audit and the configuration proofs
 - [docs/phase2_report.md](docs/phase2_report.md) — Moon and Mars target profiles
+- [docs/phase3_report.md](docs/phase3_report.md) — similarity engine, score maps and candidate sites
 - [docs/psr_verification.md](docs/psr_verification.md) — data-driven PSR checks
 - [docs/hurst_sensitivity.md](docs/hurst_sensitivity.md) — Earth Hurst robustness
 - [docs/earth_grid_report.md](docs/earth_grid_report.md) — Phase 1 grid coverage and limits

@@ -48,6 +48,55 @@ distribution:
   # normal distribution. Change here, not in code.
   percentiles: [16.0, 84.0]
 
+scoring:
+  # Phase 3. Absolute similarity is a Gaussian in target spreads:
+  #   s_abs = exp(-0.5 * (gap / scale)^2),  gap = Earth value - target median
+  # `scale` is floored so a narrow target distribution cannot make every Earth
+  # cell look infinitely far away. All three terms are config, never code.
+  absolute_kernel: gaussian
+  spread_floor_fraction: 0.10      # floor = 10% of |target median|
+  spread_floor_units:              # ... and never below these measurement floors
+    relief_20km_m: 1.0
+    slope_20km_deg: 0.05
+    roughness_5km_m: 0.5
+    roughness_10km_m: 0.5
+    roughness_20km_m: 0.5
+    hurst_2_32km: 0.01
+    temp_mean_c: 0.1
+    temp_diurnal_range_c: 0.1
+    temp_max_warmest_c: 0.1
+    temp_min_coldest_c: 0.1
+    temp_annual_range_c: 0.1
+    precip_annual_mm: 1.0
+    precip_driest_month_mm: 0.1
+  # Rank similarity compares an Earth cell's area-weighted percentile with the
+  # Earth percentile of the TARGET MEDIAN (q). Both are percentiles of Earth
+  # land, so the comparison stays scale-free.
+  rank_reference: target_median_earth_percentile
+  # "Rank hides a real-unit gap": rank similarity high while the absolute
+  # Gaussian likeness is low. Thresholds are config, and the flag never changes
+  # the score.
+  hidden_gap_rank_similarity: 0.75
+  hidden_gap_absolute_similarity: 0.35
+  # Count area, not cells: every aggregate and percentile is weighted by
+  # cos(latitude).
+  area_weighting: true
+  # Earth percentiles are stored as this many quantiles, which is what the site
+  # cards and the engine use to map a value to a percentile (error <= 1/N).
+  cdf_quantiles: 4096
+  # A site's score is the area-weighted mean of cells within this fraction of
+  # the suppression distance, so a single noisy cell cannot define a site.
+  site_aggregation_fraction_of_separation: 0.5
+
+thermal_sensitivity:
+  # Required by the thermal decision: vary band edges and temperature weight and
+  # report how much the top-N changes. Never tune these to flatter known analogs.
+  temperature_weights: [0.0, 0.25, 0.5]
+  band_edge_shifts_c: [-5.0, 0.0, 5.0]
+  top_n: 25
+  rank_sample_count: 200000
+  random_seed: 7
+
 hurst_sensitivity:
   # Earth Hurst robustness check: drop the 2 km lag (ETOPO native is ~1.85 km).
   sample_count: 600

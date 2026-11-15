@@ -205,29 +205,54 @@ exact −273.15 offset, and two bracketing `*_min`/`*_max` pairs per body are
 combined into **derived ranges** that name both inputs and the rule. These are
 reference numbers, not per-cell maps, so they are deliberately **not** turned
 into target distributions and **not** compared numerically with WorldClim 2 m
-air temperature. All temperature features therefore remain `unavailable` for
-Moon and Mars, and the qualitative-anchor mapping is a Phase 3 decision awaiting
-approval.
+air temperature.
 
-## Normalization and scoring (Phase 3 contract)
+**Approved thermal mapping (option A, banded anchors, 2026-11-15).** Only exact
+**polar** rows are scored: `temp_min_coldest_c` from the PSR/cold-trap values
+(Cabeus 37 K, coldest midday 29 K, large-crater daily maximum 40–90 K, cold-trap
+threshold 110 K) and `temp_max_warmest_c` from the 89°S peak-illumination value
+(180 K). Earth cells are placed in configured bands and scored by band distance;
+every such output is labelled `qualitative`. The equatorial 400 K subsolar
+maximum and 100 K night value are **context only** and never enter a score. Mean
+temperature, diurnal swing and annual range stay `unavailable` because no cited
+polar value exists for them. Mars thermal inertia has no Earth counterpart in
+this build, so it is context only.
 
-1. Convert each feature to a percentile rank **within its own body's valid
-   cells** (Earth land; Moon polar tile; Mars target region). Rank similarity is
-   `1 − |p_earth,f − p_target,f|`.
-2. **Also** report the absolute gap in real units, `Earth value − target median`,
-   and how many target p16–p84 spreads that gap is worth. This is mandatory: a
-   rank can look close while the real difference is enormous (the Moon's
-   day–night swing is hundreds of kelvin; an Earth desert that ranks near it is
-   still nowhere near it in absolute terms). Every site card must show the
-   absolute gap, with a plain-language note where rank similarity hides a large
-   real-unit difference.
-3. Overall score: weighted mean of available sub-scores; weights adjustable in
-   the UI, with presets for rover mobility, cold-trap/ice and thermal cycling.
-   Unavailable features carry no score and the remaining weights are
-   renormalised (the Phase 2 reports give the renormalised weights per body).
-4. Report the weight vector, the per-feature sub-scores, the absolute gaps, and
-   any feature that is unavailable for a body. A high score with an unavailable
-   ice proxy must not look like a high-confidence ice analog.
+## Normalization and scoring (Phase 3 contract, implemented)
+
+1. **Absolute similarity** per feature: `exp(−0.5·(gap/scale)²)` with
+   `gap = Earth value − target median` and `scale = max(target p16–p84
+   half-spread, spread_floor_fraction × |median|, per-feature measurement floor)`.
+   This is in real units.
+2. **Rank similarity** per feature: `1 − |p_earth − q|`, where `p_earth` is the
+   cell's area-weighted percentile of Earth land and `q` is the Earth percentile
+   of the target median. Scale-free, and therefore able to look close while the
+   real gap is enormous.
+3. **Hidden-gap flag**: rank similarity ≥ `hidden_gap_rank_similarity` **and**
+   absolute similarity ≤ `hidden_gap_absolute_similarity` (both config). The flag
+   never changes the score; it warns the reader.
+4. **Overall score**: weighted mean of available group scores. Groups with no
+   usable feature are dropped and the remaining weights are renormalised; the
+   weight vector, weight share, weight coverage and per-feature evidence are all
+   emitted. Presets (`balanced`, `rover_mobility`, `cold_trap_ice`,
+   `thermal_cycling`) come from `config/presets.yaml`; a preset that collapses to
+   another ranking for a target is labelled as such.
+5. **Area weighting**: every percentile, mean, site score and coverage fraction
+   is weighted by `cos(latitude)`; area is counted, not cells.
+6. **Top sites**: greedy non-maximum suppression at the preset's
+   `min_separation_km`, then an area-weighted site score within a configurable
+   fraction of that distance. Lists are emitted with and without sites inside the
+   configured famous-site radius.
+7. **Qualitative thermal**: band distance, never a numeric Earth/Moon comparison.
+8. **Coverage and comparability**: features used and coverage fractions are stored
+   per target; Mars legitimately uses fewer features than the Moon; raw Moon and
+   Mars scores are never compared.
+9. **Validation**: the configured spot checks and proposed analogs are scored and
+   reported as found, including their largest real-unit gap and hidden-gap count.
+   Weights and band edges are never tuned to flatter them.
+10. **Thermal sensitivity**: band edges and the temperature weight are varied
+    over the configured grid; top-N overlap and Spearman rho are reported, with
+    an honest verdict. Ranking changes are not hidden.
 
 ## Window and resolution policy
 

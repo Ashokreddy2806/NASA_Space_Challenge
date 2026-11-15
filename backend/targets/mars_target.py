@@ -222,7 +222,10 @@ def analyse_mars(config: AppConfig | None = None) -> dict[str, Any]:
     }
 
     table = thermal.thermal_availability(config, "mars")
-    entries.update(thermal.match_thermal_features(config, table, mars))
+    thermal_entries = thermal.match_thermal_features(config, table, mars)
+    thermal_entries.update(thermal.qualitative_thermal_features(config, table, mars))
+    thermal.apply_thermal_unavailable(thermal_entries, mars)
+    entries.update(thermal_entries)
     # Configured exclusions win over the literature table: Mars is documented as
     # having no surface-temperature range, so those features stay unavailable
     # even if a table row ever appears, and the weight is renormalised instead.
@@ -290,6 +293,7 @@ def analyse_mars(config: AppConfig | None = None) -> dict[str, Any]:
             "entries": table["table"],
             "references": table.get("references", []),
             "derived": table.get("derived", []),
+            "context_only": thermal.thermal_context(config, table, mars),
         },
         "runtime_seconds": time.perf_counter() - started,
     }

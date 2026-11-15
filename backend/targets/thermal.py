@@ -30,6 +30,7 @@ Required columns: ``feature`` and ``value``. Optional: ``body``, ``statistic``,
 
 from __future__ import annotations
 
+import bisect
 import csv
 from pathlib import Path
 from typing import Any
@@ -225,6 +226,151 @@ def thermal_availability(config: AppConfig, body: str) -> dict[str, Any]:
     }
 
 
+def qualitative_thermal_features(
+    config: AppConfig,
+    availability: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Build banded qualitative entries from the cited polar anchors.
+
+    Approved mapping (2026-11-15, option A): every thermal feature keeps its
+    qualitative label, Earth cells are classified into the configured bands, and
+    the target band is derived from exact cited rows only. The build fails if the
+    cited anchors do not all land in the same band, so a band cannot be invented
+    or silently averaged. Equatorial rows are never used here.
+    """
+    mapping = target.get("thermal_mapping") or {}
+    if str(mapping.get("mode", "")) != "banded":
+        return {}
+
+    references = {row["name"]: row for row in availability.get("references", [])}
+    definitions = {definition.id: definition for definition in config.all_features}
+    out: dict[str, dict[str, Any]] = {}
+
+    for feature_id, spec in (mapping.get("features") or {}).items():
+        definition = definitions.get(feature_id)
+        if definition is None:
+            raise KeyError(f"thermal_mapping references unknown feature {feature_id}")
+        bands = [float(value) for value in spec["bands_c"]]
+        if bands != sorted(bands):
+            raise ValueError(f"{feature_id}: bands_c must be ascending")
+        if len(set(bands)) != len(bands):
+            raise ValueError(f"{feature_id}: bands_c must be distinct")
+
+        values: list[float] = []
+        sources: list[str] = []
+        for name in spec["anchor_rows"]:
+            row = references.get(name)
+            if row is None:
+                raise KeyError(
+                    f"{feature_id} anchor {name} is not in {availability['path']}"
+                )
+            if "value_degc" not in row:
+                raise ValueError(
+                    f"{feature_id} anchor {name} has units {row['units']!r}; only "
+                    "cited Kelvin temperatures can be banded"
+                )
+            values.append(float(row["value_degc"]))
+            if row.get("source"):
+                sources.append(str(row["source"]))
+
+        band_hits = sorted({_band_index(value, bands) for value in values})
+        if bool(spec.get("require_single_band", True)) and len(band_hits) != 1:
+            raise ValueError(
+                f"{feature_id}: cited anchors map to different bands {band_hits} "
+                f"with edges {bands}; refusing to invent a target band"
+            )
+
+        low, high = min(values), max(values)
+        out[feature_id] = {
+            "units": definition.units,
+            "long_name": definition.long_name,
+            "label": definition.label,
+            "group": definition.group,
+            "registry_function": "cited_literature_banded",
+            "resolution": "qualitative",
+            "qualitative": True,
+            "resolution_note": (
+                "qualitative banded anchor: cited polar reference values, not a "
+                "per-cell measurement and not numerically comparable to WorldClim"
+            ),
+            "median": float("nan"),
+            "spread": float("nan"),
+            "p16": None,
+            "p84": None,
+            "min": low,
+            "max": high,
+            "n_cells": 0,
+            "sampled": False,
+            "bands_c": bands,
+            "n_bands": len(bands) + 1,
+            "target_band": band_hits[0],
+            "anchor_values_c": values,
+            "anchor_range_c": [low, high],
+            "anchor_label": str(spec.get("anchor_label", "")).strip(),
+            "anchor_rows": list(spec["anchor_rows"]),
+            "source": "; ".join(dict.fromkeys(sources)),
+            "table": availability["path"],
+            "scoring": "band_distance",
+            "conversion": "K -> degC (subtract 273.15)",
+        }
+    return out
+
+
+def apply_thermal_unavailable(
+    entries: dict[str, dict[str, Any]], target: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """Apply the configured per-feature reasons for features with no polar anchor."""
+    mapping = target.get("thermal_mapping") or {}
+    reasons = mapping.get("unavailable_features") or {}
+    for feature_id, reason in reasons.items():
+        entry = entries.get(feature_id)
+        if entry is None:
+            continue
+        entry.update(
+            {
+                "resolution": "unavailable",
+                "resolution_note": str(reason).strip(),
+                "median": float("nan"),
+                "n_cells": 0,
+            }
+        )
+    return entries
+
+
+def thermal_context(
+    config: AppConfig,
+    availability: dict[str, Any],
+    target: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Cited rows shown on the target card but never used in scoring."""
+    mapping = target.get("thermal_mapping") or {}
+    context = mapping.get("context_only") or {}
+    references = {row["name"]: row for row in availability.get("references", [])}
+    rows: list[dict[str, Any]] = []
+    for name, label in context.items():
+        row = references.get(name)
+        if row is None:
+            continue
+        rows.append(
+            {
+                "name": name,
+                "label": str(label),
+                "value": row["value"],
+                "units": row["units"],
+                "value_degc": row.get("value_degc"),
+                "source": row.get("source", ""),
+                "scored": False,
+            }
+        )
+    return rows
+
+
+def _band_index(value: float, bands: list[float]) -> int:
+    """Band index for an ascending edge list; band 0 is the cold end."""
+    return bisect.bisect_right(bands, value)
+
+
 def _kelvin_to_celsius(value: float, units: str) -> tuple[float, float | None]:
     """Convert a Kelvin literature value to degrees Celsius (exact offset)."""
     if units.strip().lower() in {"k", "kelvin", "kelvins"}:
@@ -281,8 +427,8 @@ def match_thermal_features(
             if availability.get("references"):
                 note = (
                     f"the cited table lists {len(availability['references'])} reference "
-                    "quantities, not per-cell rows; qualitative mapping is pending user "
-                    "approval"
+                    "quantities, not per-cell rows; no qualitative band mapping is "
+                    "defined for this feature"
                 )
             else:
                 note = (

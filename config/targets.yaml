@@ -17,6 +17,50 @@ moon:
   thermal_csv: thermal
   # Which scoring groups hold literature-only values for this body.
   thermal_groups: [temperature]
+  # Phase 3 qualitative mapping, approved 2026-11-15 (option A: banded anchors).
+  # Only exact cited rows are used, and only polar-appropriate ones: the 400 K
+  # subsolar maximum and ~100 K night value are equatorial and stay context.
+  # `bands_c` are ascending edges; band 0 is always the cold end and
+  # band `len(bands_c)` the warm end. The target band is computed from the cited
+  # anchors and must be the same for every listed anchor row, or the build fails.
+  thermal_mapping:
+    mode: banded
+    label: qualitative
+    temperature_weight: 0.25
+    features:
+      temp_min_coldest_c:
+        bands_c: [-40.0, -25.0, -10.0, 0.0]
+        anchor_rows:
+          - moon_cabeus_psr_avg_annual_temp
+          - moon_coldest_midday_bolometric_temp_cold_craters
+          - moon_psr_large_craters_daily_max_temp_min
+          - moon_psr_large_craters_daily_max_temp_max
+          - moon_cold_trap_threshold_annual_max_temp
+        anchor_label: >-
+          PSR and cold-trap surface temperatures at 85-90 S (Cabeus 37 K, coldest
+          midday 29 K, large-crater daily maximum 40-90 K, cold-trap threshold
+          110 K)
+        require_single_band: true
+      temp_max_warmest_c:
+        bands_c: [0.0, 10.0, 20.0, 30.0, 40.0]
+        anchor_rows:
+          - moon_89S_horizontal_peak_illum_temp_max
+        anchor_label: >-
+          horizontal surface at 89 S during peak illumination (180 K)
+        require_single_band: true
+    unavailable_features:
+      temp_mean_c: >-
+        no cited polar annual-mean surface temperature; the equatorial rows are
+        context only, so no mean is invented
+      temp_diurnal_range_c: >-
+        no cited polar day-night pair; the equatorial 400 K subsolar maximum and
+        100 K night value do not describe the 85-90 S target and are context only
+      temp_annual_range_c: >-
+        no cited polar annual temperature range; the 89 S peak-illumination value
+        is a single illumination state, not an annual range
+    context_only:
+      moon_subsolar_max_surface_temp_approx: equatorial, not scored
+      moon_night_surface_temp_typical: equatorial, not scored
   # Recompute from the 80 m DEM; these pre-computed LOLA rasters are cross-checks.
   # `roughness_800m_baseline` is computed only to match the LOLA 0.8 km baseline;
   # it is not a profile feature.
