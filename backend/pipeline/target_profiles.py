@@ -13,8 +13,8 @@ Targets (defaults recorded in PLAN.md Decisions):
   * Mars: Jezero Crater (18.38 N, 77.58 E), 50 km radius disk.
 
 Terrain features use ``earth_terrain.compute_terrain_features`` on a 2 km grid, so
-every estimator is identical to the Earth one. Temperatures come only from the
-cited literature CSVs; no site-specific value exists there yet, so they stay null.
+every estimator is identical to the Earth one. Moon temperatures come from the
+measured LRO Diviner polar table; Mars has no temperature source, so they stay null.
 """
 
 from __future__ import annotations
@@ -40,6 +40,7 @@ from rasterio.warp import reproject
 from rasterio.windows import Window
 
 from backend.paths import DOCS_DIR, FIGURES_DIR, PROCESSED_DIR, RAW, ensure_output_dirs
+from backend.pipeline.diviner import diviner_south_profile
 from backend.pipeline.earth_terrain import compute_terrain_features, hurst_exponent
 
 PIXEL_M = 2000.0
@@ -59,6 +60,11 @@ TEMPERATURE = [
     "temp_min_coldest_c", "temp_annual_range_c",
 ]
 DRYNESS = ["precip_annual_mm", "precip_driest_month_mm"]
+DIVINER_TAB = RAW["moon"] / "pds" / "diviner" / "dlre_prp_south.tab"
+MISSING_TEMPERATURE = {
+    "value": None, "status": "missing_site_specific_literature_value", "units": "degC",
+    "limitation": "No site-specific cited value; Earth cannot substitute for it.",
+}
 
 
 # ---------------------------------------------------------------- Moon
@@ -162,13 +168,6 @@ def terrain_summary(dem: np.ndarray, radius_m: float, hurst_lags=None) -> dict:
     return {k: summarize(feats[k][m & np.isfinite(feats[k])]) for k in TERRAIN}
 
 
-def read_reference(path) -> dict:
-    """Literature reference values (never site-specific numbers)."""
-    with open(path, newline="") as f:
-        return {r["feature"]: {"value": float(r["value"]), "units": r["units"], "source": r["source"]}
-                for r in csv.DictReader(f)}
-
-
 def earth_scale() -> dict:
     """Area-weighted Earth land distribution per feature (sorted values + cumulative weight)."""
     out = {}
@@ -194,15 +193,28 @@ def earth_context(scale, key, value) -> dict:
 
 # ------------------------------------------------------------ profiles
 
-def build_profile(meta, terrain, scale, notes, extra) -> dict:
+def moon_temperatures(scale, diviner) -> dict:
+    surface = ("Diviner annual surface (skin) temperature vs Earth WorldClim AIR temperature, not like-for-like; "
+               "target lies at/below the coldest Earth land cell so Earth cannot reproduce it.")
+    temps = {}
+    for key, src in (("temp_mean_c", "temp_avg_c"), ("temp_max_warmest_c", "temp_max_c")):
+        d = diviner[src]
+        temps[key] = {"value": d["median"], "p10": d["p10"], "p90": d["p90"], "units": "degC",
+                      "status": "measured_surface", "limitation": surface,
+                      **earth_context(scale, key, d["median"])}
+    for key in ("temp_diurnal_range_c", "temp_min_coldest_c", "temp_annual_range_c"):
+        temps[key] = {"value": None, "units": "degC", "status": "missing_no_source",
+                      "limitation": "Diviner PRP gives only annual mean and max temperature."}
+    return temps
+
+
+def build_profile(meta, terrain, scale, notes, extra, temps=None) -> dict:
     features = {}
     for k in TERRAIN:
         features[k] = {**terrain[k], "units": TERRAIN_UNITS[k], **earth_context(scale, k, terrain[k]["value"]),
                        **notes.get(k, {"status": "measured"})}
     for k in TEMPERATURE:
-        features[k] = {"value": None, "status": "missing_site_specific_literature_value", "units": "degC",
-                       "limitation": "No site-specific cited value yet; reference values below are equatorial/global "
-                                     "and must not be used as the target."}
+        features[k] = (temps or {}).get(k, MISSING_TEMPERATURE)
     for k in DRYNESS:
         features[k] = {"value": 0.0, "units": "mm", "status": "one_sided_constraint",
                        "limitation": meta["dryness_note"], **earth_context(scale, k, 0.0)}
@@ -245,12 +257,13 @@ def main() -> None:
 
     dem = moon_dem_2km()
     moon_terrain = terrain_summary(dem, MOON_RADIUS_M)
+    diviner = diviner_south_profile(DIVINER_TAB, MOON_LAT_LIMIT)
     moon_extra = {
-        "ice_cold_trap_proxy": {**psr_fraction(), "status": "measured",
+        "ice_cold_trap_proxy": {**psr_fraction(), "cold_trap_area_fraction": diviner["cold_trap_area_fraction"],
+            "status": "measured",
             "limitation": "PSR table lists shadowed areas > 1 km2 only (lower bound); CRS assumed equal to the DEM "
-                          "grid. Earth has no PSR analogue; its proxy temp_min_coldest_c is a different quantity."},
+                          "grid. cold_trap_area_fraction (Diviner, annual max < 110 K) agrees with the PSR polygons. Earth has no PSR analogue; the engine compares it with the Earth frozen-ground fraction."},
         "published_cross_check": moon_published(MOON_RADIUS_M),
-        "thermal_reference_values": read_reference(RAW["moon"] / "moon_thermal_literature.csv"),
     }
     moon = build_profile(
         {"name": "Lunar south pole (poleward of 85S)", "body": "Moon",
@@ -260,7 +273,7 @@ def main() -> None:
          "resolution_note": "80 m source, 2 km working grid, windows 5-32 km",
          "dryness_note": "Airless body: no precipitation by definition. Treated as 'drier than any Earth desert', "
                          "not a measured value."},
-        moon_terrain, scale, {}, moon_extra)
+        moon_terrain, scale, {}, moon_extra, moon_temperatures(scale, diviner))
 
     mars_terrain = terrain_summary(mars_dem_2km(), MARS_RADIUS_M, hurst_lags=(8, 16, 32))
     mars_notes = {
@@ -280,8 +293,7 @@ def main() -> None:
          "resolution_note": "3.7 km source, 2 km working grid: sub-pixel detail is not resolved",
          "dryness_note": "Hyper-arid: no liquid precipitation. Treated as a one-sided constraint, not a measured value."},
         mars_terrain, scale, mars_notes,
-        {"thermal_reference_values": read_reference(RAW["mars"] / "mars_thermal_literature.csv"),
-         "ice_cold_trap_proxy": {"status": "not_in_mvp", "limitation": "No mapped cold-trap product downloaded for Mars."}})
+        {"ice_cold_trap_proxy": {"status": "not_in_mvp", "limitation": "No mapped cold-trap product downloaded for Mars."}})
 
     out = {"generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
            "earth_reference": "area-weighted Earth land cells of data/processed/earth_features.nc",
